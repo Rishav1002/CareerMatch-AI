@@ -17,7 +17,7 @@ AI-Powered Career Intelligence, Skill Development, and Placement Readiness Platf
 | :---: | :---: |
 | ![Hero and Analyzer](docs/screenshots/hero.png) | ![Career Report](docs/screenshots/report.png) |
 
-| Skill Gaps & Evidence Table | Interactive Roadmap & Node Inspector | 
+| Career Toolkit | Career Roadmap | 
 | :---: | :---: |
 | ![Evidence View](docs/screenshots/evidence-view.png) | ![Interactive Roadmap](docs/screenshots/roadmap.png) |
 
