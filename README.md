@@ -24,7 +24,7 @@ AI-Powered Career Intelligence, Skill Development, and Placement Readiness Platf
 
 | Online Courses Recommendations | Job Listing |
 | :---: | :---: |
-| ![Online Courses](docs/screenshots/Corses.png) | ![Job Listing](docs/screenshots/Job-Market.png)
+| ![Online Courses](docs/screenshots/Corses.png) | ![Job Listing](docs/screenshots/Job-Market.png) |
 
 ---
 
