@@ -4,7 +4,6 @@
 
 AI-Powered Career Intelligence, Skill Development, and Placement Readiness Platform for students and early-career software/data engineers.
 
-[![Tests](https://github.com/shubhamsharma200212-coder/Token_Titans/actions/workflows/test.yml/badge.svg)](https://github.com/shubhamsharma200212-coder/Token_Titans/actions/workflows/test.yml)
 ![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![FastAPI 0.115.6](https://img.shields.io/badge/FastAPI-0.115.6-009688?logo=fastapi&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
