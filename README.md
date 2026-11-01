@@ -19,12 +19,12 @@ AI-Powered Career Intelligence, Skill Development, and Placement Readiness Platf
 | ![Hero and Analyzer](docs/screenshots/hero.png) | ![Career Report](docs/screenshots/report.png) |
 
 | Skill Gaps & Evidence Table | Interactive Roadmap & Node Inspector | 
-| :---: | :---: | :---: |
+| :---: | :---: |
 | ![Evidence View](docs/screenshots/evidence-view.png) | ![Interactive Roadmap](docs/screenshots/roadmap.png) |
 
-| Online Courses Recommendations | Job Listing |
-| :---: | :---: |
-| ![Online Courses](docs/screenshots/Corses.png) | ![Job Listing](docs/screenshots/Job-Market.png) |
+| Online Courses Recommendations | Job Listing | Project Recommendation |
+| :---: | :---: | :---: |
+| ![Online Courses](docs/screenshots/Corses.png) | ![Job Listing](docs/screenshots/Job-Market.png) | ![Project Recommendations](docs/screenshots/Planning&Projects.png) |
 
 ---
 
