@@ -1,4 +1,4 @@
-# CareerMatch AI 2.0
+# CareerMatch AI
 
 **Team Token Titans**
 
