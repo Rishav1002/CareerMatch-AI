@@ -1,0 +1,1496 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CareerMatch AI 2.0 — Career Intelligence, Skill Development &amp; Placement Readiness Platform</title>
+    <meta
+      name="description"
+      content="CareerMatch AI 2.0: Unified AI Career Intelligence, ATS Resume Simulator, Mock Interview Coach, GitHub Portfolio Verifier, Adaptive Learning Roadmap, Skill Assessment Lab &amp; Placement Readiness Index."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/frontend/css/styles.css" />
+  </head>
+  <body>
+    <div class="bg-orb orb-1" aria-hidden="true"></div>
+    <div class="bg-orb orb-2" aria-hidden="true"></div>
+    <div class="bg-grid" aria-hidden="true"></div>
+
+    <!-- Sticky Pill Navbar -->
+    <header class="navbar section-wrap" id="topNavbar">
+      <a class="brand" href="#home" data-scroll-target="#home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+            <path d="M2 17l10 5 10-5" />
+            <path d="M2 12l10 5 10-5" />
+          </svg>
+        </span>
+        <span>CareerMatch <span class="brand-accent">AI</span> <sup>2.0</sup></span>
+      </a>
+
+      <nav class="nav-links" aria-label="Primary Navigation">
+        <a href="#analyzer" class="nav-pill-link" data-scroll-target="#analyzer">Analyzer</a>
+        <a href="#results" class="nav-pill-link hidden" id="navResultsLink" data-scroll-target="#results">Career Report</a>
+        <div class="nav-dropdown" id="toolsDropdownWrap">
+          <button type="button" class="nav-dropdown-btn" id="toolsDropdownBtn" aria-expanded="false" aria-haspopup="true">
+            Tools ▾
+          </button>
+          <div class="nav-dropdown-menu hidden" id="toolsDropdownMenu" role="menu">
+            <button type="button" class="nav-dropdown-item" data-toolkit-open="ats">ATS check</button>
+            <button type="button" class="nav-dropdown-item" data-toolkit-open="interview">Mock interview</button>
+            <button type="button" class="nav-dropdown-item" data-toolkit-open="assessment">Skill test</button>
+            <button type="button" class="nav-dropdown-item" data-toolkit-open="github">GitHub proof</button>
+            <button type="button" class="nav-dropdown-item" data-toolkit-open="jobs">Job market</button>
+            <button type="button" class="nav-dropdown-item" data-toolkit-open="career">Compare roles</button>
+            <button type="button" class="nav-dropdown-item" data-toolkit-open="overview">Readiness</button>
+            <button type="button" class="nav-dropdown-item" data-toolkit-open="profile">Profile</button>
+          </div>
+        </div>
+      </nav>
+
+      <div class="nav-actions">
+        <button type="button" class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Dark / Light Theme">
+          Light Theme
+        </button>
+        <button type="button" class="nav-cta" id="openAuthModalBtn">
+          Sign in
+        </button>
+        <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="Toggle Menu">☰</button>
+      </div>
+    </header>
+
+    <!-- Mobile Hamburger Drawer -->
+    <div class="mobile-drawer" id="mobileDrawer">
+      <a href="#analyzer" class="mobile-link" data-scroll-target="#analyzer">Analyzer</a>
+      <a href="#results" class="mobile-link" data-scroll-target="#results">Career Report</a>
+      <div class="mini-divider" style="margin:0.35rem 0;"></div>
+      <span class="tiny-label" style="padding:0 0.5rem;">Career Toolkit</span>
+      <a href="#careerToolkitSection" class="mobile-link" data-toolkit-open="ats">ATS check</a>
+      <a href="#careerToolkitSection" class="mobile-link" data-toolkit-open="interview">Mock interview</a>
+      <a href="#careerToolkitSection" class="mobile-link" data-toolkit-open="assessment">Skill test</a>
+      <a href="#careerToolkitSection" class="mobile-link" data-toolkit-open="github">GitHub proof</a>
+      <a href="#careerToolkitSection" class="mobile-link" data-toolkit-open="jobs">Job market</a>
+      <a href="#careerToolkitSection" class="mobile-link" data-toolkit-open="career">Compare roles</a>
+      <a href="#careerToolkitSection" class="mobile-link" data-toolkit-open="overview">Readiness</a>
+      <a href="#careerToolkitSection" class="mobile-link" data-toolkit-open="profile">Profile</a>
+    </div>
+
+    <!-- Single-Page Main Flow -->
+    <main class="single-page-main section-wrap">
+      <!-- (a) HERO SECTION -->
+      <section class="hero" id="home">
+        <div class="hero-content">
+          <div class="eyebrow">
+            <span class="eyebrow-dot"></span>
+            AI Career Intelligence &amp; Skill Matching
+          </div>
+          <h1>Your next career move starts with clarity.</h1>
+          <p class="hero-subtitle">
+            Upload your resume and compare your skills against real role requirements.<br />
+            Get a step-by-step learning plan, verified courses, and practice tools in seconds.
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#analyzer" data-scroll-target="#analyzer">Analyze my resume</a>
+            <button class="button button-ghost" type="button" data-demo-index="0">Try a sample profile</button>
+          </div>
+        </div>
+
+        <div class="hero-visual" aria-label="Candidate Snapshot">
+          <div class="dashboard-card">
+            <div class="mock-top">
+              <div>
+                <span class="tiny-label">CANDIDATE SNAPSHOT</span>
+                <h3 id="heroCandidateName">No resume loaded yet</h3>
+              </div>
+              <span class="status-pill" id="heroStatusPill">Awaiting resume</span>
+            </div>
+
+            <!-- Empty state before analysis (grey skeleton bars, no hardcoded percentages) -->
+            <div id="heroEmptyState">
+              <p style="margin:0 0 0.85rem;color:var(--text-muted);font-size:0.9rem;font-weight:600;">
+                Upload a resume to see your match
+              </p>
+              <div class="skeleton-stack" aria-hidden="true">
+                <div class="skeleton-bar skeleton-bar-lg"></div>
+                <div class="skeleton-bar skeleton-bar-md"></div>
+                <div class="skeleton-bar skeleton-bar-sm"></div>
+              </div>
+              <p style="margin:0.85rem 0 0;color:var(--text-muted);font-size:0.8rem;">
+                Select a sample profile below or upload your resume to unlock your compatibility score and roadmap.
+              </p>
+            </div>
+
+            <!-- Live snapshot after analysis -->
+            <div id="heroLiveSnapshot" class="hidden">
+              <div class="score-row">
+                <div class="score-ring" id="heroScoreRing">
+                  <div>
+                    <strong class="tabular-nums" id="heroScoreNum">—</strong>
+                    <small>Match</small>
+                  </div>
+                </div>
+                <div class="score-copy">
+                  <strong id="heroRoleTitle">—</strong>
+                  <p id="heroCompanyTitle">—</p>
+                  <span class="positive tabular-nums" id="heroPotentialText"></span>
+                </div>
+              </div>
+              <div class="mini-divider"></div>
+              <div class="skill-section">
+                <div class="skill-head">
+                  <span>Detected Skills vs Role Requirements</span>
+                  <span class="tabular-nums" id="heroSkillCount">0 / 0 mandatory</span>
+                </div>
+                <div class="skill-tags" id="heroSkillTags"></div>
+              </div>
+              <div class="next-step">
+                <span class="tiny-label">RECOMMENDED NEXT STEP</span>
+                <p id="heroNextStepText"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- (b) ANALYZER SECTION: "Let's map your next career step" -->
+      <section class="analyzer-section" id="analyzer">
+        <div class="section-heading">
+          <span class="section-tag">RESUME &amp; ROLE ANALYZER</span>
+          <h2>Let's map your next career step</h2>
+          <p>Upload your resume and choose a target role to generate your personalized career report.</p>
+        </div>
+
+        <div class="analyzer-grid">
+          <!-- Left Column: Upload, Sample Chips, Three Small Info Cards & Parsed Preview -->
+          <div class="workspace-card">
+            <div class="card-step-header">
+              <span class="step-badge">Step 01 · Candidate Profile</span>
+              <span class="step-hint">PDF, DOCX, or TXT</span>
+            </div>
+            <h3>Upload or try a sample resume</h3>
+            <p class="card-sub">Drop your resume file below or test the analyzer with a sample profile.</p>
+
+            <label class="upload-zone" id="uploadDropZone" for="resumeFileInput">
+              <input type="file" id="resumeFileInput" accept=".pdf,.docx,.txt" hidden />
+              <div class="upload-icon">
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+              </div>
+              <strong id="uploadStatusText">Click to upload or drag &amp; drop</strong>
+              <small>Supports PDF, DOCX, and TXT files (up to 5 MB)</small>
+            </label>
+
+            <div class="demo-switcher" aria-label="Try a sample profile">
+              <span class="tiny-label">Try a sample profile:</span>
+              <button type="button" class="demo-btn" data-demo-index="0">Aarav</button>
+              <button type="button" class="demo-btn" data-demo-index="1">Priya</button>
+              <button type="button" class="demo-btn" data-demo-index="2">Rohan</button>
+            </div>
+
+            <!-- Three small info cards (Candidate / Target role / Goal company) -->
+            <div class="grid-3-col analyzer-mini-cards">
+              <div class="kpi-card">
+                <span class="kpi-label">Candidate</span>
+                <div class="kpi-value" style="font-size:1rem;" id="miniCardCandidate">Not selected</div>
+                <span class="kpi-sub" id="miniCardCandidateSub">Upload or pick a sample</span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-label">Target role</span>
+                <div class="kpi-value" style="font-size:1rem;" id="miniCardRole">Full Stack Developer</div>
+                <span class="kpi-sub">Selected benchmark</span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-label">Goal company</span>
+                <div class="kpi-value" style="font-size:1rem;" id="miniCardCompany">Any company</div>
+                <span class="kpi-sub">Optional target</span>
+              </div>
+            </div>
+
+            <!-- Parsed Resume Preview -->
+            <div class="parsed-resume-preview" id="parsedResumeBox">
+              <div class="parsed-header">
+                <div>
+                  <span class="tiny-label">PARSED CANDIDATE PROFILE</span>
+                  <h4 id="parsedCandidateName">No resume selected</h4>
+                  <p id="parsedResumeMeta">Upload a resume or click a sample chip above to preview extracted skills.</p>
+                </div>
+                <span class="tag tag-match tabular-nums" id="parsedSkillsCountBadge">0 Skills</span>
+              </div>
+              <div class="skill-tags" id="parsedSkillBadges"></div>
+              <div class="parsed-meta-row" id="parsedMetaRow"></div>
+            </div>
+          </div>
+
+          <!-- Right Column: "Build your career report" Form -->
+          <div class="workspace-card">
+            <div class="card-step-header">
+              <span class="step-badge">Step 02 · Role &amp; Job Description</span>
+              <span class="step-hint">8 roles or custom JD</span>
+            </div>
+            <h3>Build your career report</h3>
+            <p class="card-sub">Paste resume text if needed, pick your target role, and add an optional job description.</p>
+
+            <div class="paste-resume-box" style="margin-bottom:0.85rem;">
+              <label class="field-label" for="pastedResumeInput">Upload or paste resume text</label>
+              <textarea
+                id="pastedResumeInput"
+                class="input-field textarea-sm"
+                rows="2"
+                placeholder="Paste your plain resume text here (skills, education, projects, experience)..."
+              ></textarea>
+              <button type="button" class="button button-ghost" id="parseTextBtn" style="width:100%;">
+                Extract skills from pasted text
+              </button>
+            </div>
+
+            <div class="form-row-2">
+              <div>
+                <label class="field-label" for="targetRoleSelect">Target role</label>
+                <select id="targetRoleSelect" class="input-field">
+                  <option value="Full Stack Developer">Full Stack Developer</option>
+                  <option value="Data Engineer">Data Engineer</option>
+                  <option value="Machine Learning Engineer">Machine Learning Engineer</option>
+                  <option value="Data Analyst">Data Analyst</option>
+                  <option value="Python Backend Developer">Python Backend Developer</option>
+                  <option value="Java Developer">Java Developer</option>
+                  <option value="Cloud / DevOps Engineer">Cloud / DevOps Engineer</option>
+                  <option value="Cybersecurity Analyst">Cybersecurity Analyst</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label" for="goalCompanyInput">Goal company</label>
+                <input
+                  type="text"
+                  id="goalCompanyInput"
+                  class="input-field"
+                  placeholder="e.g., Google, Razorpay, Atlassian"
+                />
+              </div>
+            </div>
+
+            <label class="field-label" for="jobUrlInput">Job URL (optional)</label>
+            <input
+              type="url"
+              id="jobUrlInput"
+              class="input-field"
+              placeholder="https://careers.company.com/jobs/..."
+            />
+
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.35rem;gap:0.5rem;flex-wrap:wrap;">
+              <label class="field-label" for="customJdInput" style="margin-bottom:0;">Job description (optional)</label>
+              <button type="button" class="demo-btn" id="loadSampleJdBtn">Load sample JD</button>
+            </div>
+            <textarea
+              id="customJdInput"
+              class="input-field textarea-sm"
+              rows="3"
+              placeholder="Paste a real job posting here to match against its Mandatory and Preferred sections..."
+            ></textarea>
+
+            <label class="field-label" for="customFocusInput">Specific topic to focus on (optional)</label>
+            <input
+              type="text"
+              id="customFocusInput"
+              class="input-field"
+              placeholder="e.g., Prioritize free courses or focus on Apache Spark"
+            />
+
+            <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.82rem;color:var(--text-muted);margin:0.35rem 0 0.75rem;cursor:pointer;">
+              <input type="checkbox" id="dontSaveCheckbox" />
+              <span>Don't save my resume</span>
+            </label>
+
+            <button type="button" class="button button-primary analyze-submit-btn" id="runAnalysisBtn">
+              Generate career report
+            </button>
+
+            <div id="analyzerErrorBanner" class="error-banner hidden" role="alert"></div>
+
+            <div id="analysisProgressBox" class="progress-steps-box hidden" aria-live="polite">
+              <div class="progress-step active" id="pStep1"><span>1.</span> Parsing resume &amp; skill evidence...</div>
+              <div class="progress-step" id="pStep2"><span>2.</span> Computing weighted compatibility...</div>
+              <div class="progress-step" id="pStep3"><span>3.</span> Building career roadmap &amp; courses...</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- (c) CAREER REPORT SECTION (Hidden until an analysis exists) -->
+      <section class="results-section hidden" id="results">
+        <div class="module-header">
+          <div>
+            <span class="section-tag">PERSONALIZED CAREER REPORT</span>
+            <h2>Your roadmap is ready.</h2>
+            <p id="spotlightSummaryDesc">Review your compatibility breakdown, interactive skill tree, and tailored study plan.</p>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.65rem;flex-wrap:wrap;">
+            <span class="status-pill" id="reportSourceBadge" title="Analysis source">SOURCE: TEMPLATE</span>
+            <span class="status-pill hidden" id="spotlightVerdictBadge">Ready</span>
+          </div>
+        </div>
+
+        <!-- Row 1: Three cards (Candidate profile / Target role with quick switch / Goal company) -->
+        <div class="grid-3-col">
+          <div class="panel-card">
+            <span class="tiny-label">CANDIDATE PROFILE</span>
+            <h3 id="reportCandidateCardTitle" style="margin:0.25rem 0;">Candidate</h3>
+            <p id=" spotlightSummaryTitle" class="hidden"></p>
+            <span id="spotlightSummaryTitle" style="display:block;font-size:0.84rem;color:var(--text-muted);">—</span>
+          </div>
+          <div class="panel-card">
+            <span class="tiny-label">TARGET ROLE</span>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;margin-top:0.25rem;flex-wrap:wrap;">
+              <h3 id="reportTargetRoleCardTitle" style="margin:0;">Full Stack Developer</h3>
+              <select id="reportQuickRoleSelect" class="input-field" style="width:auto;margin-bottom:0;padding:0.35rem 0.65rem;font-size:0.8rem;" aria-label="Quick switch target role">
+                <option value="Full Stack Developer">Full Stack Developer</option>
+                <option value="Data Engineer">Data Engineer</option>
+                <option value="Machine Learning Engineer">Machine Learning Engineer</option>
+                <option value="Data Analyst">Data Analyst</option>
+                <option value="Python Backend Developer">Python Backend Developer</option>
+                <option value="Java Developer">Java Developer</option>
+                <option value="Cloud / DevOps Engineer">Cloud / DevOps Engineer</option>
+                <option value="Cybersecurity Analyst">Cybersecurity Analyst</option>
+              </select>
+            </div>
+            <small style="color:var(--text-muted);font-size:0.78rem;">Switch role to re-run report</small>
+          </div>
+          <div class="panel-card">
+            <span class="tiny-label">GOAL COMPANY</span>
+            <h3 id="reportGoalCompanyCardTitle" style="margin:0.25rem 0;">Industry Role Benchmark</h3>
+            <small id="reportGoalCompanyCardSub" style="color:var(--text-muted);font-size:0.8rem;">Role expectations &amp; skill bar</small>
+          </div>
+        </div>
+
+        <!-- Row 2: Overall compatibility (score ring + breakdown), Matched skills, Skills to build -->
+        <div class="grid-3-col">
+          <div class="panel-card">
+            <span class="tiny-label">OVERALL COMPATIBILITY</span>
+            <div style="display:flex;align-items:center;gap:1rem;margin:0.65rem 0;">
+              <div class="spotlight-score-circle" id="spotlightScoreCircle">
+                <strong class="tabular-nums" id="spotlightScoreNum">0</strong>
+                <small>/ 100</small>
+              </div>
+              <div class="spotlight-metrics" style="flex:1;">
+                <div class="spot-metric" style="min-width:calc(50% - 0.5rem);">
+                  <span>Mandatory (60%)</span>
+                  <strong class="tabular-nums" id="spotMandatoryPct">0%</strong>
+                </div>
+                <div class="spot-metric" style="min-width:calc(50% - 0.5rem);">
+                  <span>Preferred (15%)</span>
+                  <strong class="tabular-nums" id="spotPreferredPct">0%</strong>
+                </div>
+                <div class="spot-metric" style="min-width:calc(50% - 0.5rem);">
+                  <span>Projects (15%)</span>
+                  <strong class="tabular-nums" id="spotProjectsScore">0%</strong>
+                </div>
+                <div class="spot-metric" style="min-width:calc(50% - 0.5rem);">
+                  <span>Education (5%)</span>
+                  <strong class="tabular-nums" id="spotEducationScore">0%</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+              <span class="tiny-label">MATCHED SKILLS</span>
+              <span class="tag tag-match tabular-nums" id="reportMatchedCountBadge">0 Matched</span>
+            </div>
+            <div class="skill-tags" id="reportMatchedSkillsTags"></div>
+          </div>
+
+          <div class="panel-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+              <span class="tiny-label">SKILLS TO BUILD</span>
+              <span class="tag tag-gap tabular-nums" id="reportMissingCountBadge">0 To Build</span>
+            </div>
+            <div class="skill-tags" id="reportMissingSkillsTags"></div>
+          </div>
+        </div>
+
+        <!-- 5 Career Report Tabs -->
+        <nav class="report-sticky-nav" aria-label="Career Report Sections">
+          <button type="button" class="report-nav-link active" data-report-tab="sec-roadmap">1 Detailed Career Roadmap</button>
+          <button type="button" class="report-nav-link" data-report-tab="sec-evidence">2 Skill Gaps &amp; Evidence</button>
+          <button type="button" class="report-nav-link" data-report-tab="sec-simulator">3 Score Simulator &amp; Resume AI</button>
+          <button type="button" class="report-nav-link" data-report-tab="sec-roles">4 Role Comparison</button>
+          <button type="button" class="report-nav-link" data-report-tab="sec-skills">5 Edit Skills</button>
+        </nav>
+
+        <!-- TAB 1: Detailed Career Roadmap -->
+        <div class="report-section-block report-tab-panel" id="sec-roadmap">
+          <div class="roadmap-tree-layout">
+            <div class="bento-card tree-canvas-card">
+              <div class="card-step-header">
+                <span class="step-badge">Interactive Skill Graph</span>
+                <div class="tree-legend">
+                  <span><i class="legend-dot mastered"></i>Detected</span>
+                  <span><i class="legend-dot partial"></i>Adjacent</span>
+                  <span><i class="legend-dot gap"></i>Missing</span>
+                </div>
+              </div>
+              <h3>Career roadmap tree</h3>
+              <p class="card-sub">Click any skill node to inspect subtopics, exercises, and courses.</p>
+              <div class="roadmap-tree-container" id="roadmapTreeContainer"></div>
+            </div>
+
+            <div class="bento-card node-inspector-card" id="nodeInspectorCard">
+              <div id="nodeInspectorEmpty">
+                <span class="step-badge">Skill Node Inspector</span>
+                <h3 style="margin-top:0.5rem;">Select a skill node</h3>
+                <p class="card-sub">Click any node on the roadmap graph to view its details.</p>
+              </div>
+              <div id="nodeInspectorContent" class="hidden">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+                  <span class="step-badge" id="inspPhaseBadge">Phase 01</span>
+                  <span class="tag tag-match" id="inspStatusBadge">Status</span>
+                </div>
+                <h3 id="inspSkillTitle" style="margin:0.5rem 0 0.15rem;">Skill Name</h3>
+                <small id="inspTimeEstimate" style="color:var(--text-muted);display:block;margin-bottom:0.65rem;">Estimated Time: 2 Weeks</small>
+                <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.84rem;margin-bottom:0.75rem;cursor:pointer;">
+                  <input type="checkbox" id="inspCompleteCheckbox" />
+                  <span>Mark done</span>
+                </label>
+                <div class="mini-divider"></div>
+                <span class="tiny-label">WHY IT MATTERS</span>
+                <p id="inspWhyText" style="font-size:0.85rem;margin:0.25rem 0 0.75rem;"></p>
+                <span class="tiny-label">KEY TOPICS</span>
+                <ul id="inspSubtopicsList" style="margin:0.35rem 0 0.75rem;padding-left:1.15rem;font-size:0.84rem;"></ul>
+                <span class="tiny-label">PRACTICAL EXERCISE</span>
+                <p id="inspTaskText" style="font-size:0.84rem;margin:0.25rem 0 0.75rem;"></p>
+
+                <div class="inspector-course-box">
+                  <span class="course-badge-free">FREE COURSE</span>
+                  <h4 id="inspFreeCourseTitle" style="margin:0.3rem 0 0.15rem;font-size:0.9rem;"></h4>
+                  <p id="inspFreeCourseMeta" style="margin:0 0 0.35rem;font-size:0.78rem;color:var(--text-muted);"></p>
+                  <a id="inspFreeCourseLink" href="#" target="_blank" rel="noopener noreferrer" class="course-link">Open Free Course ↗</a>
+                </div>
+                <div class="inspector-course-box">
+                  <span class="course-badge-paid">PAID CERTIFICATE</span>
+                  <h4 id="inspPaidCourseTitle" style="margin:0.3rem 0 0.15rem;font-size:0.9rem;"></h4>
+                  <p id="inspPaidCourseMeta" style="margin:0 0 0.35rem;font-size:0.78rem;color:var(--text-muted);"></p>
+                  <a id="inspPaidCourseLink" href="#" target="_blank" rel="noopener noreferrer" class="course-link">Open Paid Course ↗</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Online Courses Grid with All / Free only / Paid filters and "ask for a topic" input -->
+          <div class="bento-card" style="margin-top:1.25rem;">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem;margin-bottom:0.85rem;">
+              <div>
+                <h3>Online courses</h3>
+                <p class="card-sub" style="margin:0;">Verified courses matched to your skill gaps.</p>
+              </div>
+              <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;">
+                <div class="course-filter-group" role="tablist">
+                  <button type="button" class="filter-pill active" data-course-filter="All">All</button>
+                  <button type="button" class="filter-pill" data-course-filter="Free">Free only</button>
+                  <button type="button" class="filter-pill" data-course-filter="Paid">Paid</button>
+                </div>
+                <div style="display:flex;gap:0.4rem;align-items:center;">
+                  <input
+                    type="text"
+                    id="courseTopicSearchInput"
+                    class="input-field"
+                    style="margin-bottom:0;width:190px;padding:0.42rem 0.65rem;font-size:0.8rem;"
+                    placeholder="Ask for a topic..."
+                  />
+                  <button type="button" class="button button-ghost" id="courseTopicSearchBtn" style="padding:0.42rem 0.75rem;font-size:0.8rem;">
+                    Update
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="courses-grid-2" id="coursesGridContainer"></div>
+          </div>
+
+          <!-- Practice Websites -->
+          <div class="bento-card" style="margin-top:1.25rem;">
+            <h3>Practice websites</h3>
+            <p class="card-sub">Hands-on coding platforms and official documentation.</p>
+            <div class="materials-grid-2" id="materialsGridContainer"></div>
+          </div>
+
+          <!-- 3-Stage Learning Plan & Recommended Projects Side by Side -->
+          <div class="grid-2-col" style="margin-top:1.25rem;">
+            <div class="bento-card">
+              <h3>3-stage learning plan</h3>
+              <p class="card-sub">Step-by-step milestones to close your skill gaps.</p>
+              <div class="courses-grid-2" style="grid-template-columns:1fr;" id="roadmapStagesContainer"></div>
+            </div>
+            <div class="bento-card">
+              <h3>Recommended projects</h3>
+              <p class="card-sub">Portfolio projects that prove your readiness for this role.</p>
+              <div class="projects-grid-3" style="grid-template-columns:1fr;" id="projectsGridContainer"></div>
+            </div>
+          </div>
+
+          <!-- Export Bar: Print / PDF and Download JSON -->
+          <div class="panel-card" style="margin-top:1.25rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem;">
+            <div>
+              <h3 style="margin:0;">Export your career report</h3>
+              <p style="margin:0.2rem 0 0;font-size:0.84rem;color:var(--text-muted);">Save a copy of your roadmap, courses, and compatibility scores.</p>
+            </div>
+            <div style="display:flex;gap:0.65rem;flex-wrap:wrap;">
+              <button type="button" class="button button-ghost" id="printReportBtn">Print / PDF</button>
+              <button type="button" class="button button-primary" id="downloadReportJsonBtn">Download JSON</button>
+            </div>
+          </div>
+
+          <!-- Adaptive Study Plan & Stage Quiz (preserved IDs) -->
+          <div class="bento-card" style="margin-top:1.25rem;" id="view-roadmap">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.65rem;margin-bottom:0.85rem;">
+              <div>
+                <h3>Study tasks &amp; stage quiz</h3>
+                <p class="card-sub" style="margin:0;">Check off weekly study tasks and verify your mastery with a quick quiz.</p>
+              </div>
+              <div style="display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap;">
+                <span class="status-pill tabular-nums" id="adapProgressBadge">0% Completed</span>
+                <button type="button" class="button button-ghost" id="regenerateAdaptiveRoadmapBtn">Refresh study tasks</button>
+              </div>
+            </div>
+            <div class="grid-2-col">
+              <div>
+                <h4 style="margin:0 0 0.4rem;">Stage progress</h4>
+                <div class="bar-chart-list" id="adapSkillProgressBars"></div>
+              </div>
+              <div>
+                <h4 style="margin:0 0 0.4rem;">Study notes</h4>
+                <div id="adapNotesList" style="font-size:0.85rem;display:flex;flex-direction:column;gap:0.45rem;"></div>
+              </div>
+            </div>
+            <div class="evidence-list" id="adapTasksContainer" style="margin-bottom:1rem;"></div>
+            <div class="panel-card" style="padding:1rem;">
+              <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem;margin-bottom:0.75rem;">
+                <h4 style="margin:0;">Stage quiz</h4>
+                <select id="adapQuizStageSelect" class="input-field" style="width:auto;margin-bottom:0;"></select>
+              </div>
+              <div id="adapQuizQuestionsBox"></div>
+              <div style="margin-top:0.85rem;display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
+                <button type="button" class="button button-primary" id="submitAdapQuizBtn">Submit quiz</button>
+                <span id="adapQuizResultBanner" style="font-size:0.85rem;font-weight:600;"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: Skill Gaps & Evidence -->
+        <div class="report-section-block report-tab-panel hidden" id="sec-evidence">
+          <div class="evidence-split-view">
+            <div class="bento-card resume-viewer-pane">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;">
+                <div>
+                  <span class="tiny-label">SOURCE RESUME</span>
+                  <h3 id="evidenceResumeFilename" style="margin:0.15rem 0 0;">Resume Text</h3>
+                </div>
+                <button type="button" class="demo-btn hidden" id="clearEvidenceHighlightBtn">Clear highlight</button>
+              </div>
+              <div class="resume-lines-box" id="resumeViewerLines"></div>
+            </div>
+
+            <div class="bento-card">
+              <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.75rem;">
+                <div>
+                  <h3>Requirement proof</h3>
+                  <p class="card-sub" style="margin:0;">Click any requirement to highlight the matching line in your resume.</p>
+                </div>
+                <input
+                  type="text"
+                  id="evidenceSkillFilterInput"
+                  class="input-field"
+                  style="width:200px;margin-bottom:0;"
+                  placeholder="Filter skills..."
+                />
+              </div>
+              <div class="evidence-list" id="evidenceReqList"></div>
+            </div>
+          </div>
+
+          <div class="bento-card" style="margin-top:1.2rem;">
+            <h3>Priority skill gaps</h3>
+            <p class="card-sub">Ranked by mandatory and preferred priority with practical exercises.</p>
+            <div class="gaps-grid-2" id="gapsGridContainer"></div>
+          </div>
+        </div>
+
+        <!-- TAB 3: Score Simulator & Resume AI -->
+        <div class="report-section-block report-tab-panel hidden" id="sec-simulator">
+          <div class="simulator-grid-2">
+            <div class="bento-card">
+              <h3>What-if score simulator</h3>
+              <p class="card-sub">Toggle unmastered skills to preview how learning them boosts your compatibility score.</p>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:0.75rem;flex-wrap:wrap;">
+                <div>
+                  <span class="tiny-label">CURRENT SCORE</span>
+                  <strong class="tabular-nums" id="simBaseScore" style="font-size:1.5rem;">0%</strong>
+                </div>
+                <div>
+                  <span class="tiny-label">PROJECTED SCORE</span>
+                  <strong class="tabular-nums" id="simProjectedScore" style="font-size:1.8rem;color:var(--accent-green);">0%</strong>
+                </div>
+                <span class="status-pill tabular-nums" id="simDeltaBadge">+0% Gain</span>
+              </div>
+              <div class="bar-chart-track" style="margin-bottom:1rem;">
+                <div class="bar-chart-fill green" id="simProgressBar" style="width:0%;"></div>
+              </div>
+              <div class="sim-skills-checklist" id="simSkillsChecklist"></div>
+            </div>
+
+            <div class="bento-card">
+              <h3>Custom scoring weights</h3>
+              <p class="card-sub">Adjust how mandatory skills, preferred skills, and projects are weighted.</p>
+              <div style="display:flex;flex-direction:column;gap:0.75rem;">
+                <div>
+                  <div style="display:flex;justify-content:space-between;font-size:0.82rem;">
+                    <span>Mandatory Skills</span><strong id="weightMandatoryVal">60%</strong>
+                  </div>
+                  <input type="range" id="weightMandatoryInput" min="20" max="80" value="60" style="width:100%;" />
+                </div>
+                <div>
+                  <div style="display:flex;justify-content:space-between;font-size:0.82rem;">
+                    <span>Preferred Skills</span><strong id="weightPreferredVal">15%</strong>
+                  </div>
+                  <input type="range" id="weightPreferredInput" min="5" max="40" value="15" style="width:100%;" />
+                </div>
+                <div>
+                  <div style="display:flex;justify-content:space-between;font-size:0.82rem;">
+                    <span>Projects &amp; Experience</span><strong id="weightProjectsVal">15%</strong>
+                  </div>
+                  <input type="range" id="weightProjectsInput" min="5" max="40" value="15" style="width:100%;" />
+                </div>
+                <div style="display:flex;gap:0.6rem;margin-top:0.35rem;flex-wrap:wrap;">
+                  <button type="button" class="button button-primary" id="recalculateWeightsBtn">Apply weights</button>
+                  <button type="button" class="button button-ghost" id="resetWeightsBtn">Reset</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bento-card" style="margin-top:1.2rem;">
+            <h3>Resume improvements &amp; bullet rewriter</h3>
+            <p class="card-sub">Grounded suggestions based on your existing project and experience bullets.</p>
+            <div class="improvements-grid-2">
+              <div>
+                <span class="tiny-label">SUGGESTED SUMMARY</span>
+                <p id="improvedSummaryText" style="font-size:0.88rem;margin:0.35rem 0 0.85rem;"></p>
+                <span class="tiny-label">SKILL GROUPING</span>
+                <ul id="skillGroupingList" style="margin:0.35rem 0 0.85rem;padding-left:1.15rem;font-size:0.84rem;"></ul>
+                <span class="tiny-label">ACTION TIPS</span>
+                <ul id="actionTipsList" style="margin:0.35rem 0 0;padding-left:1.15rem;font-size:0.84rem;"></ul>
+              </div>
+              <div>
+                <span class="tiny-label">BEFORE / AFTER BULLET REWRITES</span>
+                <div class="evidence-list" id="bulletRewritesList" style="margin-top:0.35rem;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: Role Comparison -->
+        <div class="report-section-block report-tab-panel hidden" id="sec-roles">
+          <div class="bento-card">
+            <h3>8-role compatibility comparison</h3>
+            <p class="card-sub">Click any role card to switch your target role and recalculate your report.</p>
+            <div class="roles-comparison-grid" id="rolesComparisonGrid"></div>
+          </div>
+
+          <div class="bento-card" style="margin-top:1.25rem;" id="reportRoleCompareBridgeWrap">
+            <h3>Compensation &amp; role transition bridge</h3>
+            <p class="card-sub">Compare two career tracks side by side with transition skills and pay ranges.</p>
+            <div class="filter-toolbar">
+              <div>
+                <label class="field-label" for="careerPrimaryRoleSelect">Primary Role</label>
+                <select id="careerPrimaryRoleSelect">
+                  <option value="Full Stack Developer">Full Stack Developer</option>
+                  <option value="Data Engineer">Data Engineer</option>
+                  <option value="Machine Learning Engineer">Machine Learning Engineer</option>
+                  <option value="Data Analyst">Data Analyst</option>
+                  <option value="Python Backend Developer">Python Backend Developer</option>
+                  <option value="Java Developer">Java Developer</option>
+                  <option value="Cloud / DevOps Engineer">Cloud / DevOps Engineer</option>
+                  <option value="Cybersecurity Analyst">Cybersecurity Analyst</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label" for="careerSecondaryRoleSelect">Comparison Role</label>
+                <select id="careerSecondaryRoleSelect">
+                  <option value="Data Engineer">Data Engineer</option>
+                  <option value="Machine Learning Engineer">Machine Learning Engineer</option>
+                  <option value="Full Stack Developer">Full Stack Developer</option>
+                  <option value="Python Backend Developer">Python Backend Developer</option>
+                  <option value="Cloud / DevOps Engineer">Cloud / DevOps Engineer</option>
+                  <option value="Cybersecurity Analyst">Cybersecurity Analyst</option>
+                  <option value="Java Developer">Java Developer</option>
+                  <option value="Data Analyst">Data Analyst</option>
+                </select>
+              </div>
+              <div style="align-self:flex-end;">
+                <button type="button" class="button button-primary" id="runCareerCompareBtn">Compare paths</button>
+              </div>
+            </div>
+            <div class="grid-2-col">
+              <div class="panel-card" id="careerRoleACard"></div>
+              <div class="panel-card" id="careerRoleBCard"></div>
+            </div>
+            <div class="panel-card" style="margin-bottom:1.2rem;">
+              <h4 id="careerBridgeTitle" style="margin:0 0 0.5rem;">Transition bridge</h4>
+              <div id="careerBridgeBody"></div>
+            </div>
+            <div class="panel-card">
+              <h4 style="margin:0 0 0.5rem;">Compensation &amp; demand matrix</h4>
+              <div class="data-table-wrap">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Role</th>
+                      <th>Your Match</th>
+                      <th>India (Entry / Mid / Sr)</th>
+                      <th>Global USD (Entry / Mid / Sr)</th>
+                      <th>YoY Growth</th>
+                      <th>Source</th>
+                    </tr>
+                  </thead>
+                  <tbody id="careerMatrixTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 5: Edit Skills -->
+        <div class="report-section-block report-tab-panel hidden" id="sec-skills">
+          <div class="bento-card">
+            <h3>Edit detected skills</h3>
+            <p class="card-sub">Add skills that were missed or remove skills to re-run your career report.</p>
+            <div class="skill-tags" id="editableSkillsContainer" style="margin-bottom:0.85rem;"></div>
+            <div style="display:flex;gap:0.6rem;flex-wrap:wrap;">
+              <input
+                type="text"
+                id="newSkillInput"
+                class="input-field"
+                style="max-width:260px;margin-bottom:0;"
+                placeholder="Add a skill (e.g., Docker, AWS)..."
+              />
+              <button type="button" class="button button-ghost" id="addSkillBtn">+ Add Skill</button>
+              <button type="button" class="button button-primary" id="saveSkillsBtn">Save &amp; Recalculate</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- (d) CAREER TOOLKIT SECTION -->
+      <section class="analyzer-section" id="careerToolkitSection">
+        <div class="section-heading">
+          <span class="section-tag">PRACTICE, VERIFICATION &amp; READINESS</span>
+          <h2>Career toolkit</h2>
+          <p>Audit your resume for ATS filters, practice mock interviews, test your skills, and track readiness.</p>
+        </div>
+
+        <!-- Toolkit Tab Strip -->
+        <div class="report-sticky-nav toolkit-tab-strip" role="tablist" aria-label="Career Toolkit Tabs">
+          <button type="button" class="report-nav-link active" data-toolkit-tab="ats">ATS check</button>
+          <button type="button" class="report-nav-link" data-toolkit-tab="interview">Mock interview</button>
+          <button type="button" class="report-nav-link" data-toolkit-tab="assessment">Skill test</button>
+          <button type="button" class="report-nav-link" data-toolkit-tab="github">GitHub proof</button>
+          <button type="button" class="report-nav-link" data-toolkit-tab="jobs">Job market</button>
+          <button type="button" class="report-nav-link" data-toolkit-tab="career">Compare roles</button>
+          <button type="button" class="report-nav-link" data-toolkit-tab="overview">Readiness</button>
+          <button type="button" class="report-nav-link" data-toolkit-tab="profile">Profile</button>
+        </div>
+
+        <!-- Empty-state banner when no resume is loaded yet -->
+        <div class="panel-card" id="toolkitNoResumeBanner" style="margin-bottom:1.2rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem;">
+          <div>
+            <h3 style="margin:0;">Analyze a resume first</h3>
+            <p style="margin:0.2rem 0 0;font-size:0.85rem;color:var(--text-muted);">
+              Upload a resume or pick a sample profile above to unlock tailored ATS checks, mock interviews, and readiness scores.
+            </p>
+          </div>
+          <a href="#analyzer" class="button button-primary" data-scroll-target="#analyzer">Go to Analyzer</a>
+        </div>
+
+        <!-- VIEW: ATS CHECK -->
+        <section class="module-view active" id="view-ats">
+          <div class="module-header">
+            <div>
+              <h2>ATS check</h2>
+              <p>Score your resume formatting, keywords, and section completeness.</p>
+            </div>
+            <div style="display:flex;gap:0.65rem;flex-wrap:wrap;">
+              <button type="button" class="button button-ghost" id="runAtsAuditBtn">Re-run ATS check</button>
+              <button type="button" class="button button-primary" id="downloadAtsResumeBtn">Download ATS resume (.md)</button>
+            </div>
+          </div>
+
+          <div class="kpi-grid-4" id="atsPillarKpis"></div>
+
+          <div class="grid-2-col">
+            <div class="panel-card">
+              <h3>Section check</h3>
+              <div class="evidence-list" id="atsSectionAuditList"></div>
+            </div>
+            <div class="panel-card">
+              <h3>Formatting &amp; keywords</h3>
+              <div class="evidence-list" id="atsFormattingChecksList" style="margin-bottom:0.85rem;"></div>
+              <span class="tiny-label">MISSING ROLE KEYWORDS</span>
+              <div class="skill-tags" id="atsMissingKeywordsTags" style="margin-top:0.4rem;"></div>
+            </div>
+          </div>
+
+          <div class="panel-card">
+            <h3>Bullet point rewrites</h3>
+            <p style="color:var(--text-muted);font-size:0.84rem;margin:0 0 0.85rem;">
+              Stronger phrasing for your existing project and internship bullets.
+            </p>
+            <div class="courses-grid-2" id="atsBulletRewritesContainer"></div>
+          </div>
+        </section>
+
+        <!-- VIEW: MOCK INTERVIEW -->
+        <section class="module-view" id="view-interview">
+          <div class="module-header">
+            <div>
+              <h2>Mock interview</h2>
+              <p>Practice role-specific questions and get instant feedback on your answers.</p>
+            </div>
+          </div>
+
+          <div class="filter-toolbar">
+            <div>
+              <label class="field-label" for="interviewRoundSelect">Interview Round</label>
+              <select id="interviewRoundSelect">
+                <option value="Technical">Technical Round</option>
+                <option value="Behavioral">Behavioral (STAR)</option>
+                <option value="HR">HR &amp; Career Fit</option>
+                <option value="Company-Style">Company Bar</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label" for="interviewDiffSelect">Difficulty Level</label>
+              <select id="interviewDiffSelect">
+                <option value="Intermediate">Intermediate</option>
+                <option value="Beginner">Beginner / Entry</option>
+                <option value="Advanced">Advanced / Senior Bar</option>
+              </select>
+            </div>
+            <div style="align-self:flex-end;">
+              <button type="button" class="button button-primary" id="startInterviewBtn">Start interview</button>
+            </div>
+          </div>
+
+          <div class="grid-2-col">
+            <div class="panel-card">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;flex-wrap:wrap;gap:0.5rem;">
+                <span class="step-badge" id="intProgressBadge">Question 1 of 5</span>
+                <span class="tag tag-partial tabular-nums" id="intTimerDisplay">00:00</span>
+              </div>
+              <span class="tiny-label" id="intQuestionContext">Ready to Start</span>
+              <h3 id="intQuestionText" style="margin:0.35rem 0 0.85rem;line-height:1.4;">
+                Click "Start interview" above to generate your first question.
+              </h3>
+
+              <label class="field-label" for="intAnswerInput">Your Answer</label>
+              <textarea
+                id="intAnswerInput"
+                class="input-field textarea-sm"
+                rows="5"
+                placeholder="Type your detailed technical or STAR behavioral answer here..."
+              ></textarea>
+
+              <div style="display:flex;flex-wrap:wrap;gap:0.6rem;justify-content:space-between;align-items:center;">
+                <button type="button" class="button button-ghost" id="voiceInputToggleBtn">
+                  🎙️ Voice Input
+                </button>
+                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                  <button type="button" class="button button-primary" id="submitInterviewAnswerBtn">
+                    Submit answer
+                  </button>
+                  <button type="button" class="button button-ghost hidden" id="nextInterviewQuestionBtn">
+                    Next question →
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel-card" id="intEvaluationPanel">
+              <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+                <h3>Answer feedback</h3>
+                <span class="status-pill tabular-nums" id="intEvalScoreBadge">Awaiting Answer</span>
+              </div>
+              <div class="bar-chart-list" id="intRubricBars" style="margin:0.85rem 0;"></div>
+              <div id="intFeedbackBox" style="font-size:0.85rem;color:var(--text-muted);">
+                Submit an answer on the left to see your rubric breakdown, mistakes to avoid, and a sample answer.
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-card">
+            <h3>Past interview sessions</h3>
+            <div class="data-table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Session</th>
+                    <th>Role &amp; Round</th>
+                    <th>Answered</th>
+                    <th>Overall Score</th>
+                    <th>Technical / Comm</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody id="intHistoryTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW: SKILL TEST -->
+        <section class="module-view" id="view-assessment">
+          <div class="module-header">
+            <div>
+              <h2>Skill test</h2>
+              <p>Take a quick multiple-choice and coding check to verify your skills.</p>
+            </div>
+          </div>
+
+          <div class="filter-toolbar">
+            <div>
+              <label class="field-label" for="asmtTopicSelect">Skill Topic</label>
+              <select id="asmtTopicSelect">
+                <option value="Python">Python</option>
+                <option value="SQL">SQL</option>
+                <option value="JavaScript">JavaScript</option>
+                <option value="React">React</option>
+                <option value="Data Structures">Data Structures</option>
+                <option value="Machine Learning">Machine Learning</option>
+                <option value="System Design">System Design</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label" for="asmtDifficultySelect">Difficulty</label>
+              <select id="asmtDifficultySelect">
+                <option value="Intermediate">Intermediate</option>
+                <option value="Beginner">Beginner</option>
+                <option value="Advanced">Advanced</option>
+              </select>
+            </div>
+            <div style="align-self:flex-end;">
+              <button type="button" class="button button-primary" id="generateAssessmentBtn">Start test</button>
+            </div>
+          </div>
+
+          <div class="grid-2-col" id="asmtWorkspaceGrid">
+            <div class="panel-card">
+              <h3>Part 1 · Multiple-choice questions (65% weight)</h3>
+              <div id="asmtMcqContainer" class="evidence-list"></div>
+            </div>
+
+            <div class="panel-card">
+              <h3 id="asmtCodingTitle">Part 2 · Coding challenge (35% weight)</h3>
+              <p id="asmtCodingPrompt" style="font-size:0.85rem;color:var(--text-muted);margin-bottom:0.65rem;"></p>
+              <textarea id="asmtCodeEditor" class="code-editor-box" spellcheck="false"></textarea>
+              <div style="margin-top:0.65rem;">
+                <span class="tiny-label">EXPECTED TEST CASES</span>
+                <div id="asmtTestCasesList" style="font-size:0.78rem;color:var(--text-muted);margin-top:0.25rem;"></div>
+              </div>
+              <button type="button" class="button button-primary" id="submitAssessmentBtn" style="width:100%;margin-top:0.9rem;">
+                Submit test
+              </button>
+            </div>
+          </div>
+
+          <div class="panel-card hidden" id="asmtResultCard" style="margin-bottom:1.2rem;">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+              <h3>Test results</h3>
+              <span class="status-pill tabular-nums" id="asmtFinalScoreBadge">0%</span>
+            </div>
+            <div id="asmtReviewList" class="evidence-list" style="margin-top:0.75rem;"></div>
+          </div>
+
+          <div class="panel-card">
+            <h3>Past skill tests</h3>
+            <div class="data-table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Topic</th>
+                    <th>Difficulty</th>
+                    <th>Overall Score</th>
+                    <th>MCQ Score</th>
+                    <th>Coding Score</th>
+                    <th>Grading Mode</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody id="asmtHistoryBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW: GITHUB PROOF -->
+        <section class="module-view" id="view-github">
+          <div class="module-header">
+            <div>
+              <h2>GitHub proof</h2>
+              <p>Check how many of your resume skills show up in your public repositories.</p>
+            </div>
+            <span class="status-pill" id="githubSourceTag">Enter a GitHub username</span>
+          </div>
+
+          <div class="filter-toolbar">
+            <div style="flex:1;min-width:220px;">
+              <label class="field-label" for="githubUsernameInput">GitHub Username</label>
+              <input type="text" id="githubUsernameInput" value="" placeholder="e.g., octocat or your-username" style="width:100%;" />
+            </div>
+            <div style="align-self:flex-end;">
+              <button type="button" class="button button-primary" id="runGithubAnalyzeBtn">Verify GitHub</button>
+            </div>
+          </div>
+
+          <div class="kpi-grid-4">
+            <div class="kpi-card">
+              <span class="kpi-label">Portfolio Score</span>
+              <div class="kpi-value tabular-nums" id="ghStrengthScore">—</div>
+              <span class="kpi-sub">Repos, docs &amp; languages</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Skill Verification Rate</span>
+              <div class="kpi-value tabular-nums" id="ghVerifiedRate">—</div>
+              <span class="kpi-sub" id="ghVerifiedSub">—</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Public Repositories</span>
+              <div class="kpi-value tabular-nums" id="ghRepoCount">—</div>
+              <span class="kpi-sub" id="ghFollowersSub">—</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Documentation Quality</span>
+              <div class="kpi-value tabular-nums" id="ghDocScore">—</div>
+              <span class="kpi-sub">README completeness</span>
+            </div>
+          </div>
+
+          <div class="grid-2-col">
+            <div class="panel-card">
+              <h3>Verified skills</h3>
+              <div class="evidence-list" id="ghVerifiedSkillsList">
+                <p style="color:var(--text-muted);font-size:0.84rem;">Enter a GitHub username above and click Verify GitHub.</p>
+              </div>
+            </div>
+            <div class="panel-card">
+              <h3>Unverified resume skills</h3>
+              <div class="evidence-list" id="ghUnverifiedSkillsList">
+                <p style="color:var(--text-muted);font-size:0.84rem;">Enter a GitHub username above to compare against your resume.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-card">
+            <h3>Public repositories</h3>
+            <div class="courses-grid-2" id="ghReposGrid">
+              <p style="color:var(--text-muted);font-size:0.84rem;">No repositories loaded yet.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW: JOB MARKET -->
+        <section class="module-view" id="view-jobs">
+          <div class="module-header">
+            <div>
+              <h2>Job market</h2>
+              <p>See live job listings and how your skills compare.</p>
+            </div>
+            <div>
+              <span class="status-pill" id="jobsDataSourceLabel">Live Job Feed</span>
+            </div>
+          </div>
+
+          <div class="filter-toolbar">
+            <div>
+              <label class="field-label" for="jobFilterRole">Role</label>
+              <select id="jobFilterRole">
+                <option value="All">All Roles</option>
+                <option value="Full Stack Developer">Full Stack Developer</option>
+                <option value="Data Engineer">Data Engineer</option>
+                <option value="Machine Learning Engineer">Machine Learning Engineer</option>
+                <option value="Data Analyst">Data Analyst</option>
+                <option value="Python Backend Developer">Python Backend Developer</option>
+                <option value="Java Developer">Java Developer</option>
+                <option value="Cloud / DevOps Engineer">Cloud / DevOps Engineer</option>
+                <option value="Cybersecurity Analyst">Cybersecurity Analyst</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label" for="jobFilterMode">Work Mode</label>
+              <select id="jobFilterMode">
+                <option value="All">All Modes</option>
+                <option value="Remote">Remote</option>
+                <option value="Hybrid">Hybrid</option>
+                <option value="Onsite">Onsite</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label" for="jobFilterLocation">Location</label>
+              <input type="text" id="jobFilterLocation" placeholder="e.g., Bengaluru, Remote" />
+            </div>
+            <div>
+              <label class="field-label" for="jobFilterSkill">Skill Filter</label>
+              <input type="text" id="jobFilterSkill" placeholder="e.g., Python, Docker" />
+            </div>
+            <div style="align-self:flex-end;display:flex;gap:0.5rem;align-items:center;">
+              <label style="font-size:0.8rem;color:var(--text-muted);display:flex;align-items:center;gap:0.35rem;cursor:pointer;">
+                <input type="checkbox" id="jobPreferLiveCheck" checked />
+                <span>Fetch live feed</span>
+              </label>
+              <button type="button" class="button button-primary" id="runJobsFilterBtn">Search jobs</button>
+            </div>
+          </div>
+
+          <div class="grid-2-col">
+            <div class="panel-card">
+              <h3>In-demand skills</h3>
+              <p style="color:var(--text-muted);font-size:0.83rem;margin:0 0 0.6rem;">
+                Skills green-highlighted are already present in your active resume.
+              </p>
+              <div class="bar-chart-list" id="jobsTrendingChart"></div>
+            </div>
+
+            <div class="panel-card">
+              <h3>Role &amp; company matches</h3>
+              <div class="data-table-wrap">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Company</th>
+                      <th>Role</th>
+                      <th>Compensation</th>
+                      <th>Your Match</th>
+                    </tr>
+                  </thead>
+                  <tbody id="jobsCompanyMatrixBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.85rem;flex-wrap:wrap;gap:0.5rem;">
+              <h3 style="margin:0;">Matching job listings (<span id="jobsTotalCount">0</span>)</h3>
+              <small style="color:var(--text-muted);" id="jobsLastUpdatedLabel"></small>
+            </div>
+            <div class="courses-grid-2" id="jobsCardsGrid"></div>
+          </div>
+        </section>
+
+        <!-- VIEW: COMPARE ROLES (Toolkit standalone access) -->
+        <section class="module-view" id="view-career">
+          <div class="module-header">
+            <div>
+              <h2>Compare roles</h2>
+              <p>Compare salary ranges, demand growth, and transition skills across roles.</p>
+            </div>
+          </div>
+          <div class="panel-card">
+            <p style="margin:0 0 0.75rem;color:var(--text-muted);font-size:0.88rem;">
+              Compare any two career paths or inspect the 8-role matrix in your Career Report.
+            </p>
+            <div id="toolkitCareerCompareMirror"></div>
+          </div>
+        </section>
+
+        <!-- VIEW: READINESS & OVERVIEW -->
+        <section class="module-view" id="view-overview">
+          <div class="module-header">
+            <div>
+              <h2>Placement readiness</h2>
+              <p>Track your overall placement readiness, skill match, and next actions.</p>
+            </div>
+            <div style="display:flex;gap:0.6rem;flex-wrap:wrap;">
+              <button type="button" class="button button-ghost" id="refreshOverviewPriBtn">Recalculate</button>
+              <button type="button" class="button button-ghost" id="recalcPriBtn">Refresh</button>
+            </div>
+          </div>
+
+          <div class="kpi-grid-4">
+            <div class="kpi-card">
+              <span class="kpi-label">Placement Readiness Index</span>
+              <div class="kpi-value" id="ovPriScore" style="color:var(--accent-green);">—</div>
+              <span class="kpi-sub" id="ovPriTier">Analyze a resume to see this</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Technical Role Match</span>
+              <div class="kpi-value" id="ovTechScore">—</div>
+              <span class="kpi-sub" id="ovTargetRoleLabel">Analyze a resume to see this</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">ATS Compatibility</span>
+              <div class="kpi-value" id="ovAtsScore">—</div>
+              <span class="kpi-sub">Analyze a resume to see this</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Market Demand Fit</span>
+              <div class="kpi-value" id="ovMarketScore">—</div>
+              <span class="kpi-sub">Analyze a resume to see this</span>
+            </div>
+          </div>
+
+          <div class="grid-2-col">
+            <div class="panel-card">
+              <h3>Readiness breakdown</h3>
+              <div class="bar-chart-list" id="overviewPillarBars">
+                <p style="color:var(--text-muted);font-size:0.84rem;margin:0;">Analyze a resume to see this</p>
+              </div>
+            </div>
+            <div class="panel-card">
+              <h3>Next actions</h3>
+              <div class="evidence-list" id="overviewNextActionsList">
+                <p style="color:var(--text-muted);font-size:0.84rem;margin:0;">Analyze a resume to see this</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Detailed PRI Scorecard & Weight Controls -->
+          <div class="grid-2-col" id="view-pri">
+            <div class="panel-card" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+              <span class="tiny-label">COMPOSITE READINESS SCORE</span>
+              <div style="font-size:3.2rem;font-weight:800;font-family:var(--font-display);color:var(--accent-green);margin:0.3rem 0;" class="tabular-nums" id="priBigScore">—</div>
+              <span class="status-pill" id="priTierBadge" style="margin-bottom:0.65rem;">Analyze a resume to see this</span>
+              <p id="priCandidateHeader" style="margin:0;font-weight:600;"></p>
+              <p id="priVerifiedCountText" style="font-size:0.82rem;color:var(--text-muted);margin:0.35rem 0 0.75rem;"></p>
+              <small id="priDisclaimerText" style="font-size:0.74rem;color:var(--text-muted);max-width:44ch;"></small>
+            </div>
+
+            <div class="panel-card">
+              <h3>Customize readiness weights</h3>
+              <div style="display:flex;flex-direction:column;gap:0.55rem;font-size:0.82rem;">
+                <div style="display:flex;justify-content:space-between;"><span>Technical Skills</span><strong id="priWTechVal">25%</strong></div>
+                <input type="range" id="priWTech" min="5" max="50" value="25" />
+                <div style="display:flex;justify-content:space-between;"><span>ATS Resume Quality</span><strong id="priWResVal">15%</strong></div>
+                <input type="range" id="priWRes" min="5" max="40" value="15" />
+                <div style="display:flex;justify-content:space-between;"><span>Mock Interview Performance</span><strong id="priWIntVal">20%</strong></div>
+                <input type="range" id="priWInt" min="5" max="40" value="20" />
+                <div style="display:flex;justify-content:space-between;"><span>GitHub Portfolio Proof</span><strong id="priWPortVal">15%</strong></div>
+                <input type="range" id="priWPort" min="5" max="40" value="15" />
+                <div style="display:flex;justify-content:space-between;"><span>Skill Test Score</span><strong id="priWAsmtVal">15%</strong></div>
+                <input type="range" id="priWAsmt" min="5" max="40" value="15" />
+                <div style="display:flex;justify-content:space-between;"><span>Job Market Alignment</span><strong id="priWMktVal">10%</strong></div>
+                <input type="range" id="priWMkt" min="5" max="30" value="10" />
+                <button type="button" class="button button-primary" id="applyPriWeightsBtn" style="margin-top:0.35rem;">Apply weights</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-card" style="margin-bottom:1.2rem;">
+            <h3>Pillar breakdown</h3>
+            <div class="bar-chart-list" id="priBreakdownBars">
+              <p style="color:var(--text-muted);font-size:0.84rem;margin:0;">Analyze a resume to see this</p>
+            </div>
+          </div>
+
+          <div class="grid-2-col">
+            <div class="panel-card">
+              <h3>Strengths</h3>
+              <ul id="priStrengthsList" style="margin:0.5rem 0 0;padding-left:1.2rem;font-size:0.86rem;line-height:1.7;"></ul>
+            </div>
+            <div class="panel-card">
+              <h3>Areas to improve</h3>
+              <ul id="priWeaknessesList" style="margin:0.5rem 0 0;padding-left:1.2rem;font-size:0.86rem;line-height:1.7;"></ul>
+            </div>
+          </div>
+
+          <!-- Saved Analyses & Database History -->
+          <div class="panel-card" style="margin-top:1.2rem;">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem;margin-bottom:0.85rem;">
+              <div>
+                <h3 style="margin:0;">Saved analyses</h3>
+                <p style="color:var(--text-muted);font-size:0.82rem;margin:0.2rem 0 0;">
+                  Resumes: <strong id="dashTotalResumes">0</strong> · Reports: <strong id="dashTotalAnalyses">0</strong> · Avg Match: <strong id="dashAvgScore">0%</strong> · Status: <strong id="dashReadinessStatus">Ready</strong>
+                </p>
+              </div>
+              <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                <div id="dashTopMatched" class="skill-tags"></div>
+                <div id="dashTopMissing" class="skill-tags"></div>
+              </div>
+            </div>
+            <div class="data-table-wrap">
+              <table class="data-table" id="historyTable">
+                <thead>
+                  <tr>
+                    <th>Candidate</th>
+                    <th>Target Role</th>
+                    <th>Compatibility</th>
+                    <th>Mandatory Met</th>
+                    <th>Skills Summary</th>
+                    <th>Timestamp</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="dashHistoryBody">
+                  <tr>
+                    <td colspan="7">No analyses recorded yet.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW: PROFILE & ACCOUNT -->
+        <section class="module-view" id="view-profile">
+          <div class="module-header">
+            <div>
+              <h2>Profile</h2>
+              <p>Manage your career details and account session.</p>
+            </div>
+            <div class="course-filter-group" role="tablist">
+              <button type="button" class="filter-pill active" data-profile-tab="profile" id="profileInnerTabBtn">Profile</button>
+              <button type="button" class="filter-pill" data-profile-tab="account" id="accountInnerTabBtn">Account</button>
+            </div>
+          </div>
+
+          <div id="profileSubTabPanel">
+            <div class="panel-card">
+              <h3>Student details</h3>
+              <div class="form-row-2">
+                <div>
+                  <label class="field-label" for="profFullName">Full Name</label>
+                  <input type="text" id="profFullName" class="input-field" placeholder="Your full name" />
+                </div>
+                <div>
+                  <label class="field-label" for="profEmail">Email Address</label>
+                  <input type="email" id="profEmail" class="input-field" placeholder="you@university.edu" />
+                </div>
+              </div>
+              <div class="form-row-2">
+                <div>
+                  <label class="field-label" for="profDegree">Degree &amp; Specialization</label>
+                  <input type="text" id="profDegree" class="input-field" placeholder="B.Tech in Computer Science" />
+                </div>
+                <div>
+                  <label class="field-label" for="profInstitution">University / Institution</label>
+                  <input type="text" id="profInstitution" class="input-field" placeholder="Your university" />
+                </div>
+              </div>
+              <div class="form-row-2">
+                <div>
+                  <label class="field-label" for="profGradYear">Graduation Year</label>
+                  <input type="text" id="profGradYear" class="input-field" placeholder="2026" />
+                </div>
+                <div>
+                  <label class="field-label" for="profTargetRole">Primary Target Role</label>
+                  <select id="profTargetRole" class="input-field">
+                    <option value="Full Stack Developer">Full Stack Developer</option>
+                    <option value="Data Engineer">Data Engineer</option>
+                    <option value="Machine Learning Engineer">Machine Learning Engineer</option>
+                    <option value="Data Analyst">Data Analyst</option>
+                    <option value="Python Backend Developer">Python Backend Developer</option>
+                    <option value="Java Developer">Java Developer</option>
+                    <option value="Cloud / DevOps Engineer">Cloud / DevOps Engineer</option>
+                    <option value="Cybersecurity Analyst">Cybersecurity Analyst</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row-2">
+                <div>
+                  <label class="field-label" for="profGithub">GitHub Username</label>
+                  <input type="text" id="profGithub" class="input-field" placeholder="e.g., octocat" />
+                </div>
+                <div>
+                  <label class="field-label" for="profCompanies">Target Companies (comma-separated)</label>
+                  <input type="text" id="profCompanies" class="input-field" placeholder="Google, Microsoft, Razorpay" />
+                </div>
+              </div>
+              <button type="button" class="button button-primary" id="saveProfileBtn" style="width:100%;">
+                Save profile
+              </button>
+            </div>
+          </div>
+
+          <div id="accountSubTabPanel" class="hidden">
+            <div class="panel-card">
+              <h3>Account</h3>
+              <p style="font-size:0.85rem;color:var(--text-muted);">
+                Sign in with your account or test the platform using the demo student account.
+              </p>
+              <div class="evidence-req-item" style="cursor:default;margin-bottom:0.85rem;">
+                <span class="tiny-label">CURRENT SESSION</span>
+                <strong id="authCurrentStatusText" style="display:block;margin-top:0.2rem;">Guest session (not signed in)</strong>
+              </div>
+              <div style="display:flex;gap:0.65rem;flex-wrap:wrap;">
+                <button type="button" class="button button-ghost" id="openLoginModalFromProfileBtn">Sign in / Register</button>
+                <button type="button" class="button button-ghost" id="switchDemoAccountBtn">Try demo account</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <!-- Auth Modal (Register / Login / Try demo account) -->
+    <div class="modal-backdrop hidden" id="authModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="authModalTitle">
+      <div class="modal-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.85rem;">
+          <h3 id="authModalTitle" style="margin:0;">Account</h3>
+          <button type="button" class="demo-btn" id="closeAuthModalBtn">✕ Close</button>
+        </div>
+
+        <div class="course-filter-group" style="margin-bottom:1rem;">
+          <button type="button" class="filter-pill active" id="tabLoginBtn">Login</button>
+          <button type="button" class="filter-pill" id="tabRegisterBtn">Register</button>
+          <button type="button" class="filter-pill" id="tabDemoQuickBtn">Try demo account</button>
+        </div>
+
+        <div id="authNameRow" class="hidden">
+          <label class="field-label" for="authFullNameInput">Full Name</label>
+          <input type="text" id="authFullNameInput" class="input-field" placeholder="Enter your full name" />
+        </div>
+
+        <label class="field-label" for="authEmailInput">Email Address</label>
+        <input type="email" id="authEmailInput" class="input-field" value="" placeholder="you@example.com" />
+
+        <label class="field-label" for="authPasswordInput">Password</label>
+        <input type="password" id="authPasswordInput" class="input-field" value="" placeholder="At least 6 characters" />
+
+        <div id="authErrorMsg" class="error-banner hidden" style="margin-bottom:0.75rem;"></div>
+
+        <button type="button" class="button button-primary" id="submitAuthFormBtn" style="width:100%;">
+          Sign in
+        </button>
+      </div>
+    </div>
+
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+    <!-- (e) FOOTER -->
+    <footer class="footer">
+      <div class="section-wrap footer-inner">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M12 2L2 7l10 5 10-5-10-5z" />
+              <path d="M2 17l10 5 10-5" />
+              <path d="M2 12l10 5 10-5" />
+            </svg>
+          </span>
+          <span>CareerMatch <span class="brand-accent">AI</span> <sup>2.0</sup></span>
+        </div>
+        <p class="footer-copy">
+          CareerMatch AI 2.0 · Career Intelligence, Skill Development &amp; Placement Readiness Platform.
+        </p>
+      </div>
+    </footer>
+
+    <script src="/frontend/js/app.js"></script>
+  </body>
+</html>
