@@ -1,8 +1,10 @@
 """
 Test runner for CareerMatch AI.
-Runs test_basic.py using pytest if available, or a lightweight fixture runner.
+Discovers and runs all tests/test_*.py test files using pytest if available,
+or a lightweight fixture inspection runner.
 """
 
+import importlib
 import inspect
 import os
 import sys
@@ -32,41 +34,48 @@ def main():
     # If pytest is installed, try running it
     try:
         import pytest
-        sys.exit(pytest.main(["tests/test_basic.py"]))
+        sys.exit(pytest.main(["tests"]))
     except ImportError:
         pass
 
-    # Fallback to direct inspection runner
-    import tests.test_basic as tb
-
-    test_functions = [
-        (name, func)
-        for name, func in inspect.getmembers(tb, inspect.isfunction)
-        if name.startswith("test_")
+    # Fallback to direct inspection runner across tests/
+    tests_dir = os.path.join(ROOT_DIR, "tests")
+    test_files = [
+        f[:-3]
+        for f in sorted(os.listdir(tests_dir))
+        if f.startswith("test_") and f.endswith(".py")
     ]
 
-    print(f"Running {len(test_functions)} tests in tests/test_basic.py...")
-    passed = 0
-    failed = 0
+    total_passed = 0
+    total_failed = 0
 
-    for name, func in test_functions:
-        sig = inspect.signature(func)
-        mp = SimpleMonkeyPatch()
-        try:
-            if "monkeypatch" in sig.parameters:
-                func(monkeypatch=mp)
+    for mod_name in test_files:
+        module = importlib.import_module(f"tests.{mod_name}")
+        test_functions = [
+            (name, func)
+            for name, func in inspect.getmembers(module, inspect.isfunction)
+            if name.startswith("test_")
+        ]
+
+        print(f"\nRunning {len(test_functions)} tests in tests/{mod_name}.py...")
+        for name, func in test_functions:
+            sig = inspect.signature(func)
+            mp = SimpleMonkeyPatch()
+            try:
+                if "monkeypatch" in sig.parameters:
+                    func(monkeypatch=mp)
+                    mp.undo()
+                else:
+                    func()
+                print(f"  [PASS] {name}")
+                total_passed += 1
+            except Exception as exc:
+                print(f"  [FAIL] {name}: {exc}")
+                total_failed += 1
                 mp.undo()
-            else:
-                func()
-            print(f"  [PASS] {name}")
-            passed += 1
-        except Exception as exc:
-            print(f"  [FAIL] {name}: {exc}")
-            failed += 1
-            mp.undo()
 
-    print(f"\nResults: {passed} passed, {failed} failed.")
-    sys.exit(0 if failed == 0 else 1)
+    print(f"\nResults: {total_passed} passed, {total_failed} failed.")
+    sys.exit(0 if total_failed == 0 else 1)
 
 
 if __name__ == "__main__":

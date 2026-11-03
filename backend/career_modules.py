@@ -31,6 +31,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from backend.ai_service import VERIFIED_RESOURCES, _call_gemini_json
 from backend.config import GITHUB_TOKEN, JWT_EXPIRY_HOURS, JWT_SECRET
 from backend.database import get_connection, get_resume_by_id, save_resume
+from backend.jobs.service import job_market_service
 from backend.matching_engine import (
     DEFAULT_WEIGHTS,
     ROLE_TEMPLATES,
@@ -667,16 +668,16 @@ def fetch_job_market_intelligence(body: Dict[str, Any]) -> Dict[str, Any]:
     skill_filter = sanitize_short_field(body.get("skillFilter", ""), 60)
     prefer_live = bool(body.get("preferLiveApi", False))
 
-    live_jobs: List[Dict[str, Any]] = []
-    live_err = None
-    if prefer_live:
-        live_jobs, live_err = _try_fetch_live_remotive_jobs(role_filter)
-
-    combined_raw = live_jobs + [j.copy() for j in BENCHMARK_JOB_LISTINGS]
+    combined_raw = job_market_service.get_market_jobs(
+        query=role_filter or skill_filter,
+        location=location_filter,
+        prefer_live=prefer_live,
+        limit=15,
+    )
     data_source_label = (
-        "Hybrid: Live Remotive API + Curated India/Global Benchmark Dataset"
-        if live_jobs
-        else "Fallback Demo Dataset (Curated India & Global Tech Roles)"
+        "Live Market Provider (Remotive / Arbeitnow / Adzuna) · Cached in Neon"
+        if combined_raw and any("Live" in j.get("dataSource", "") for j in combined_raw)
+        else "Verified Indian Tech Hub Benchmark Dataset"
     )
 
     now_iso = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
@@ -792,7 +793,7 @@ def fetch_job_market_intelligence(body: Dict[str, Any]) -> Dict[str, Any]:
 
     return {
         "dataSource": data_source_label,
-        "liveApiStatus": "connected" if live_jobs else f"fallback ({live_err or 'using curated benchmark dataset'})",
+        "liveApiStatus": "connected" if any("Live" in j.get("dataSource", "") for j in combined_raw) else "benchmark (verified dataset)",
         "lastUpdated": now_iso,
         "totalListings": len(enriched_jobs),
         "marketAlignmentScore": market_alignment_pct,

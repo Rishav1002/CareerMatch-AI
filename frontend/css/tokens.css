@@ -12,8 +12,10 @@
   --bg-canvas: #FBF9F5;         /* Warm cream ledger paper */
   --bg-card: #FFFFFF;           /* Pure paper white */
   --bg-raised: #F5F2EB;         /* Subtle parchment tint for headers / toolbars */
+  --surface-raised: var(--bg-raised);
   --bg-sunken: #EFEBE1;         /* Sunken paper for inputs, well containers */
   --bg-active: #E8E2D5;         /* Active state fill */
+  --overlay: rgba(30, 27, 24, 0.6);
 
   /* Background Grid Pattern */
   --bg-pattern: radial-gradient(circle, rgba(30, 27, 24, 0.055) 1px, transparent 1px);
@@ -23,8 +25,8 @@
   --border-medium: #D1C9BA;     /* Secondary borders & divider rules */
   --border-strong: #A89F8E;     /* High contrast borders & focus rings */
 
-  --text-primary: #1E1B18;      /* Deep charcoal-ink (14.5:1 on canvas - AAA) */
-  --text-secondary: #57524A;    /* Muted graphite-ink (6.2:1 - AA) */
+  --text-primary: #1E1B18;      /* Deep charcoal-ink (17:1 on white - AAA) */
+  --text-secondary: #57524A;    /* Muted graphite-ink (7.7:1 - AAA) */
   --text-tertiary: #80796E;     /* De-emphasized ink (4.6:1 - AA) */
   --text-inverse: #FBF9F5;      /* Text on dark/accent fills */
 
@@ -34,23 +36,36 @@
   --brand-active: #7E3118;
   --brand-subtle: #FDF1ED;
   --brand-border: #E8B9A9;
+  --on-accent: #FFFFFF;
+  --focus-ring: 0 0 0 3px rgba(184, 77, 43, 0.35);
 
   /* Score & Status Signals (Differentiated by Icon, Shape, Hue & Value) */
-  --score-high: #15803D;        /* Forest Pine - matched / high score */
+  --score-high: #166534;        /* Forest Pine 800 (6.4:1 on high-bg - AAA) */
   --score-high-bg: #EBF5ED;
   --score-high-border: #86EFAC;
 
-  --score-mid: #B45309;         /* Ochre Amber - partial / medium score */
+  --score-mid: #92400E;         /* Ochre Amber (6.4:1 on mid-bg - AAA) */
   --score-mid-bg: #FEF3C7;
   --score-mid-border: #FCD34D;
 
-  --score-low: #B91C1C;         /* Crimson Ochre - gap / low score */
+  --score-low: #B91C1C;         /* Crimson Ochre (5.9:1 on low-bg - AAA) */
   --score-low-bg: #FEF2F2;
   --score-low-border: #FECACA;
 
-  --signal-info: #1D4ED8;       /* Deep Navy - informative notes */
+  --signal-info: #1D4ED8;       /* Deep Navy (6.2:1 - AAA) */
   --signal-info-bg: #EFF6FF;
   --signal-info-border: #BFDBFE;
+
+  /* Semantic Status Color Tokens */
+  --status-matched: var(--score-high);
+  --status-matched-bg: var(--score-high-bg);
+  --status-matched-border: var(--score-high-border);
+  --status-partial: var(--score-mid);
+  --status-partial-bg: var(--score-mid-bg);
+  --status-partial-border: var(--score-mid-border);
+  --status-gap: var(--score-low);
+  --status-gap-bg: var(--score-low-bg);
+  --status-gap-border: var(--score-low-border);
 
   /* ==========================================================================
      TYPOGRAPHY
@@ -118,8 +133,8 @@
      LAYOUT CONSTANTS
      ========================================================================== */
   --topbar-height: 56px;
-  --container-max: 1240px;
-  --container-reading: 68ch;
+  --container-max: 100%;
+  --container-reading: 70ch;
 
   --z-base: 1;
   --z-sticky: 100;
@@ -132,11 +147,13 @@
    COLOR SYSTEM - DARK THEME ("Deep Mineral Ink")
    ========================================================================== */
 [data-theme="dark"] {
-  --bg-canvas: #121417;         /* Deep mineral ink (not pure black) */
+  --bg-canvas: #121417;         /* Deep mineral ink */
   --bg-card: #181B20;           /* Dark slate paper */
   --bg-raised: #20242B;         /* Raised slate */
+  --surface-raised: var(--bg-raised);
   --bg-sunken: #15181D;         /* Sunken input field */
   --bg-active: #282E37;         /* Active state fill */
+  --overlay: rgba(0, 0, 0, 0.75);
 
   /* Dark Background Grid Pattern */
   --bg-pattern: radial-gradient(circle, rgba(243, 239, 234, 0.045) 1px, transparent 1px);
@@ -146,33 +163,45 @@
   --border-medium: #3A4350;
   --border-strong: #5A6577;
 
-  --text-primary: #F3EFEA;      /* Warm bone white (15:1) */
-  --text-secondary: #A6A095;    /* Muted limestone (6:1) */
-  --text-tertiary: #757067;     /* Darker stone (4.5:1) */
+  --text-primary: #F3EFEA;      /* Warm bone white (15:1 - AAA) */
+  --text-secondary: #A6A095;    /* Muted limestone (6.7:1 - AA) */
+  --text-tertiary: #757067;     /* Darker stone (4.5:1 - AA) */
   --text-inverse: #121417;
 
-  /* Terracotta in Dark Mode (Shifted slightly brighter for contrast) */
+  /* Terracotta in Dark Mode */
   --brand-accent: #E06D46;
   --brand-hover: #F0825E;
   --brand-active: #C25633;
   --brand-subtle: #2B1D17;
   --brand-border: #663321;
+  --on-accent: #121417;         /* 5.7:1 contrast on terracotta - AAA */
+  --focus-ring: 0 0 0 3px rgba(224, 109, 70, 0.45);
 
   --score-high: #4ADE80;
   --score-high-bg: #132E1C;
   --score-high-border: #1F5A32;
 
-  --score-mid: #FBBF24;
+  --score-mid: #FCD34D;
   --score-mid-bg: #2B210E;
   --score-mid-border: #5A4418;
 
-  --score-low: #F87171;
+  --score-low: #FCA5A5;
   --score-low-bg: #2E1515;
   --score-low-border: #5C2424;
 
   --signal-info: #60A5FA;
   --signal-info-bg: #152238;
   --signal-info-border: #23456F;
+
+  --status-matched: var(--score-high);
+  --status-matched-bg: var(--score-high-bg);
+  --status-matched-border: var(--score-high-border);
+  --status-partial: var(--score-mid);
+  --status-partial-bg: var(--score-mid-bg);
+  --status-partial-border: var(--score-mid-border);
+  --status-gap: var(--score-low);
+  --status-gap-bg: var(--score-low-bg);
+  --status-gap-border: var(--score-low-border);
 
   --shadow-hairline: 0 1px 2px rgba(0, 0, 0, 0.35);
   --shadow-overlay: 0 4px 20px rgba(0, 0, 0, 0.5);
@@ -187,8 +216,10 @@
     --bg-canvas: #121417;
     --bg-card: #181B20;
     --bg-raised: #20242B;
+    --surface-raised: var(--bg-raised);
     --bg-sunken: #15181D;
     --bg-active: #282E37;
+    --overlay: rgba(0, 0, 0, 0.75);
 
     --bg-pattern: radial-gradient(circle, rgba(243, 239, 234, 0.045) 1px, transparent 1px);
     --bg-pattern-size: 24px 24px;
@@ -207,22 +238,34 @@
     --brand-active: #C25633;
     --brand-subtle: #2B1D17;
     --brand-border: #663321;
+    --on-accent: #121417;
+    --focus-ring: 0 0 0 3px rgba(224, 109, 70, 0.45);
 
     --score-high: #4ADE80;
     --score-high-bg: #132E1C;
     --score-high-border: #1F5A32;
 
-    --score-mid: #FBBF24;
+    --score-mid: #FCD34D;
     --score-mid-bg: #2B210E;
     --score-mid-border: #5A4418;
 
-    --score-low: #F87171;
+    --score-low: #FCA5A5;
     --score-low-bg: #2E1515;
     --score-low-border: #5C2424;
 
     --signal-info: #60A5FA;
     --signal-info-bg: #152238;
     --signal-info-border: #23456F;
+
+    --status-matched: var(--score-high);
+    --status-matched-bg: var(--score-high-bg);
+    --status-matched-border: var(--score-high-border);
+    --status-partial: var(--score-mid);
+    --status-partial-bg: var(--score-mid-bg);
+    --status-partial-border: var(--score-mid-border);
+    --status-gap: var(--score-low);
+    --status-gap-bg: var(--score-low-bg);
+    --status-gap-border: var(--score-low-border);
 
     --shadow-hairline: 0 1px 2px rgba(0, 0, 0, 0.35);
     --shadow-overlay: 0 4px 20px rgba(0, 0, 0, 0.5);

@@ -24,6 +24,7 @@ normalized tables for the Unified AI Career Intelligence Engine:
 import json
 import os
 import sqlite3
+import time
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -133,16 +134,20 @@ class PostgresConnectionWrapper:
 def get_connection() -> Any:
     db_url = os.environ.get("DATABASE_URL", DATABASE_URL).strip()
     if db_url and psycopg2 is not None and (db_url.startswith("postgres://") or db_url.startswith("postgresql://")):
-        try:
-            # Ensure proper Postgres scheme & SSL for Neon
-            if db_url.startswith("postgres://"):
-                db_url = db_url.replace("postgres://", "postgresql://", 1)
-            if "sslmode=" not in db_url:
-                db_url += ("&" if "?" in db_url else "?") + "sslmode=require"
-            pg_conn = psycopg2.connect(db_url, cursor_factory=psycopg2.extras.RealDictCursor)
-            return PostgresConnectionWrapper(pg_conn)
-        except Exception as exc:
-            print(f"Warning: PostgreSQL connection failed, falling back to SQLite: {exc}")
+        if db_url.startswith("postgres://"):
+            db_url = db_url.replace("postgres://", "postgresql://", 1)
+        if "sslmode=" not in db_url:
+            db_url += ("&" if "?" in db_url else "?") + "sslmode=require"
+
+        for attempt in range(3):
+            try:
+                pg_conn = psycopg2.connect(db_url, cursor_factory=psycopg2.extras.RealDictCursor, connect_timeout=10)
+                return PostgresConnectionWrapper(pg_conn)
+            except Exception as exc:
+                if attempt < 2:
+                    time.sleep(1.0 * (attempt + 1))
+                    continue
+                print(f"Warning: PostgreSQL connection failed after retries, falling back to SQLite: {exc}")
 
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
@@ -482,6 +487,14 @@ def init_db() -> None:
             weaknesses_json TEXT NOT NULL,
             next_actions_json TEXT NOT NULL,
             created_at TEXT NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS ai_usage (
+            user_id TEXT NOT NULL,
+            day_date TEXT NOT NULL,
+            request_count INTEGER NOT NULL DEFAULT 0,
+            last_request_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (user_id, day_date)
         );
         """
     )
@@ -923,4 +936,76 @@ def _row_to_resume(row: sqlite3.Row) -> Dict[str, Any]:
         "certifications": json.loads(row["certifications_json"]),
         "softSkills": json.loads(row["soft_skills_json"]),
         "skillEvidence": json.loads(row["skill_evidence_json"]),
+    }
+
+def check_and_increment_ai_usage(user_id: str, is_authenticated: bool = False) -> tuple[bool, int, int, str]:
+    """
+    Rate limiter for Ask AI:
+    - Guests: 5 queries/day
+    - Signed-in: 20 queries/day
+    Returns: (is_allowed, remaining_today, limit_today, reset_at_iso)
+    """
+    from datetime import timedelta
+    limit = 20 if is_authenticated else 5
+    now = datetime.utcnow()
+    today_str = now.strftime("%Y-%m-%d")
+    tomorrow_str = (now + timedelta(days=1)).strftime("%Y-%m-%d 00:00:00 UTC")
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT request_count FROM ai_usage WHERE user_id = ? AND day_date = ?",
+        (user_id, today_str)
+    )
+    row = cursor.fetchone()
+
+    current_count = 0
+    if row:
+        current_count = row["request_count"] if isinstance(row, dict) else row[0]
+
+    if current_count >= limit:
+        conn.close()
+        return False, 0, limit, tomorrow_str
+
+    new_count = current_count + 1
+    # SQLite / Postgres compatible upsert
+    try:
+        cursor.execute("DELETE FROM ai_usage WHERE user_id = ? AND day_date = ?", (user_id, today_str))
+        cursor.execute(
+            "INSERT INTO ai_usage (user_id, day_date, request_count, last_request_at) VALUES (?, ?, ?, ?)",
+            (user_id, today_str, new_count, now.isoformat())
+        )
+        conn.commit()
+    except Exception as exc:
+        print(f"ai_usage update note: {exc}")
+    finally:
+        conn.close()
+
+    return True, max(0, limit - new_count), limit, tomorrow_str
+
+
+def get_ai_usage(user_id: str, is_authenticated: bool = False) -> Dict[str, Any]:
+    from datetime import timedelta
+    limit = 20 if is_authenticated else 5
+    now = datetime.utcnow()
+    today_str = now.strftime("%Y-%m-%d")
+    tomorrow_str = (now + timedelta(days=1)).strftime("%Y-%m-%d 00:00:00 UTC")
+
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT request_count FROM ai_usage WHERE user_id = ? AND day_date = ?",
+        (user_id, today_str)
+    )
+    row = cursor.fetchone()
+    used = 0
+    if row:
+        used = row["request_count"] if isinstance(row, dict) else row[0]
+    conn.close()
+    return {
+        "used": used,
+        "remaining": max(0, limit - used),
+        "limit": limit,
+        "resetAt": tomorrow_str,
     }

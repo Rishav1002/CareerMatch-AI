@@ -133,9 +133,20 @@ function updateAnalyzerMiniCards() {
   }
   if (candSubEl) {
     const skCount = state.activeResume?.technicalSkills?.length || 0;
-    candSubEl.textContent = state.activeResume ? `${skCount} skills extracted` : "Upload or pick a sample";
+    candSubEl.textContent = state.activeResume ? `${skCount} skills extracted` : "Upload your resume to begin";
   }
-  const roleVal = document.getElementById("targetRoleSelect")?.value || "Full Stack Developer";
+
+  const roleSelectEl = document.getElementById("targetRoleSelect");
+  const customRoleContainer = document.getElementById("customRoleInputContainer");
+  if (customRoleContainer && roleSelectEl) {
+    customRoleContainer.style.display = roleSelectEl.value === "Other" ? "block" : "none";
+  }
+
+  let roleVal = roleSelectEl?.value || "Full Stack Developer";
+  if (roleVal === "Other") {
+    const customInp = document.getElementById("customRoleInput")?.value?.trim();
+    roleVal = customInp || "Custom Role";
+  }
   if (roleEl) roleEl.textContent = roleVal;
 
   const compVal = document.getElementById("goalCompanyInput")?.value?.trim() || "Any company";
@@ -170,92 +181,12 @@ function switchReportTab(tabId) {
 
 function switchWorkspaceView(viewName, scrollToToolkit = false) {
   if (!viewName) return;
-
   if (window.__careermatch && window.__careermatch.router) {
-    const routeMap = {
-      match: "analyzer",
-      resume: "ats",
-      practice: "interview",
-      proof: "github",
-      pri: "readiness",
-      overview: "dashboard",
-      account: "profile",
-      career: "compare",
-      jobs: "market",
-      assessment: "skills",
-    };
-    const targetRoute = routeMap[viewName] || viewName;
-    if (window.location.hash !== `#/${targetRoute}`) {
-      window.__careermatch.router.navigate(targetRoute);
-    }
-  }
-
-  if (viewName === "analyzer" || viewName === "match") {
-    document.getElementById("analyzer")?.scrollIntoView({ behavior: "smooth" });
-    return;
-  }
-
-  let targetSectionView = viewName;
-  if (viewName === "resume") {
-    targetSectionView = "ats";
-  } else if (viewName === "practice") {
-    targetSectionView = "interview";
-  } else if (viewName === "proof") {
-    targetSectionView = "github";
-  } else if (viewName === "pri") {
-    targetSectionView = "overview";
-  } else if (viewName === "account") {
-    targetSectionView = "profile";
-    switchProfileSubTab("account");
-  } else if (viewName === "profile") {
-    switchProfileSubTab("profile");
-  }
-
-  state.activeView = targetSectionView;
-
-  document.querySelectorAll("#careerToolkitSection .module-view").forEach((sec) => {
-    sec.classList.toggle("active", sec.id === `view-${targetSectionView}`);
-  });
-
-  document.querySelectorAll("[data-toolkit-tab]").forEach((btn) => {
-    btn.classList.toggle("active", btn.getAttribute("data-toolkit-tab") === targetSectionView);
-  });
-
-  const drawer = document.getElementById("mobileDrawer");
-  if (drawer) drawer.classList.remove("open");
-
-  const toolsMenu = document.getElementById("toolsDropdownMenu");
-  const toolsBtn = document.getElementById("toolsDropdownBtn");
-  if (toolsMenu) toolsMenu.classList.add("hidden");
-  if (toolsBtn) toolsBtn.setAttribute("aria-expanded", "false");
-
-  if (scrollToToolkit) {
-    document.getElementById("careerToolkitSection")?.scrollIntoView({ behavior: "smooth" });
-  }
-
-  // Lazy-refresh module data on view activation when required inputs exist
-  if (targetSectionView === "jobs") {
-    loadJobMarketIntelligence();
-  } else if (targetSectionView === "ats") {
-    if (state.activeResume) loadAtsSimulator();
-  } else if (targetSectionView === "interview") {
-    if (state.activeResume) loadInterviewHistory();
-  } else if (targetSectionView === "github") {
-    const ghVal = document.getElementById("githubUsernameInput")?.value.trim() || "";
-    if (ghVal) loadGithubPortfolio();
-  } else if (targetSectionView === "roadmap") {
-    if (state.activeResume) loadAdaptiveRoadmap(false);
-  } else if (targetSectionView === "assessment") {
-    if (!state.activeAssessment) {
-      loadSkillAssessment();
-    }
-    if (state.activeResume) loadAssessmentHistory();
-  } else if (targetSectionView === "career") {
-    loadCareerComparison();
-  } else if (targetSectionView === "overview") {
-    if (state.activeResume) loadPlacementReadinessIndex();
-  } else if (targetSectionView === "profile") {
-    populateProfileForm();
+    const route = window.__careermatch.router.getRoute(viewName);
+    const target = route ? route.id : viewName;
+    window.__careermatch.router.navigate(target);
+  } else {
+    window.location.hash = `#/${viewName}`;
   }
 }
 
@@ -435,6 +366,7 @@ function initEventListeners() {
   });
 
   document.getElementById("targetRoleSelect")?.addEventListener("change", updateAnalyzerMiniCards);
+  document.getElementById("customRoleInput")?.addEventListener("input", updateAnalyzerMiniCards);
   document.getElementById("goalCompanyInput")?.addEventListener("input", updateAnalyzerMiniCards);
 
   const quickRoleSel = document.getElementById("reportQuickRoleSelect");
@@ -699,6 +631,7 @@ function initEventListeners() {
 function selectDemoResume(index, triggerAnalysis = false) {
   if (!state.demos[index]) return;
   state.activeResume = JSON.parse(JSON.stringify(state.demos[index]));
+  window.dispatchEvent(new CustomEvent("cm:resume-changed", { detail: state.activeResume }));
   renderParsedResumePreview(state.activeResume);
   hideErrorBanner();
 
@@ -737,6 +670,7 @@ async function handleFileUpload(file) {
     if (!res.ok) throw new Error(data.detail || "Failed to parse file");
 
     state.activeResume = data.resume;
+    window.dispatchEvent(new CustomEvent("cm:resume-changed", { detail: state.activeResume }));
     renderParsedResumePreview(state.activeResume);
     updateAnalyzerMiniCards();
     if (data.dashboard) renderDashboardMetrics(data.dashboard);
@@ -772,6 +706,7 @@ async function handlePastedResumeParse() {
     if (!res.ok) throw new Error(data.detail || "Failed to parse pasted text");
 
     state.activeResume = data.resume;
+    window.dispatchEvent(new CustomEvent("cm:resume-changed", { detail: state.activeResume }));
     renderParsedResumePreview(state.activeResume);
     updateAnalyzerMiniCards();
     if (data.dashboard) renderDashboardMetrics(data.dashboard);
@@ -1641,6 +1576,7 @@ function renderDashboardMetrics(dash) {
         if (!res.ok) throw new Error(data.detail || "Could not load record");
         state.analysisResult = data;
         state.activeResume = data.resume;
+        window.dispatchEvent(new CustomEvent("cm:resume-changed", { detail: state.activeResume }));
         state.activeJob = data.activeJob;
         state.completedNodes = data.completedNodes || {};
         renderParsedResumePreview(state.activeResume);
@@ -1903,6 +1839,10 @@ async function loadJobMarketIntelligence(showNotif = false) {
 
     if (showNotif) showToast(`Loaded ${data.totalListings} job listings`);
   } catch (err) {
+    const container = document.getElementById("jobsCardsGrid");
+    if (container && window.renderInlineError) {
+      window.renderInlineError(container, err.message, () => loadJobMarketIntelligence(true));
+    }
     showToast("Job Market error: " + err.message);
   }
 }
@@ -2018,6 +1958,10 @@ async function loadAtsSimulator(showNotif = false) {
 
     if (showNotif) showToast(`ATS Compatibility Score: ${Math.round(data.atsScore)}%`);
   } catch (err) {
+    const container = document.getElementById("atsPillarKpis");
+    if (container && window.renderInlineError) {
+      window.renderInlineError(container, err.message, () => loadAtsSimulator(true));
+    }
     showToast("ATS Simulator error: " + err.message);
   }
 }
@@ -2458,6 +2402,10 @@ async function loadAdaptiveRoadmap(regenerate = false) {
     renderAdaptiveRoadmapUI(data);
     if (regenerate) showToast("Regenerated Adaptive Learning Roadmap");
   } catch (err) {
+    const container = document.getElementById("roadmapStagesContainer");
+    if (container && window.renderInlineError) {
+      window.renderInlineError(container, err.message, () => loadAdaptiveRoadmap(true));
+    }
     showToast("Roadmap error: " + err.message);
   }
 }
@@ -2679,6 +2627,10 @@ async function loadSkillAssessment(showNotif = false) {
 
     if (showNotif) showToast(`Loaded ${topic} (${difficulty}) Assessment`);
   } catch (err) {
+    const container = document.getElementById("asmtMcqContainer");
+    if (container && window.renderInlineError) {
+      window.renderInlineError(container, err.message, () => loadSkillAssessment(true));
+    }
     showToast("Assessment Lab error: " + err.message);
   }
 }
@@ -2904,6 +2856,10 @@ async function loadCareerComparison(showNotif = false) {
 
     if (showNotif) showToast(`Compared ${primaryRole} vs ${secondaryRole}`);
   } catch (err) {
+    const container = document.getElementById("careerBridgeBody");
+    if (container && window.renderInlineError) {
+      window.renderInlineError(container, err.message, () => loadCareerComparison(true));
+    }
     showToast("Career comparison error: " + err.message);
   }
 }
@@ -3033,6 +2989,10 @@ async function loadPlacementReadinessIndex(showNotif = false) {
 
     if (showNotif) showToast(`Placement Readiness Index: ${priRounded}%`);
   } catch (err) {
+    const container = document.getElementById("priBreakdownBars");
+    if (container && window.renderInlineError) {
+      window.renderInlineError(container, err.message, () => loadPlacementReadinessIndex(true));
+    }
     showToast("PRI error: " + err.message);
   }
 }
@@ -3166,4 +3126,10 @@ window.loadAdaptiveRoadmap = loadAdaptiveRoadmap;
 window.loadSkillAssessment = loadSkillAssessment;
 window.loadCareerComparison = loadCareerComparison;
 window.loadPlacementReadinessIndex = loadPlacementReadinessIndex;
+window.loadInterviewHistory = loadInterviewHistory;
+window.loadGithubPortfolio = loadGithubPortfolio;
+window.populateProfileForm = populateProfileForm;
+window.renderDashboardMetrics = renderDashboardMetrics;
+window.getAppState = () => state;
+window.hasActiveResume = () => Boolean(state.activeResume);
 

@@ -1,272 +1,177 @@
 # CareerMatch AI
 
-AI-Powered Career Intelligence, Skill Development, and Placement Readiness Platform for students and early-career software/data engineers.
+> Explainable career-readiness intelligence, deterministic skill verification, and placement benchmarking platform for engineering students and early-career software professionals.
 
-![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
-![FastAPI 0.115.6](https://img.shields.io/badge/FastAPI-0.115.6-009688?logo=fastapi&logoColor=white)
-![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
-
-**Quick demo:** Click **Demo Mode (Aarav)** in the top bar or upload [`samples/sample_resume_aarav_sharma.txt`](samples/sample_resume_aarav_sharma.txt) and paste [`samples/sample_jd_data_engineer.txt`](samples/sample_jd_data_engineer.txt) (or click **Load sample Data Engineer JD**) to explore the resume analyzer and all 8 CareerMatch AI modules.
-
----
-
-| Hero & Analyzer | Career Report & Score Breakdown |
-| :---: | :---: |
-| ![Hero and Analyzer](docs/screenshots/hero.png) | ![Career Report](docs/screenshots/report.png) |
-
-| Career Toolkit | Career Roadmap | 
-| :---: | :---: |
-| ![Evidence View](docs/screenshots/evidence-view.png) | ![Interactive Roadmap](docs/screenshots/roadmap.png) |
-
-| Online Courses Recommendations | Job Listing | Project Recommendation |
-| :---: | :---: | :---: |
-| ![Online Courses](docs/screenshots/Courses.png) | ![Job Listing](docs/screenshots/Job-Market.png) | ![Project Recommendations](docs/screenshots/Planning&Projects.png) |
+[![Python 3.12.8](https://img.shields.io/badge/Python-3.12.8-3776AB?logo=python&logoColor=white)](.python-version)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115.6-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![PostgreSQL / Neon](https://img.shields.io/badge/Database-PostgreSQL%20%2F%20Neon-336791?logo=postgresql&logoColor=white)](https://neon.tech/)
+[![WCAG 2.1 AA](https://img.shields.io/badge/Accessibility-WCAG%202.1%20AA%20Compliant-success)](#design-system--accessibility)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ---
 
-## Overview & Preserved Core Features
+## Architecture & System Overview
 
-CareerMatch AI preserves all original resume-to-JD matching capabilities while expanding the platform into an 11-workspace Career Intelligence suite:
+CareerMatch AI combines semantic resume extraction with deterministic scoring algorithms, grounded AI coaching, real-time live market intelligence, and placement readiness indexing.
 
-1. **Multi-format resume parsing:** Extracts contact details, education, work experience, projects, certifications, and 38 cataloged technical skills from PDF (`PyMuPDF` / `fitz` + `pypdf`), DOCX (`python-docx`), or plain text.
-2. **Heading-aware JD requirement extraction:** Splits job descriptions into Mandatory, Preferred, and Optional tiers using section headings (`Mandatory Requirements`, `Preferred Qualifications`, `Optional / Bonus`) or Gemini structured JSON extraction (`response_schema`).
-3. **Explainable 100-point score breakdown:** Scores only verified matches across Mandatory Skills (60%), Preferred Skills (15%), Projects & Experience (15%), Education (5%), and Certifications (5%), with zero padded baselines.
-4. **Requirement-to-resume evidence table:** Displays every job requirement alongside its single status (`Detected`, `Adjacent skill`, or `Missing`), the exact quote from the JD, and the supporting line from the resume.
-5. **4-phase roadmap with progress tracking:** Builds a clickable skill tree with a sticky node inspector, completion checkboxes persisted to the relational database, and verified Free + Paid courses from `backend/resources.json`.
-6. **What-if score simulator & grounded bullet rewrites:** Lets users toggle missing skills to see exact point gains (`+60/N` mandatory, `+15/M` preferred) and rewrites existing resume bullets using Gemini (`gemini-2.5-flash`) or a deterministic fallback.
-7. **Saved analysis history & privacy controls:** Stores analysis history across sessions and includes a **"Don't save my resume"** checkbox to bypass persistence.
-
----
-
-## CareerMatch AI — 8 Advanced Modules
-
-### Module 1: Live Job Market Intelligence (`/api/jobs/market`)
-- Fetches live public job postings (Remotive public API with timeout protection) and merges or falls back to a clearly labelled **Curated Benchmark Dataset** (`India & Global Tech Roles`) when offline or rate-limited.
-- Extracts required skills per listing, computes a live **Resume Match %** against the active student profile, and visualizes top trending skills and company-tier skill patterns (`Product Giants`, `High-Growth Unicorns`, `Cloud & Enterprise`).
-- Supports filtering by role, location, experience level, and work mode.
-
-### Module 2: AI Mock Interview Simulator (`/api/interview/*`)
-- Supports **Technical**, **HR**, **Behavioral (STAR)**, and **Company-Style** rounds across Beginner, Intermediate, and Advanced difficulty levels.
-- Conducts interviews **one question at a time** with both text answers and browser **Web Speech API** voice dictation.
-- Evaluates each response across 5 rubric dimensions: **Technical Accuracy**, **Communication Clarity**, **Relevance**, **Problem-Solving Depth**, and **Textual Specificity Indicator** (labelled transparently as a text-based metric rather than acoustic voice analysis).
-- Provides a mistake breakdown, strong sample answer, contextual follow-up prompt, and persistent session history.
-
-### Module 3: ATS Resume Simulator (`/api/ats/evaluate`)
-- Calculates an explainable **ATS Compatibility Score (0–100)** broken down across **Keyword Alignment (40%)**, **Section Completeness (20%)**, **Formatting & Parseability (20%)**, and **Impact & Measurability (20%)**.
-- Audits section presence, formatting checks, missing mandatory/preferred keywords, and weak action verbs.
-- Generates **truthful Before/After bullet improvements** grounded strictly in the candidate's existing projects and skills (using `[X]%` / `[N]` placeholders where metrics are needed instead of fabricating credentials) and exports an ATS-optimized Markdown resume (`.md`).
-
-### Module 4: GitHub Skill Verification & Portfolio Analyzer (`/api/github/analyze`)
-- Connects to the **GitHub REST API** (`/users/{username}` and `/users/{username}/repos`) with an instant **Demo Mode** fallback (`aarav-sharma-dev`) when offline or unauthenticated.
-- Verifies skills evidenced in public repository languages, topics, and descriptions against skills claimed on the student's resume (`Verified in Both`, `Resume Only — Needs Proof`, `GitHub Only — Add to Resume`).
-- Audits repository README/documentation indicators, deployment links, and test signals while explicitly noting that stars and commit counts are not direct proof of engineering expertise.
-
-### Module 5: Adaptive AI Learning Roadmap (`/api/roadmap/adaptive`, `/api/roadmap/task`, `/api/roadmap/quiz`)
-- Generates a structured 4-stage learning plan with daily and weekly tasks, curated Free & Paid resources, practice links, and milestone project checkpoints.
-- Includes interactive **Stage Quizzes**; if a student scores below **80%**, the engine automatically injects targeted **Adaptive Remediation Tasks** into that stage and persists the updated plan.
-
-### Module 6: AI Skill Assessment Lab (`/api/assessment/*`)
-- Generates assessments across **Python, SQL, Data Structures & Algorithms, Java, JavaScript, Aptitude, and Technical Fundamentals** at Beginner, Intermediate, or Advanced difficulty.
-- Combines timed **Multiple-Choice Questions (MCQs)** with a **Hands-On Coding Challenge**.
-- Evaluates code submissions using a **Sandboxed Non-Executing Static AST & Test-Case Verifier** (`ast.parse` structural analysis + complexity/edge-case rubric — never executing arbitrary user code via `eval`/`exec`/`subprocess`).
-
-### Module 7: Career Path & Salary Intelligence (`/api/career/compare`)
-- Compares 2 to 4 career paths side by side across current resume match %, core vs. missing skills, fresher/mid/senior **India (INR LPA)** and **Global (USD)** salary ranges (with cited benchmark sources), and 5-year progression timelines.
-- Computes a **Role-to-Role Skill Bridge** showing transferable skills and new skills required to pivot from Role A to Role B.
-
-### Module 8: Placement Readiness Index — PRI (`/api/readiness/index`)
-- Computes a unified, explainable **0–100 Placement Readiness Index** combining 6 configurable weighted pillars:
-  - **Technical Skills (25%)**
-  - **Resume & ATS Quality (15%)**
-  - **Mock Interview Performance (20%)**
-  - **GitHub Portfolio Evidence (15%)**
-  - **Skill Assessment Lab (15%)**
-  - **Market Alignment (10%)**
-- Clearly labels whether each pillar is backed by **Verified Activity** or a **Baseline Estimate**, and outputs top strengths, weaknesses, and prioritized next actions.
-
----
-
-## Architecture & Database Schema
-
-```mermaid
-flowchart LR
-    A[Resume PDF / DOCX / TXT] --> B[resume_parser.py\nPyMuPDF + pypdf + python-docx]
-    C[Job Description / Live Market] --> D[matching_engine.py\nHeading Parser + 100-pt Scorer]
-    B --> E[career_modules.py\n8 Career Intelligence Modules]
-    D --> E
-    E --> F[ai_service.py\ngemini-2.5-flash + Deterministic Fallbacks]
-    E --> G[database.py\n17-Table Relational Schema]
-    E --> H[frontend/js/app.js\n11-Module SaaS Workspace]
+```
+                              ┌──────────────────────────────────────────────┐
+                              │            Vanilla ES-Module Client          │
+                              │  (Tokens CSS · Router · Left Rail · Views)   │
+                              └──────────────────────┬───────────────────────┘
+                                                     │ HTTP / JSON (REST)
+                                                     ▼
+                              ┌──────────────────────────────────────────────┐
+                              │               FastAPI Backend                │
+                              │       (Security Headers · JWT Auth)          │
+                              └───────┬──────────────┬──────────────┬────────┘
+                                      │              │              │
+                   ┌──────────────────┘              │              └──────────────────┐
+                   ▼                                 ▼                                 ▼
+   ┌──────────────────────────────┐   ┌──────────────────────────────┐   ┌──────────────────────────────┐
+   │       Matching Engine        │   │    Live Market Aggregator    │   │      Cold-Start Resilient    │
+   │  · Deterministic Scoring     │   │  · Remotive API              │   │         Database Layer       │
+   │  · Evidence Ledger Quotes    │   │  · Arbeitnow API             │   │  · Neon PostgreSQL (psycopg2)│
+   │  · 41+ Categorized Roles     │   │  · Adzuna Provider Adapter   │   │  · SQLite Auto-Fallback      │
+   │  · AST Python Verification   │   │  · 24h Neon Cache (TTL)      │   │  · Reconnect Retry Loop      │
+   └──────────────────────────────┘   └──────────────────────────────┘   └──────────────────────────────┘
 ```
 
-- **17-Table Relational Schema:** Defined in `backend/mysql_schema.sql` (MySQL 8.0+ DDL) and automatically provisioned in `backend/database.py` (`users`, `student_profiles`, `resumes`, `resume_analyses`, `job_listings`, `job_matches`, `skill_records`, `skill_gaps`, `interview_sessions`, `interview_questions_answers`, `github_profiles`, `learning_roadmaps`, `learning_tasks`, `assessment_sessions`, `assessment_results`, `career_comparisons`, `placement_readiness_reports`).
+---
+
+## Key Modules & Capabilities
+
+### 1. Unified Navigation Shell & Routing
+- **Authoritative Route Registry (`router.js`)**: Maps every route cleanly to its view panel, document title, and data loader.
+- **Empty State Integrity**: Prevents broken calculations or blank states when no resume has been uploaded; renders a clean action card guiding users to upload their CV.
+- **Desktop Collapsible Left Rail (`#appRail`)**: Grouped into 5 logical stages:
+  - **Overview**: Central metrics, profile summary, quick-action cards (`#/dashboard`).
+  - **Diagnose**: Multi-format Resume Matcher (`#/analyzer`), Evidence Ledger & Gaps (`#/report`), ATS Scanner (`#/ats`).
+  - **Prepare**: 4-Phase Adaptive Roadmap (`#/roadmap`), 7-Day Study Planner (`#/planner`), AST Skill Assessment (`#/skills`), AI Mock Interview Coach (`#/interview`).
+  - **Prove**: Live GitHub Commit Verification (`#/github`).
+  - **Decide**: 6-Pillar Placement Readiness Index (`#/readiness`), Live Job Market Intelligence (`#/market`), Career & Salary Bridge (`#/compare`), Application Kanban Tracker (`#/tracker`).
+- **Minimal Topbar**: Breadcrumb title, Command Palette (⌘K), Ask AI advisor with live usage meter, and Avatar dropdown menu.
+- **Mobile Bottom Navigation**: Instant thumb-reachable access to top workflows on viewports under 768px.
+
+### 2. Multi-Format Resume & Requirement Engine
+- Supports **PDF** (`PyMuPDF` / `fitz` + `pypdf`), **DOCX** (`python-docx`), and plain text.
+- Extracts technical skills, projects, work experience, education, and credentials without hallucination.
+- Evaluates resumes against 41 comprehensively modeled tech roles across Software Engineering, Data & AI, Cloud & DevOps, Systems & Embedded, Cyber Security, Mobile, QA, Product, and Emerging Tech.
+- Supports custom user-defined roles with dynamic requirements generation.
+
+### 3. Real, Live Job Market Intelligence (`/api/jobs/market`)
+- Extensible multi-provider architecture (`backend/jobs/providers/`):
+  - **Remotive Provider**: Remote engineering roles with tech tags.
+  - **Arbeitnow Provider**: European and international listings with visa/remote sponsorship filters.
+  - **Adzuna Provider**: High-volume market queries with salary and location grounding.
+- Neon Postgres `job_listings` cache with 24-hour TTL prevents provider rate-limiting and ensures millisecond response times.
+
+### 4. Context-Aware Ask AI Advisor (`/api/ai/ask`)
+- Slide-out interactive career advisor grounded in the candidate's active resume and target role.
+- Enforces atomic rate-limiting stored in the database (`ai_usage` table):
+  - **5 queries / day** for guest sessions.
+  - **20 queries / day** for registered students.
+- Returns HTTP 429 with explicit reset timestamps when quotas are exhausted.
+
+### 5. Design System & Accessibility
+- Strict token-only theme (`frontend/css/tokens.css`) supporting Warm Paper (Light) and Deep Ink (Dark).
+- Flash-of-unstyled-content (FOUC) eliminated via an inline synchronous `<head>` script.
+- **100% WCAG 2.1 AA Compliant**: All text/background and button contrast ratios exceed 4.5:1 (scores reach up to 17:1), verified via automated color-contrast test suite (`scripts/check_contrast.py`).
+- Fluid layout without arbitrary fixed caps; adapts gracefully from 360px mobile screens to 3440px ultrawide displays.
 
 ---
 
-## How the Resume Match Score Is Calculated
+## Production Deployment (Render + Neon)
 
-Each job requirement is evaluated once and assigned a single status: **Matched** (full weight), **Adjacent** (candidate knows a related technology in `ADJACENT_SKILLS`, e.g., knowing `Flask` when `FastAPI` is required — **0 points credited**), or **Missing** (0 points). A resume with zero detected technical skills is capped at `5.0%` (always under 10).
+CareerMatch AI is engineered for zero-compilation, zero-breakage continuous deployment from GitHub to Render with serverless Neon Postgres.
 
-| Category | Weight | How Raw Score (0–100) Is Computed | Max Points |
-| :--- | :---: | :--- | :---: |
-| **Mandatory Skills** | 60% | `(matched_mandatory / total_mandatory) * 100` | 60.0 |
-| **Preferred Skills** | 15% | `(matched_preferred / total_preferred) * 100` | 15.0 |
-| **Projects & Experience** | 15% | `30 pts` per project (up to 60) + `40 pts` per internship/job (up to 40); `0` if 0 skills detected | 15.0 |
-| **Education** | 5% | `100` if a degree pattern (`B.Tech`, `B.E.`, `B.Sc`, `M.Tech`, `MCA`, etc.) is detected, else `0` | 5.0 |
-| **Certifications** | 5% | `50 pts` per extracted certification line (up to 100 for 2+ certifications) | 5.0 |
+### 1. Environment Variables Configuration
+
+Set the following variables in your **Render Web Service** dashboard:
+
+| Variable | Description | Default / Example |
+| :--- | :--- | :--- |
+| `DATABASE_URL` | Neon PostgreSQL pooled connection string | `postgresql://user:pass@ep-xyz.neon.tech/neondb?sslmode=require` |
+| `GEMINI_API_KEY` | Google Gemini API Key for grounded LLM coaching | `AIzaSy...` |
+| `JWT_SECRET` | Secret key for signing student JWT auth tokens | Any secure 64-char string |
+| `APP_ENV` | Application environment flag | `production` |
+| `CORS_ORIGINS` | Allowed CORS origins (comma-separated) | `https://careermatch-ai.onrender.com` |
+| `ADZUNA_APP_ID` | *(Optional)* Adzuna Job Market App ID | Custom API ID |
+| `ADZUNA_APP_KEY` | *(Optional)* Adzuna Job Market API Key | Custom API Key |
+
+### 2. Render Deployment Settings
+
+- **Environment**: Python
+- **Build Command**: `pip install -r requirements.txt`
+- **Start Command**: `uvicorn backend.main:app --host 0.0.0.0 --port $PORT`
+- **Python Version**: Pinned to `3.12.8` via `.python-version`
+
+### 3. Neon Cold-Start & Free-Tier Resilience
+Render free-tier instances sleep when idle, and Neon serverless databases auto-suspend after periods of inactivity. CareerMatch AI handles this via:
+- Built-in exponential backoff connection retry loop in `backend/database.py` (3 attempts with 1.5s backoff).
+- `/api/health` connectivity probe that verifies active database queries (`SELECT 1;`).
+- Frontend connection status banner notifying the user that the server is waking up instead of failing abruptly.
 
 ---
 
-## Tech Stack
-
-| Layer | Technology | Version | Purpose |
-| :--- | :--- | :--- | :--- |
-| **Backend API** | Python + FastAPI + Uvicorn | `0.115.6` / `0.34.0` | REST endpoints, static file serving, JWT auth, security headers (`main.py`) |
-| **AI Service** | Google GenAI SDK (`google-genai`) | `1.5.0` | Structured JSON extraction, interview rubric & bullet rewrites with `gemini-2.5-flash` |
-| **Document Parsing** | `PyMuPDF` (`fitz`), `pypdf`, `python-docx` | `1.25.1` / `5.1.0` / `1.1.2` | PDF page extraction and DOCX paragraph/table parsing |
-| **Database** | MySQL (`PyMySQL`) & SQLite (`sqlite3`) | `1.1.1` / Built-in | 17-table relational schema (`mysql_schema.sql` & `database.py`) |
-| **Authentication** | JWT (`HMAC-SHA256` + `PBKDF2-SHA256`) | Built-in | Stateless JWT bearer tokens, user registration/login, and 1-click Demo Mode |
-| **Testing** | `pytest` | `8.3.4` | Automated unit & integration tests in `tests/test_basic.py` and GitHub Actions CI |
-| **Frontend** | HTML5, CSS3, Vanilla JS | ES6+ | 11-module SaaS workspace, Dark/Light theme, interactive SVG charts, Web Speech API |
-
----
-
-## Quick Start
+## Local Development & Setup
 
 ### Prerequisites
-- **Python 3.10+**
-- **Google Gemini API Key** *(Optional — if omitted, all modules run in deterministic `template` / benchmark mode)*
+- Python 3.12+
+- Git
 
-### Windows (Command Prompt / PowerShell)
-```bat
-git clone https://github.com/your-username/CareerMatch.git
+### 1. Clone & Set Up Virtual Environment
+
+```bash
+git clone https://github.com/Rishav1002/CarrerMatch.git
 cd CareerMatch
+
 python -m venv venv
-venv\Scripts\activate
-pip install -r requirements.txt
-copy .env.example .env
-uvicorn backend.main:app --reload --host 127.0.0.1 --port 3000
-```
-*(Or double-click `run_windows.bat` to run all setup steps and launch on `http://127.0.0.1:3000`.)*
-
-### macOS / Linux
-```bash
-git clone https://github.com/your-username/CareerMatch.git
-cd CareerMatch
-python3 -m venv venv
+# On Windows:
+.\venv\Scripts\activate
+# On Linux/macOS:
 source venv/bin/activate
+```
+
+### 2. Install Dependencies
+
+All dependencies are pinned to pre-compiled wheels for Python 3.12:
+
+```bash
 pip install -r requirements.txt
-cp .env.example .env
-uvicorn backend.main:app --reload --host 127.0.0.1 --port 3000
-```
-Open `http://127.0.0.1:3000` in your browser (or `http://127.0.0.1:3000/docs` for FastAPI Swagger UI).
-
----
-
-## Environment Variables
-
-| Variable | Required | Default | Description |
-| :--- | :---: | :--- | :--- |
-| `GEMINI_API_KEY` | No | `""` (empty) | Google Gemini API key from [Google AI Studio](https://aistudio.google.com/app/apikey). Leave empty to run in deterministic template mode. |
-| `GEMINI_MODEL` | No | `gemini-2.5-flash` | Gemini model identifier used by `backend/ai_service.py` (loaded via `backend/config.py`). |
-| `DATABASE_PATH` | No | `careermatch.db` | File path for the local SQLite database created on startup. |
-| `DATABASE_URL` | No | `""` (empty) | Optional MySQL connection URL (see `backend/mysql_schema.sql` for MySQL 8.0+ DDL). |
-| `JWT_SECRET` | No | Dev secret | Secret key used to sign and verify HMAC-SHA256 JWT tokens. |
-| `GITHUB_TOKEN` | No | `""` (empty) | Optional GitHub personal access token for higher rate limits on `/api/github/analyze`. |
-| `PORT` | No | `3000` | Server port used across `app.py`, `backend/main.py`, `.env.example`, and `run_windows.bat`. |
-
----
-
-## Project Structure
-
-```text
-CareerMatch/
-├── .github/
-│   └── workflows/
-│       └── test.yml              # GitHub Actions CI workflow running pytest on every push
-├── app.py                        # Root entry point with dependency bootstrapper; delegates to backend.main
-├── backend/
-│   ├── __init__.py               # Backend package marker
-│   ├── config.py                 # Centralized env config (GEMINI_API_KEY, GEMINI_MODEL, DATABASE_PATH, JWT_SECRET, PORT)
-│   ├── main.py                   # FastAPI routes, ThreadingHTTPServer fallback, and static file mounting
-│   ├── career_modules.py         # JWT auth, Central Student Profile, and CareerMatch AI Modules 1–8
-│   ├── matching_engine.py        # 8 role templates, JD heading parser, 100-pt scorer, and roadmap node builder
-│   ├── resume_parser.py          # PDF (PyMuPDF + pypdf), DOCX & TXT extraction, 38-skill catalog, whole-word matcher
-│   ├── ai_service.py             # Gemini API calls, response_schema verification, and template fallbacks
-│   ├── database.py               # 17-table relational schema + legacy tables and parameterized SQL queries
-│   ├── mysql_schema.sql          # Production MySQL 8.0+ DDL for all 17 normalized tables
-│   └── resources.json            # 32 curated skills with verified Free & Paid course URLs and subtopics
-├── frontend/
-│   ├── index.html                # 11-module SaaS workspace + Hero, Analyzer, and 5-tab Career Report
-│   ├── css/
-│   │   └── styles.css            # Responsive dark cosmic + light paper theme, sidebar layout, and module UI
-│   └── js/
-│       └── app.js                # Frontend state management, Fetch API client, and controllers for Modules 1–8
-├── index.html                    # Root HTML entry fallback
-├── samples/
-│   ├── sample_resume_aarav_sharma.txt  # Sample B.Tech CS student resume for instant testing
-│   └── sample_jd_data_engineer.txt     # Sample Data Engineer JD with Mandatory, Preferred, and Optional sections
-├── scripts/
-│   └── check_links.py            # Utility script that requests every URL in backend/resources.json
-├── tests/
-│   └── test_basic.py             # Pytest suite verifying core matching + CareerMatch AI Modules 1–8
-├── docs/
-│   └── screenshots/
-│       └── README.txt            # Checklist of the 5 screenshots referenced in this README
-├── requirements.txt              # Pinned Python dependencies (FastAPI, Uvicorn, PyMuPDF, pypdf, python-docx, PyMySQL, pytest)
-├── package.json                  # Runner and syntax check scripts
-├── metadata.json                 # Application metadata
-├── .env.example                  # Environment variable template (safe empty defaults)
-├── .gitignore                    # Git ignore rules (excludes *.db, .env, venv, .aistudio, public, bun.lock)
-├── run_windows.bat               # One-click Windows virtual environment setup and Uvicorn launcher (port 3000)
-└── LICENSE                       # MIT License
 ```
 
----
+### 3. Run the Development Server
 
-## API Reference
-
-| Method | Path | Purpose |
-| :--- | :--- | :--- |
-| `GET` | `/api/health` | Health check returning status, stack, and active modules count. |
-| `GET` | `/api/bootstrap` | Returns the 8 role templates, 3 sample resumes, default weights, PRI weights, and demo profile. |
-| `POST` | `/api/auth/register` | Registers a student account and returns a signed JWT + profile. |
-| `POST` | `/api/auth/login` | Authenticates credentials or logs into the Demo Student account (`demo: true`). |
-| `GET` / `PUT` | `/api/profile` | Reads or updates the Central Student Career Profile (`student_profiles`). |
-| `POST` | `/api/resume/parse` | Parses base64-encoded file bytes (`PDF`/`DOCX`/`TXT`) or `pastedText`; respects `dontSave`. |
-| `POST` | `/api/resume/upload` | Multipart file upload endpoint (`UploadFile`) that parses and saves a resume profile. |
-| `POST` | `/api/analyze` | Runs resume-to-JD matching, 8-role comparison, roadmap generation, and Gemini/template recommendations. |
-| `GET` | `/api/jobs/market` | **Module 1:** Fetches live/benchmark job market listings, trending skills, and resume match %. |
-| `POST` | `/api/interview/start` | **Module 2:** Starts an adaptive Technical, HR, Behavioral, or Company-Style mock interview session. |
-| `POST` | `/api/interview/answer` | **Module 2:** Evaluates an interview answer on 5 rubric metrics and returns the next question. |
-| `GET` | `/api/interview/history` | **Module 2:** Returns past mock interview sessions for the student. |
-| `POST` | `/api/ats/evaluate` | **Module 3:** Computes the 4-pillar ATS score, section/format checks, bullet rewrites, and `.md` export. |
-| `POST` | `/api/github/analyze` | **Module 4:** Analyzes GitHub repos vs. resume skill claims and audits documentation quality. |
-| `POST` | `/api/roadmap/adaptive` | **Module 5:** Generates or loads the 4-stage adaptive roadmap with tasks and stage quizzes. |
-| `PUT` | `/api/roadmap/task` | **Module 5:** Toggles completion of a learning task and updates mastery progress. |
-| `POST` | `/api/roadmap/quiz` | **Module 5:** Grades a stage quiz and injects adaptive remediation tasks if score < 80%. |
-| `POST` | `/api/assessment/generate` | **Module 6:** Generates an MCQ + coding assessment session for a selected topic and difficulty. |
-| `POST` | `/api/assessment/submit` | **Module 6:** Evaluates MCQ answers and runs the non-executing AST verifier on code submissions. |
-| `POST` | `/api/career/compare` | **Module 7:** Compares multiple roles across match %, salary ranges, and Role-to-Role Skill Bridge. |
-| `POST` | `/api/readiness/index` | **Module 8:** Computes the 6-pillar Placement Readiness Index (PRI) with custom weights. |
-
----
-
-## Running the Tests
-
-Run the automated `pytest` suite (`tests/test_basic.py`):
 ```bash
-pytest
+uvicorn backend.main:app --reload --port 8000
 ```
 
-Verify that all course URLs in `backend/resources.json` return HTTP 200:
+Open [http://localhost:8000](http://localhost:8000) in your browser.
+
+---
+
+## Automated Test Suite
+
+Run the complete test suite locally:
+
 ```bash
-python3 scripts/check_links.py
+# Run unit, route architecture, and endpoint tests:
+python scripts/run_tests.py
+
+# Run automated WCAG 2.1 AA color-contrast audits:
+python scripts/check_contrast.py
 ```
 
 ---
 
-## License & Acknowledgements
+## Security & Compliance
+- **Security Headers**: Standard production middleware enforces `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy: strict-origin-when-cross-origin`, and `Permissions-Policy`.
+- **JWT Protection**: Production boot fails fast if `JWT_SECRET` is left as the default placeholder.
+- **Privacy Controls**: "Don't save my resume" toggle skips persistence of candidate CVs to the database.
 
-- **License:** Distributed under the [MIT License](LICENSE).
-- **Acknowledgements:** Built using the [Google Gemini API (google-genai)](https://ai.google.dev/), [FastAPI](https://fastapi.tiangolo.com/), and community learning paths referenced from [roadmap.sh](https://roadmap.sh/).
+---
+
+## License
+
+CareerMatch AI is open-source software licensed under the [MIT License](LICENSE).

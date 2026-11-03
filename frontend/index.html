@@ -3,12 +3,24 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (function() {
+        try {
+          var saved = localStorage.getItem("cm_theme") || localStorage.getItem("theme");
+          var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+          var theme = saved ? saved : (prefersDark ? "dark" : "light");
+          document.documentElement.setAttribute("data-theme", theme);
+          document.documentElement.style.colorScheme = theme;
+        } catch (e) {}
+      })();
+    </script>
     <title>CareerMatch AI — Explainable Career-Readiness Field Guide for Indian Engineers</title>
     <meta
       name="description"
       content="CareerMatch AI: An explainable career-readiness platform for Indian students and early-career engineers. Semantic resume parsing, evidence ledgers, adaptive roadmaps, ATS simulator, mock interview coach, and placement readiness index."
     />
     <meta name="theme-color" content="#B84D2B" />
+    <link rel="icon" type="image/svg+xml" href="/frontend/assets/favicon.svg" />
     <meta property="og:title" content="CareerMatch AI — Explainable Career-Readiness Field Guide" />
     <meta property="og:description" content="Explainable career intelligence, semantic skill matching, and placement readiness for Indian engineers." />
     <meta property="og:type" content="website" />
@@ -36,73 +48,156 @@
 
     <div class="app-shell">
       <!-- ======================================================================
-           TOP HORIZONTAL NAVIGATION BAR (Unified Sticky Header)
+           LEFT APP RAIL (Desktop Nav & Mobile Drawer)
            ====================================================================== -->
-      <header class="app-topbar" id="appTopbar" aria-label="Main Navigation">
-        <div class="topbar-container">
-          <!-- Left: Brand Identity -->
-          <div class="topbar-brand">
-            <a href="#/landing" class="brand-badge" title="CareerMatch AI">
-              <span class="brand-mark">CM</span>
-              <div class="brand-titles">
-                <span class="brand-name">CareerMatch</span>
-                <span class="brand-edition">AI</span>
-              </div>
+      <aside class="app-rail" id="appRail" aria-label="Main Navigation">
+        <!-- Rail Header: Brand + Collapse Toggle -->
+        <div class="rail-header">
+          <a href="#/landing" class="rail-brand" title="CareerMatch AI">
+            <span class="brand-mark">CM</span>
+            <div class="brand-titles">
+              <span class="brand-name">CareerMatch</span>
+              <span class="brand-edition">AI</span>
+            </div>
+          </a>
+          <button type="button" class="rail-toggle-btn" id="collapseRailBtn" aria-label="Collapse Navigation Rail" title="Collapse Sidebar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Rail Navigation Groups: Overview / Diagnose / Prepare / Prove / Decide -->
+        <nav class="rail-nav">
+          <!-- Overview -->
+          <div class="rail-group">
+            <div class="rail-group-title">Overview</div>
+            <a href="#/dashboard" class="rail-nav-link" data-view="dashboard">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+              <span class="rail-link-text">Dashboard</span>
             </a>
           </div>
 
-          <!-- Center: Primary Feature Navigation Links -->
-          <nav class="topbar-nav" id="topbarNav" aria-label="Primary Navigation">
-            <a href="#/landing" class="topbar-nav-link" data-view="landing">
-              <span data-i18n="nav_guide">Guide</span>
+          <!-- Group 1: Diagnose -->
+          <div class="rail-group">
+            <div class="rail-group-title">Diagnose</div>
+            <a href="#/analyzer" class="rail-nav-link" data-view="analyzer" id="navAnalyzerLink">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <span class="rail-link-text">Resume Matcher</span>
             </a>
-            <a href="#/dashboard" class="topbar-nav-link" data-view="dashboard">
-              <span data-i18n="nav_dashboard">Overview</span>
+            <a href="#/report" class="rail-nav-link" data-view="report" id="navResultsLink">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+              <span class="rail-link-text">Evidence &amp; Gaps</span>
             </a>
-            <a href="#/analyzer" class="topbar-nav-link" data-view="analyzer" id="navAnalyzerLink">
-              <span data-i18n="nav_analyzer">Analyzer</span>
+            <a href="#/ats" class="rail-nav-link" data-view="ats">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+              <span class="rail-link-text">ATS Simulator</span>
             </a>
-            <a href="#/report" class="topbar-nav-link" data-view="report" id="navResultsLink">
-              <span data-i18n="nav_report">Report &amp; Gaps</span>
-            </a>
-            <a href="#/roadmap" class="topbar-nav-link" data-view="roadmap">
-              <span data-i18n="nav_roadmap">Roadmap</span>
-            </a>
-            <a href="#/market" class="topbar-nav-link" data-view="market">
-              <span data-i18n="nav_market">Job Market</span>
-            </a>
-          </nav>
+          </div>
 
-          <!-- Right: Actions & Three-Line Expandable More Menu -->
+          <!-- Group 2: Prepare -->
+          <div class="rail-group">
+            <div class="rail-group-title">Prepare</div>
+            <a href="#/roadmap" class="rail-nav-link" data-view="roadmap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="1" 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg>
+              <span class="rail-link-text">Adaptive Roadmap</span>
+            </a>
+            <a href="#/planner" class="rail-nav-link" data-view="planner">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              <span class="rail-link-text">Study Planner</span>
+            </a>
+            <a href="#/skills" class="rail-nav-link" data-view="skills">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+              <span class="rail-link-text">Skill Assessment</span>
+            </a>
+            <a href="#/interview" class="rail-nav-link" data-view="interview">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+              <span class="rail-link-text">AI Mock Interview</span>
+            </a>
+          </div>
+
+          <!-- Group 3: Prove -->
+          <div class="rail-group">
+            <div class="rail-group-title">Prove</div>
+            <a href="#/github" class="rail-nav-link" data-view="github">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+              <span class="rail-link-text">GitHub Verification</span>
+            </a>
+          </div>
+
+          <!-- Group 4: Decide -->
+          <div class="rail-group">
+            <div class="rail-group-title">Decide</div>
+            <a href="#/readiness" class="rail-nav-link" data-view="readiness">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><polygon points="12 6 12 12 16 14"></polygon></svg>
+              <span class="rail-link-text">Placement Index (PRI)</span>
+            </a>
+            <a href="#/market" class="rail-nav-link" data-view="market">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+              <span class="rail-link-text">Live Job Market</span>
+            </a>
+            <a href="#/compare" class="rail-nav-link" data-view="compare">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 3h5v5"></path><path d="M4 20L21 3"></path><path d="M21 16v5h-5"></path><path d="M15 15l6 6"></path><path d="M4 4l5 5"></path></svg>
+              <span class="rail-link-text">Career &amp; Salary Bridge</span>
+            </a>
+            <a href="#/tracker" class="rail-nav-link" data-view="tracker">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+              <span class="rail-link-text">Application Tracker</span>
+            </a>
+          </div>
+        </nav>
+
+        <!-- Rail Footer: User Profile -->
+        <div class="rail-footer">
+          <a href="#/profile" class="sidebar-user-card" id="sidebarUserCard" title="View Profile">
+            <div class="sidebar-user-avatar" id="sidebarUserAvatar">ST</div>
+            <div class="sidebar-user-info">
+              <div class="sidebar-user-name" id="sidebarUserName">Guest Student</div>
+              <div class="sidebar-user-role" id="sidebarUserRole">Set Target Role</div>
+            </div>
+            <span class="score-pill mid" id="sidebarPriBadge">--</span>
+          </a>
+        </div>
+      </aside>
+
+      <!-- Backdrop for mobile drawer -->
+      <div class="rail-backdrop" id="railBackdrop"></div>
+
+      <!-- App Main Wrapper -->
+      <div class="app-main-wrapper">
+        <!-- Minimal Topbar Header -->
+        <header class="app-topbar" id="appTopbar" aria-label="Main Navigation">
+          <div class="topbar-left">
+            <button type="button" class="mobile-rail-trigger" id="mobileRailTriggerBtn" aria-label="Open Navigation">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="4" y1="6" x2="20" y2="6"></line>
+                <line x1="4" y1="12" x2="20" y2="12"></line>
+                <line x1="4" y1="18" x2="20" y2="18"></line>
+              </svg>
+            </button>
+            <h1 class="topbar-view-title" id="topbarViewTitle">Dashboard</h1>
+          </div>
+
           <div class="topbar-actions">
-            <!-- Command Palette Trigger -->
+            <!-- Jump Palette Trigger -->
             <button type="button" class="cmd-palette-trigger" id="cmdPaletteTrigger" aria-label="Open Command Palette (Ctrl+K)">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="11" cy="11" r="8"></circle>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
               </svg>
-              <span class="cmd-text" data-i18n="action_cmd_palette">Jump...</span>
+              <span class="cmd-text">Jump...</span>
               <kbd class="cmd-shortcut-badge">⌘K</kbd>
             </button>
 
-            <!-- Language Switcher (EN/HI) -->
-            <button type="button" class="btn btn-ghost btn-sm" id="langToggleBtn" title="Switch Language" style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 600; padding: 4px 8px;">
-              HI
-            </button>
-
-            <!-- Theme Switcher (Warm Paper / Deep Ink) -->
-            <button type="button" class="btn btn-ghost btn-sm btn-icon" id="themeToggleBtn" aria-label="Toggle Color Theme" title="Toggle Theme">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="5"></circle>
-                <line x1="12" y1="1" x2="12" y2="3"></line>
-                <line x1="12" y1="21" x2="12" y2="23"></line>
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                <line x1="1" y1="12" x2="3" y2="12"></line>
-                <line x1="21" y1="12" x2="23" y2="12"></line>
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            <!-- Ask AI with Usage Meter -->
+            <button type="button" class="btn btn-ghost btn-sm ask-ai-topbar-btn" id="askAiTopBtn" aria-label="Ask Career Advisor AI">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
               </svg>
+              <span>Ask AI</span>
+              <span class="usage-meter-badge" id="askAiUsageMeter">5 left</span>
             </button>
 
             <!-- Notifications Drawer Trigger -->
@@ -114,148 +209,41 @@
               <span id="notifBadgeCount" style="position: absolute; top: 4px; right: 4px; width: 8px; height: 8px; background: var(--brand-accent); border-radius: 999px;"></span>
             </button>
 
-            <!-- Auth / Profile Button -->
-            <button type="button" class="btn btn-secondary btn-sm" id="openAuthModalBtn">
-              Sign In
-            </button>
-
-            <!-- ☰ Three-line "More Tools" Expandable Button -->
-            <button type="button" class="btn btn-ghost btn-sm more-tools-trigger" id="moreToolsBtn" aria-expanded="false" aria-controls="moreToolsDrawer" title="Explore All Modules &amp; Tools">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="4" y1="6" x2="20" y2="6"></line>
-                <line x1="4" y1="12" x2="20" y2="12"></line>
-                <line x1="4" y1="18" x2="20" y2="18"></line>
-              </svg>
-              <span class="more-tools-text">More</span>
-              <svg class="more-tools-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <!-- ======================================================================
-           MORE TOOLS EXPANDABLE DRAWER
-           ====================================================================== -->
-      <div class="more-drawer-backdrop" id="moreToolsBackdrop" style="display: none;">
-        <div class="more-drawer" id="moreToolsDrawer" role="dialog" aria-modal="true" aria-label="All Tools &amp; Modules">
-          <div class="more-drawer-header">
-            <div>
-              <div style="font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary);">CareerMatch Suite</div>
-              <h3 style="font-size: 1.15rem; margin: 0; font-family: var(--font-display);">All Modules &amp; Tools</h3>
-            </div>
-            <button type="button" class="btn btn-ghost btn-sm btn-icon" id="closeMoreToolsBtn" aria-label="Close tools menu">✕</button>
-          </div>
-
-          <div class="more-drawer-grid">
-            <!-- Section 1: Audit & Verification -->
-            <div class="more-drawer-col">
-              <div class="more-col-title">Audit &amp; Verification</div>
-              <a href="#/ats" class="more-module-item" data-view="ats">
-                <div class="more-item-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+            <!-- Avatar Dropdown Menu -->
+            <div style="position: relative;">
+              <button type="button" class="user-avatar-btn" id="userAvatarMenuBtn" aria-expanded="false" aria-label="Open User Menu">
+                <span id="topbarAvatarInitials">ST</span>
+              </button>
+              <div class="user-avatar-dropdown" id="userAvatarDropdown" role="menu">
+                <div style="padding: 10px 16px 8px; border-bottom: 1px solid var(--border-subtle);">
+                  <div style="font-weight: 600; font-size: 0.85rem;" id="dropdownUserName">Guest Student</div>
+                  <div style="font-size: 0.75rem; color: var(--text-tertiary);" id="dropdownUserEmail">guest@careermatch.ai</div>
                 </div>
-                <div class="more-item-content">
-                  <div class="more-item-name">ATS Resume Simulator</div>
-                  <div class="more-item-desc">4-pillar formatting, section checks &amp; bullet rewrites</div>
-                </div>
-              </a>
-              <a href="#/github" class="more-module-item" data-view="github">
-                <div class="more-item-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
-                </div>
-                <div class="more-item-content">
-                  <div class="more-item-name">GitHub Skill Verification</div>
-                  <div class="more-item-desc">Verify commits against claimed resume skills</div>
-                </div>
-              </a>
-            </div>
-
-            <!-- Section 2: Practice & Preparation -->
-            <div class="more-drawer-col">
-              <div class="more-col-title">Practice &amp; Preparation</div>
-              <a href="#/interview" class="more-module-item" data-view="interview">
-                <div class="more-item-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                </div>
-                <div class="more-item-content">
-                  <div class="more-item-name">AI Mock Interview</div>
-                  <div class="more-item-desc">Adaptive 5-rubric technical &amp; behavioral simulator</div>
-                </div>
-              </a>
-              <a href="#/skills" class="more-module-item" data-view="skills">
-                <div class="more-item-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
-                </div>
-                <div class="more-item-content">
-                  <div class="more-item-name">Skill Assessment Lab</div>
-                  <div class="more-item-desc">AST code analyzer &amp; timed MCQ tests</div>
-                </div>
-              </a>
-              <a href="#/planner" class="more-module-item" data-view="planner">
-                <div class="more-item-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                </div>
-                <div class="more-item-content">
-                  <div class="more-item-name">Study Planner &amp; Streaks</div>
-                  <div class="more-item-desc">Structured 7-day milestone planner</div>
-                </div>
-              </a>
-            </div>
-
-            <!-- Section 3: Decide & Compare -->
-            <div class="more-drawer-col">
-              <div class="more-col-title">Career Benchmarks &amp; Tracking</div>
-              <a href="#/readiness" class="more-module-item" data-view="readiness">
-                <div class="more-item-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><polygon points="12 6 12 12 16 14"></polygon></svg>
-                </div>
-                <div class="more-item-content">
-                  <div class="more-item-name">Placement Readiness (PRI)</div>
-                  <div class="more-item-desc">6-pillar placement readiness index score</div>
-                </div>
-              </a>
-              <a href="#/compare" class="more-module-item" data-view="compare">
-                <div class="more-item-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 3h5v5"></path><path d="M4 20L21 3"></path><path d="M21 16v5h-5"></path><path d="M15 15l6 6"></path><path d="M4 4l5 5"></path></svg>
-                </div>
-                <div class="more-item-content">
-                  <div class="more-item-name">Role &amp; Salary Benchmark</div>
-                  <div class="more-item-desc">India tech salary ranges &amp; skill transition bridge</div>
-                </div>
-              </a>
-              <a href="#/tracker" class="more-module-item" data-view="tracker">
-                <div class="more-item-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
-                </div>
-                <div class="more-item-content">
-                  <div class="more-item-name">Application Tracker</div>
-                  <div class="more-item-desc">Kanban pipeline for your applications</div>
-                </div>
-              </a>
-            </div>
-          </div>
-
-          <!-- Drawer Footer: Profile & Session Info -->
-          <div class="more-drawer-footer">
-            <a href="#/profile" class="sidebar-user-card" id="sidebarUserCard" title="View Profile">
-              <div class="sidebar-user-avatar" id="sidebarUserAvatar">AS</div>
-              <div class="sidebar-user-info">
-                <div class="sidebar-user-name" id="sidebarUserName">Aarav Sharma</div>
-                <div class="sidebar-user-role" id="sidebarUserRole">Aspiring Data Engineer</div>
+                <button type="button" class="avatar-menu-item" id="themeToggleBtn">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                  <span>Toggle Theme</span>
+                </button>
+                <button type="button" class="avatar-menu-item" id="langToggleBtn">
+                  <span style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; width: 15px; text-align: center;">HI</span>
+                  <span>Switch to Hindi</span>
+                </button>
+                <a href="#/profile" class="avatar-menu-item">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                  <span>My Profile</span>
+                </a>
+                <div class="avatar-menu-divider"></div>
+                <button type="button" class="avatar-menu-item" id="openAuthModalBtn">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+                  <span id="authModalBtnText">Sign In</span>
+                </button>
               </div>
-              <span class="score-pill high" id="sidebarPriBadge">83%</span>
-            </a>
+            </div>
           </div>
-        </div>
-      </div>
+        </header>
 
-      <!-- ======================================================================
-           MAIN CONTENT WRAPPER
-           ====================================================================== -->
-      <div class="app-main">
-        <main id="mainContent" class="app-content">
+        <!-- Main Content Wrapper -->
+        <div class="app-main">
+          <main id="mainContent" class="app-content">
           <!-- ==================================================================
                VIEW 1: PUBLIC LANDING PAGE & FIELD GUIDE (#/landing)
                ================================================================== -->
@@ -273,9 +261,9 @@
                 High-stakes career decisions shouldn’t rely on black-box hype. CareerMatch AI breaks down your resume against live industry benchmarks with complete mathematical explainability, verifiable evidence quotes, and targeted remediation steps.
               </p>
               <div class="landing-cta-row">
-                <button type="button" class="btn btn-primary btn-lg" id="landingTryDemoBtn">
-                  Try Sample Profile (Aarav Sharma) →
-                </button>
+                <a href="#/analyzer" class="btn btn-primary btn-lg" id="landingTryDemoBtn">
+                  Analyze Your Resume →
+                </a>
                 <a href="#/analyzer" class="btn btn-secondary btn-lg">
                   Analyze Your Resume
                 </a>
@@ -287,7 +275,7 @@
               <div class="landing-preview-header">
                 <div>
                   <span class="status-badge status-matched">Sample Interactive Ledger</span>
-                  <strong style="margin-left: 8px; font-size: 0.95rem;">Aarav Sharma — Data Engineer Target</strong>
+                  <strong style="margin-left: 8px; font-size: 0.95rem;">Candidate Profile — Target Role Benchmarks</strong>
                 </div>
                 <span class="score-pill high">83.2% Placement Match</span>
               </div>
@@ -582,7 +570,7 @@
 
                 <div class="pri-hero-details">
                   <div style="display: flex; align-items: baseline; gap: 8px;">
-                    <h2 style="font-size: 1.5rem; margin: 0;" id="dashCandidateGreeting">Aarav Sharma</h2>
+                    <h2 style="font-size: 1.5rem; margin: 0;" id="dashCandidateGreeting">Candidate Overview</h2>
                     <span class="status-badge status-matched" id="ovPriTier">Tier 1: Industry Ready</span>
                   </div>
                   <p style="font-size: 0.875rem; margin: 4px 0 12px;" id="ovTargetRoleLabel">
@@ -701,11 +689,8 @@
                 <div class="card">
                   <div class="card-header">
                     <h3>1. Candidate Resume</h3>
-                    <div class="demo-pills-row">
-                      <span style="font-size: 0.75rem; color: var(--text-tertiary);">Load Demo:</span>
-                      <button type="button" class="demo-pill" id="demoAaravBtn" data-demo-index="0">Aarav (Data Eng)</button>
-                      <button type="button" class="demo-pill" id="demoPriyaBtn" data-demo-index="1">Priya (ML Eng)</button>
-                      <button type="button" class="demo-pill" id="demoRohanBtn" data-demo-index="2">Rohan (Java Dev)</button>
+                    <div style="font-size: 0.75rem; color: var(--text-tertiary);">
+                      Deterministic evidence parsing · Supports PDF, DOCX, TXT
                     </div>
                   </div>
                   <div class="card-body">
@@ -766,26 +751,82 @@
                     <div class="form-group">
                       <label class="form-label" for="targetRoleSelect">Target Job Profile</label>
                       <select id="targetRoleSelect" class="form-select">
-                        <option value="Data Engineer" selected>Data Engineer</option>
-                        <option value="Full Stack Developer">Full Stack Developer</option>
-                        <option value="DevOps Engineer">DevOps &amp; Cloud Engineer</option>
-                        <option value="AI / ML Engineer">AI &amp; Machine Learning Engineer</option>
-                        <option value="Cybersecurity Analyst">Cybersecurity Analyst</option>
-                        <option value="Frontend Specialist">Frontend Specialist</option>
+                        <option value="" disabled selected>Select a target role...</option>
+                        <optgroup label="Software Engineering">
+                          <option value="Full Stack Developer">Full Stack Developer</option>
+                          <option value="Python Backend Developer">Python Backend Developer</option>
+                          <option value="Java Developer">Java Developer</option>
+                          <option value="Go / Golang Engineer">Go / Golang Engineer</option>
+                          <option value="Frontend Engineer (React / TypeScript)">Frontend Engineer (React / TypeScript)</option>
+                          <option value=".NET Core Backend Developer">.NET Core Backend Developer</option>
+                        </optgroup>
+                        <optgroup label="Data & AI">
+                          <option value="Data Engineer">Data Engineer</option>
+                          <option value="Machine Learning Engineer">Machine Learning Engineer</option>
+                          <option value="Generative AI / LLM Engineer">Generative AI / LLM Engineer</option>
+                          <option value="Data Scientist">Data Scientist</option>
+                          <option value="Computer Vision Engineer">Computer Vision Engineer</option>
+                          <option value="NLP Engineer">NLP Engineer</option>
+                          <option value="MLOps Engineer">MLOps Engineer</option>
+                          <option value="Data Analyst & Business Intelligence Specialist">Data Analyst & BI Specialist</option>
+                          <option value="Database Administrator (DBA / Data Reliability)">Database Administrator (DBA)</option>
+                        </optgroup>
+                        <optgroup label="Cloud & DevOps">
+                          <option value="Cloud / DevOps Engineer">Cloud / DevOps Engineer</option>
+                          <option value="Site Reliability Engineer (SRE)">Site Reliability Engineer (SRE)</option>
+                          <option value="Cloud Platform Architect">Cloud Platform Architect</option>
+                          <option value="Platform & Developer Experience (DevEx) Engineer">Platform / DevEx Engineer</option>
+                        </optgroup>
+                        <optgroup label="Systems & Embedded">
+                          <option value="Embedded Systems & Firmware Engineer">Embedded Systems & Firmware Engineer</option>
+                          <option value="Rust Systems Software Engineer">Rust Systems Software Engineer</option>
+                          <option value="C++ High-Performance Systems Engineer">C++ High-Performance Systems Engineer</option>
+                        </optgroup>
+                        <optgroup label="Cyber Security">
+                          <option value="Cybersecurity Analyst">Cybersecurity Analyst</option>
+                          <option value="Application Security (AppSec) Engineer">Application Security Engineer</option>
+                          <option value="Penetration Tester / Ethical Hacker">Penetration Tester / Ethical Hacker</option>
+                          <option value="SOC Analyst / Incident Responder">SOC Analyst / Incident Responder</option>
+                        </optgroup>
+                        <optgroup label="Mobile Engineering">
+                          <option value="Android Developer (Kotlin)">Android Developer (Kotlin)</option>
+                          <option value="iOS Developer (Swift)">iOS Developer (Swift)</option>
+                          <option value="Cross-Platform Mobile Developer (Flutter / React Native)">Cross-Platform Mobile (Flutter / React Native)</option>
+                        </optgroup>
+                        <optgroup label="Quality Assurance">
+                          <option value="Software Development Engineer in Test (SDET)">SDET (Software Dev Engineer in Test)</option>
+                          <option value="QA Automation Engineer">QA Automation Engineer</option>
+                          <option value="Performance & Load Testing Engineer">Performance & Load Testing Engineer</option>
+                        </optgroup>
+                        <optgroup label="Product & Design">
+                          <option value="Technical Product Manager">Technical Product Manager</option>
+                          <option value="UI/UX Product Designer">UI/UX Product Designer</option>
+                          <option value="Solutions Architect">Solutions Architect</option>
+                        </optgroup>
+                        <optgroup label="Emerging Tech">
+                          <option value="Blockchain / Web3 Developer">Blockchain / Web3 Developer</option>
+                          <option value="Robotics Software Engineer">Robotics Software Engineer</option>
+                        </optgroup>
+                        <optgroup label="Custom">
+                          <option value="Other">Other (Custom Role)...</option>
+                        </optgroup>
                       </select>
+                    </div>
+
+                    <div class="form-group" id="customRoleInputContainer" style="display: none;">
+                      <label class="form-label" for="customRoleInput">Custom Role Title</label>
+                      <input type="text" id="customRoleInput" class="form-input" placeholder="e.g. Distributed Systems Engineer" />
                     </div>
 
                     <div class="form-group">
                       <label class="form-label" for="goalCompanyInput">Target Company Name</label>
-                      <input type="text" id="goalCompanyInput" class="form-input" value="NexusCloud Commerce India" />
+                      <input type="text" id="goalCompanyInput" class="form-input" value="" placeholder="e.g. Infosys, TCS, Google, Startup" />
                     </div>
 
                     <div class="form-group">
                       <div style="display: flex; justify-content: space-between; align-items: baseline;">
                         <label class="form-label" for="customJdInput">Job Description (JD)</label>
-                        <button type="button" class="btn btn-ghost btn-sm" id="loadSampleJdBtn" style="font-size: 0.75rem;">
-                          Load Sample JD
-                        </button>
+                        
                       </div>
                       <textarea id="customJdInput" class="form-textarea" placeholder="Paste custom JD or use standard benchmark requirements..." rows="6"></textarea>
                     </div>
@@ -1728,11 +1769,11 @@
                   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);">
                     <div class="form-group">
                       <label class="form-label" for="profFullName">Full Name</label>
-                      <input type="text" id="profFullName" class="form-input" value="Aarav Sharma" />
+                      <input type="text" id="profFullName" class="form-input" value="" placeholder="Enter your full name" />
                     </div>
                     <div class="form-group">
                       <label class="form-label" for="profEmail">Email Address</label>
-                      <input type="email" id="profEmail" class="form-input" value="aarav.sharma@example.com" />
+                      <input type="email" id="profEmail" class="form-input" value="" placeholder="Enter your email" />
                     </div>
                     <div class="form-group">
                       <label class="form-label" for="profDegree">Degree / Stream</label>
@@ -1759,7 +1800,7 @@
 
                   <div class="form-group">
                     <label class="form-label" for="profGithub">GitHub Profile URL or Username</label>
-                    <input type="text" id="profGithub" class="form-input" value="aarav-sharma-dev" />
+                    <input type="text" id="profGithub" class="form-input" value="" placeholder="Enter your GitHub username" />
                   </div>
 
                   <div style="margin-top: var(--space-3);">
@@ -1786,62 +1827,66 @@
             </div>
           </section>
 
-          <!-- Hidden carrier toolkit legacy container for selector compatibility -->
-          <div id="careerToolkitSection" style="display: none;">
-            <div id="toolkitNoResumeBanner"></div>
-            <div id="view-overview"></div>
-          </div>
+          <!-- ==================================================================
+               VIEW 16: 404 NOT FOUND VIEW (#/404)
+               ================================================================== -->
+          <section id="view-404" class="view-panel" hidden>
+            <div class="card" style="text-align: center; padding: clamp(32px, 5vw, 64px); max-width: 600px; margin: 40px auto;">
+              <div style="font-family: var(--font-mono); font-size: 3.5rem; font-weight: 700; color: var(--brand-accent); line-height: 1; margin-bottom: 12px;">404</div>
+              <h2 style="font-family: var(--font-display); font-size: 1.5rem; margin: 0 0 8px; color: var(--text-primary);">View Not Found</h2>
+              <p style="color: var(--text-secondary); margin: 0 0 24px; font-size: 0.95rem; line-height: 1.6;">
+                The career tool, module, or report view you requested does not exist or has moved. Choose a destination below to continue.
+              </p>
+              <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                <a href="#/landing" class="btn btn-secondary">Field Guide</a>
+                <a href="#/dashboard" class="btn btn-primary">Go to Dashboard</a>
+                <a href="#/analyzer" class="btn btn-secondary">Resume Analyzer</a>
+              </div>
+            </div>
+          </section>
         </main>
-      </div>
 
-      <!-- ======================================================================
-           MOBILE BOTTOM NAVIGATION BAR (<768px)
-           ====================================================================== -->
-      <nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
-        <a href="#/dashboard" class="mobile-nav-item active" data-view="dashboard">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="7" height="9"></rect>
-            <rect x="14" y="3" width="7" height="5"></rect>
-            <rect x="14" y="12" width="7" height="9"></rect>
-            <rect x="3" y="16" width="7" height="5"></rect>
-          </svg>
-          <span>Home</span>
-        </a>
-        <a href="#/analyzer" class="mobile-nav-item" data-view="analyzer">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-          </svg>
-          <span>Analyzer</span>
-        </a>
-        <a href="#/report" class="mobile-nav-item" data-view="report">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
-          </svg>
-          <span>Report</span>
-        </a>
-        <a href="#/tracker" class="mobile-nav-item" data-view="tracker">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="18" height="18" rx="2"></rect>
-            <line x1="9" y1="3" x2="9" y2="21"></line>
-            <line x1="15" y1="3" x2="15" y2="21"></line>
-          </svg>
-          <span>Tracker</span>
-        </a>
-        <button type="button" class="mobile-nav-item" id="mobileMoreTrigger" aria-label="More navigation items">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="1"></circle>
-            <circle cx="19" cy="12" r="1"></circle>
-            <circle cx="5" cy="12" r="1"></circle>
-          </svg>
-          <span>More</span>
-        </button>
-      </nav>
-    </div>
+        <!-- ======================================================================
+             MOBILE 4-ITEM BOTTOM NAVIGATION BAR (<768px)
+             ====================================================================== -->
+        <nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
+          <a href="#/dashboard" class="mobile-nav-item active" data-view="dashboard">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="9"></rect>
+              <rect x="14" y="3" width="7" height="5"></rect>
+              <rect x="14" y="12" width="7" height="9"></rect>
+              <rect x="3" y="16" width="7" height="5"></rect>
+            </svg>
+            <span>Dashboard</span>
+          </a>
+          <a href="#/analyzer" class="mobile-nav-item" data-view="analyzer">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <span>Analyzer</span>
+          </a>
+          <a href="#/roadmap" class="mobile-nav-item" data-view="roadmap">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="1" 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+            </svg>
+            <span>Roadmap</span>
+          </a>
+          <button type="button" class="mobile-nav-item" id="mobileMoreBtn" aria-label="Open Navigation Drawer" style="background: none; border: none; cursor: pointer;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="4" y1="6" x2="20" y2="6"></line>
+              <line x1="4" y1="12" x2="20" y2="12"></line>
+              <line x1="4" y1="18" x2="20" y2="18"></line>
+            </svg>
+            <span>More</span>
+          </button>
+        </nav>
+      </div><!-- /.app-main -->
+    </div><!-- /.app-main-wrapper -->
+  </div><!-- /.app-shell -->
 
     <!-- ======================================================================
-         AUTH / REGISTER / DEMO LOGIN MODAL
+         AUTH / REGISTER / SESSION MODAL
          ====================================================================== -->
     <div class="modal-backdrop hidden" id="authModalBackdrop" style="display: none;">
       <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="authModalHeading">
@@ -1853,7 +1898,7 @@
           <div class="segmented-nav" style="margin-bottom: var(--space-2);">
             <button type="button" class="tab-btn active" id="tabLoginBtn">Sign In</button>
             <button type="button" class="tab-btn" id="tabRegisterBtn">Register</button>
-            <button type="button" class="tab-btn" id="tabDemoQuickBtn">1-Click Demo</button>
+            
           </div>
 
           <form id="authModalForm" onsubmit="return false;">

@@ -25,6 +25,7 @@ import json
 import mimetypes
 import os
 import traceback
+from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any, Dict, List, Optional
 from urllib.parse import parse_qs, urlparse
@@ -55,7 +56,11 @@ from backend.career_modules import (
     update_student_profile,
 )
 from backend.config import PORT as DEFAULT_PORT, ROOT_DIR
+from backend.roles_catalog import get_roles_catalog, get_roles_by_category
 from backend.database import (
+    check_and_increment_ai_usage,
+    get_ai_usage,
+    get_connection,
     delete_analysis_record,
     get_analysis_by_id,
     get_dashboard_metrics,
@@ -104,26 +109,87 @@ seed_initial_sqlite_data()
 # CORE CONTROLLER LOGIC (Shared by FastAPI routes & Fallback Runner)
 # ============================================================================
 
-def handle_bootstrap(user_id: Optional[str] = None) -> Dict[str, Any]:
-    sample_jd_path = os.path.join(ROOT_DIR, "samples", "sample_jd_data_engineer.txt")
-    sample_jd = ""
-    if os.path.isfile(sample_jd_path):
-        try:
-            with open(sample_jd_path, "r", encoding="utf-8") as f:
-                sample_jd = f.read()
-        except Exception:
-            sample_jd = ""
+def handle_health_check() -> tuple[Dict[str, Any], int]:
+    db_ok = False
+    engine = "sqlite"
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1;")
+        res = cursor.fetchone()
+        db_ok = bool(res)
+        engine = "postgresql" if hasattr(conn, "_conn") else "sqlite"
+        conn.close()
+    except Exception:
+        db_ok = False
+    status_code = 200 if db_ok else 503
+    return {
+        "status": "healthy" if db_ok else "unhealthy",
+        "database": "connected" if db_ok else "disconnected",
+        "engine": engine,
+        "version": "1.0.0",
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+    }, status_code
 
+
+def handle_ask_ai_payload(body: Dict[str, Any], user_id: str, is_auth: bool) -> tuple[Dict[str, Any], int]:
+    question = sanitize_plain_text(body.get("question", ""), 1000).strip()
+    if not question:
+        return {"detail": "Question text is required."}, 400
+
+    allowed, remaining, limit, reset_at = check_and_increment_ai_usage(user_id, is_auth)
+    if not allowed:
+        return {
+            "detail": f"Daily AI query limit reached ({limit}/{limit}). Limit resets at midnight UTC.",
+            "limit": limit,
+            "remaining": 0,
+            "resetAt": reset_at,
+        }, 429
+
+    resume = body.get("resume") or {}
+    skills = resume.get("technicalSkills", [])
+    target_role = sanitize_short_field(body.get("targetRole", "Software Engineer"), 80)
+    current_view = sanitize_short_field(body.get("currentView", "dashboard"), 40)
+
+    prompt = (
+        f"You are the CareerMatch AI Advisor. Provide concise, expert, practical career advice for Indian engineers.\n"
+        f"Context:\n"
+        f"- Target Role: {target_role}\n"
+        f"- Candidate Technical Skills: {', '.join(skills[:12]) if skills else 'None uploaded yet'}\n"
+        f"- Current Context View: {current_view}\n\n"
+        f"User Question: {question}\n\n"
+        f"Answer in 2-3 focused, actionable paragraphs with bullet points where helpful. Be encouraging, honest, and specific to tech hiring standards in India and remote."
+    )
+
+    try:
+        from backend.ai_service import _call_gemini_text
+        answer = _call_gemini_text(prompt)
+    except Exception:
+        answer = (
+            f"Here is strategic advice for **{target_role}**:\n\n"
+            f"1. **Core Competencies**: Focus on fundamental system design, SQL query profiling, and clean architecture.\n"
+            f"2. **ATS Impact**: Quantify accomplishments in your resume bullets using measurable impact (e.g. latency reduced by 30%, query speed improved 2x).\n"
+            f"3. **Proof of Work**: Back your claims with working GitHub repositories containing clean tests and documentation."
+        )
+
+    return {
+        "answer": answer,
+        "remaining": remaining,
+        "limit": limit,
+        "resetAt": reset_at,
+    }, 200
+
+def handle_bootstrap(user_id: Optional[str] = None) -> Dict[str, Any]:
     student_profile = get_student_profile(user_id) if user_id else None
     active_resume_id = student_profile.get("activeResumeId") if student_profile else None
 
     return {
         "dashboard": get_dashboard_metrics(active_resume_id),
         "roles": ROLE_TEMPLATES,
-        "demos": SAMPLE_RESUMES,
+        "demos": [],
         "defaultWeights": DEFAULT_WEIGHTS,
         "defaultPriWeights": DEFAULT_PRI_WEIGHTS,
-        "sampleJdText": sample_jd,
+        "sampleJdText": "",
         "studentProfile": student_profile,
     }
 
@@ -386,8 +452,40 @@ try:
         return response
 
     @app.get("/api/health")
-    async def api_health() -> Dict[str, str]:
-        return {"status": "ok", "version": "1.0.0", "stack": "CareerMatch AI (Python + Relational DB + Google Gemini)"}
+    async def api_health() -> Any:
+        res, code = handle_health_check()
+        return JSONResponse(res, status_code=code)
+
+    @app.get("/api/roles")
+    async def api_roles() -> Dict[str, Any]:
+        return {"roles": get_roles_catalog(), "categories": get_roles_by_category()}
+
+    @app.get("/api/ai/usage")
+    async def api_ai_usage(request: Request) -> Dict[str, Any]:
+        uid = None
+        auth_hdr = request.headers.get("Authorization")
+        if auth_hdr:
+            try:
+                uid = _extract_user_id_from_auth_header(auth_hdr)
+            except Exception:
+                uid = None
+        return get_ai_usage(uid or "guest", bool(uid))
+
+    @app.post("/api/ai/ask")
+    async def api_ai_ask(request: Request) -> Any:
+        uid = None
+        auth_hdr = request.headers.get("Authorization")
+        if auth_hdr:
+            try:
+                uid = _extract_user_id_from_auth_header(auth_hdr)
+            except Exception:
+                uid = None
+        try:
+            body = await request.json()
+        except Exception:
+            body = {}
+        res, code = handle_ask_ai_payload(body, uid or "guest", bool(uid))
+        return JSONResponse(res, status_code=code)
 
     @app.get("/api/bootstrap")
     async def api_bootstrap(request: Request) -> Dict[str, Any]:
@@ -675,7 +773,21 @@ class CareerMatchHTTPHandler(BaseHTTPRequestHandler):
                     return
 
         if path == "/api/health":
-            self._send_json({"status": "ok", "version": "1.0.0", "stack": "CareerMatch AI"})
+            res, code = handle_health_check()
+            self._send_json(res, code)
+            return
+        if path == "/api/roles":
+            self._send_json({"roles": get_roles_catalog(), "categories": get_roles_by_category()})
+            return
+        if path == "/api/ai/usage":
+            uid = None
+            auth_hdr = self.headers.get("Authorization")
+            if auth_hdr:
+                try:
+                    uid = _extract_user_id_from_auth_header(auth_hdr)
+                except Exception:
+                    uid = None
+            self._send_json(get_ai_usage(uid or "guest", bool(uid)))
             return
         if path == "/api/bootstrap":
             try:
@@ -740,12 +852,24 @@ class CareerMatchHTTPHandler(BaseHTTPRequestHandler):
                 auth_hdr = self.headers.get("Authorization")
                 if auth_hdr and auth_hdr.strip():
                     _extract_user_id_from_auth_header(auth_hdr)
-            body = self._read_json_body()
+                body = self._read_json_body()
             if path == "/api/resume/parse":
                 self._send_json(handle_parse_resume_payload(body))
                 return
             if path == "/api/analyze":
                 self._send_json(handle_analyze_payload(body))
+                return
+            if path == "/api/ai/ask":
+                uid = None
+                auth_hdr = self.headers.get("Authorization")
+                if auth_hdr:
+                    try:
+                        uid = _extract_user_id_from_auth_header(auth_hdr)
+                    except Exception:
+                        uid = None
+                body = self._read_json_body()
+                res, code = handle_ask_ai_payload(body, uid or "guest", bool(uid))
+                self._send_json(res, code)
                 return
             if path == "/api/auth/register":
                 self._send_json(register_user(body))

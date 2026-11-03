@@ -16,8 +16,8 @@ if ROOT_DIR not in sys.path:
 from backend.matching_engine import match_resume_to_job, parse_jd_requirements_by_headings, resolve_job_profile  # noqa: E402
 from backend.resume_parser import parse_resume_text_to_profile  # noqa: E402
 
-SAMPLE_RESUME_PATH = os.path.join(ROOT_DIR, "samples", "sample_resume_aarav_sharma.txt")
-SAMPLE_JD_PATH = os.path.join(ROOT_DIR, "samples", "sample_jd_data_engineer.txt")
+SAMPLE_RESUME_PATH = os.path.join(ROOT_DIR, "tests", "fixtures", "test_resume.txt")
+SAMPLE_JD_PATH = os.path.join(ROOT_DIR, "tests", "fixtures", "test_jd.txt")
 
 
 def test_sample_resume_and_jd_mandatory_skills() -> None:

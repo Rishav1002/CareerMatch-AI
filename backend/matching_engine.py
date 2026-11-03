@@ -15,6 +15,7 @@ import os
 import re
 from typing import Any, Dict, List, Optional
 
+from backend.roles_catalog import ROLES_CATALOG
 from backend.ai_service import extract_jd_requirements_with_gemini
 from backend.resume_parser import (
     KNOWN_SKILLS_CATALOG,
@@ -441,10 +442,26 @@ def resolve_job_profile(
     Return a JobRoleProfile from either a custom JD (using Gemini response_schema
     with fallback to whole-word + heading parsing) or one of the 8 role templates.
     """
-    base = next(
-        (r for r in ROLE_TEMPLATES if r["title"].lower() == role_title.lower()),
-        ROLE_TEMPLATES[0],
-    ).copy()
+    match_role = next(
+        (r for r in ROLES_CATALOG if r["title"].lower() == role_title.lower()),
+        None
+    )
+    if match_role:
+        base = {
+            "id": match_role["id"],
+            "title": match_role["title"],
+            "companyName": "Industry Role Benchmark",
+            "mandatorySkills": list(match_role["mandatorySkills"]),
+            "preferredSkills": list(match_role["preferredSkills"]),
+            "optionalSkills": [],
+            "softSkills": list(match_role["softSkills"]),
+            "educationRequired": "B.Tech / B.E. / Equivalent practical software portfolio",
+        }
+    else:
+        base = next(
+            (r for r in ROLE_TEMPLATES if r["title"].lower() == role_title.lower()),
+            ROLE_TEMPLATES[0],
+        ).copy()
     base.setdefault("optionalSkills", [])
     base["requirementQuotes"] = {}
     base["extractionSource"] = "template"

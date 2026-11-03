@@ -186,9 +186,9 @@ hr {
    ========================================================================== */
 @media print {
   body {
-    background: #FFF !important;
+    background: var(--bg-card, #FFFFFF) !important;
     background-image: none !important;
-    color: #111 !important;
+    color: var(--text-primary, #111111) !important;
     font-size: 11pt;
   }
 
@@ -210,7 +210,7 @@ hr {
   }
 
   .card, .ledger-table, .report-section {
-    border: 1px solid #CCC !important;
+    border: 1px solid var(--border-medium, #CCCCCC) !important;
     box-shadow: none !important;
     break-inside: avoid;
     margin-bottom: 16pt;
@@ -219,6 +219,6 @@ hr {
   a[href]::after {
     content: " (" attr(href) ")";
     font-size: 80%;
-    color: #555;
+    color: var(--text-secondary, #555555);
   }
 }

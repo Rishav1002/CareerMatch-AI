@@ -1,4 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
-  <rect width="192" height="192" rx="24" fill="#B84D2B"/>
-  <text x="96" y="125" font-family="monospace" font-size="96" font-weight="700" fill="#FBF9F5" text-anchor="middle">CM</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192" fill="none">
+  <rect width="192" height="192" rx="36" fill="#B84D2B" />
+  <g transform="translate(36, 36) scale(5)">
+    <polygon points="12 2 22 12 12 22 2 12" stroke="#FFFFFF" stroke-width="2" />
+    <path d="M7 12h10" stroke="#FFFFFF" stroke-width="2" />
+    <path d="M12 7v10" stroke="#FFFFFF" stroke-width="2" />
+    <circle cx="12" cy="12" r="2.5" fill="#FFFFFF" />
+  </g>
 </svg>
