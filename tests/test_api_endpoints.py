@@ -2,6 +2,13 @@
 Tests for Core API Endpoints: Roles Catalog, Health Check, and AI Limiter.
 """
 
+import os
+import sys
+
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
+
 from backend.main import handle_health_check, handle_ask_ai_payload
 from backend.roles_catalog import get_roles_catalog, get_roles_by_category
 from backend.database import get_ai_usage, check_and_increment_ai_usage
