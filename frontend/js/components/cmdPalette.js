@@ -27,14 +27,13 @@ const COMMAND_ITEMS = [
 
   // Quick Actions
   {
-    id: "act-demo",
-    label: "Load Sample Aarav Sharma (Data Engineer Demo)",
+    id: "act-new-analysis",
+    label: "Start New Resume Analysis",
     tag: "Action",
     action: () => {
-      if (window.selectDemoResume) {
-        window.selectDemoResume(0, true);
-      }
       router.navigate("analyzer");
+      const dropzone = document.getElementById("uploadDropZone");
+      if (dropzone) dropzone.focus();
     },
   },
   {

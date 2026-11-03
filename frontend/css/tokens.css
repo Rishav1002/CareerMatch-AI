@@ -80,6 +80,7 @@
   --text-h2: clamp(1.25rem, 1.4vw + 0.7rem, 1.65rem);
   --text-h3: clamp(1.05rem, 0.8vw + 0.6rem, 1.25rem);
   --text-h4: 1rem;
+  --text-body-lg: 1.0625rem;    /* 17px */
   --text-body: 0.9375rem;       /* 15px */
   --text-sm: 0.8125rem;         /* 13px */
   --text-xs: 0.75rem;           /* 12px */
@@ -88,6 +89,11 @@
   --lh-heading: 1.25;
   --lh-body: 1.55;
   --lh-relaxed: 1.7;
+
+  /* Line-height aliases */
+  --leading-tight: 1.15;
+  --leading-snug: 1.25;
+  --leading-normal: 1.55;
 
   /* ==========================================================================
      SPACING SYSTEM (Based on 8px grid with 4px half-steps)

@@ -28,8 +28,8 @@ class Store {
       sidebarCollapsed: false,
       parsedResume: null,
       rawResumeText: "",
-      targetRole: "Data Engineer",
-      goalCompany: "NexusCloud Commerce India",
+      targetRole: "Full Stack Developer",
+      goalCompany: "",
       analysisResult: null,
       atsResult: null,
       roadmapData: null,
@@ -41,10 +41,10 @@ class Store {
       trackerJobs: this._getStoredJson(STORAGE_KEYS.TRACKER, []),
       plannerTasks: this._getStoredJson(STORAGE_KEYS.PLANNER, []),
       resumeHistory: this._getStoredJson(STORAGE_KEYS.HISTORY, []),
-      streak: this._getStoredJson(STORAGE_KEYS.STREAK, { current: 3, lastDate: new Date().toISOString().split("T")[0] }),
+      streak: this._getStoredJson(STORAGE_KEYS.STREAK, { current: 1, lastDate: new Date().toISOString().split("T")[0] }),
       notifications: this._getStoredJson(STORAGE_KEYS.NOTIFICATIONS, [
-        { id: 1, title: "Welcome to CareerMatch AI", desc: "Start by analyzing your resume or testing the demo profile.", time: "Just now", unread: true },
-        { id: 2, title: "3-Day Study Streak Active", desc: "Complete 1 roadmap milestone today to maintain your streak.", time: "2h ago", unread: true },
+        { id: 1, title: "Welcome to CareerMatch AI", desc: "Start by analyzing your resume against live industry benchmarks.", time: "Just now", unread: true },
+        { id: 2, title: "Career Match Ready", desc: "Select your target role and upload your resume to discover placement readiness.", time: "Just now", unread: true },
       ]),
     };
   }

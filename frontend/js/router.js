@@ -350,11 +350,13 @@ export class Router {
       console.warn(`[Router] View panel #${route.panelId} not found in DOM`);
     }
 
-    // Auto-close More Tools drawer or modal sheets if open
-    const moreBackdrop = document.getElementById("moreToolsBackdrop");
-    const moreBtn = document.getElementById("moreToolsBtn");
-    if (moreBackdrop) moreBackdrop.style.display = "none";
-    if (moreBtn) moreBtn.setAttribute("aria-expanded", "false");
+    // Auto-close mobile rail drawer if open
+    const rail = document.getElementById("appRail");
+    const railBackdrop = document.getElementById("railBackdrop");
+    if (rail && window.innerWidth <= 768) {
+      rail.classList.remove("open");
+      railBackdrop?.classList.remove("open");
+    }
 
     // Sync active state on navigation links across shell
     document.querySelectorAll(".topbar-nav-link, .more-module-item, .nav-link, .mobile-nav-item, .rail-nav-link").forEach((link) => {

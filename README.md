@@ -2,11 +2,24 @@
 
 > Explainable career-readiness intelligence, deterministic skill verification, and placement benchmarking platform for engineering students and early-career software professionals.
 
+<div align="center">
+
+[![Live Application](https://img.shields.io/badge/🌐%20Live%20App-carrermatch--ai.onrender.com-46E3B7?style=for-the-badge&logo=render&logoColor=black)](https://carrermatch-ai.onrender.com)
+[![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Rishav1002/CarrerMatch)
+
+<br/>
+
 [![Python 3.12.8](https://img.shields.io/badge/Python-3.12.8-3776AB?logo=python&logoColor=white)](.python-version)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115.6-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![PostgreSQL / Neon](https://img.shields.io/badge/Database-PostgreSQL%20%2F%20Neon-336791?logo=postgresql&logoColor=white)](https://neon.tech/)
 [![WCAG 2.1 AA](https://img.shields.io/badge/Accessibility-WCAG%202.1%20AA%20Compliant-success)](#design-system--accessibility)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+<br/>
+
+👉 **[🚀 Launch CareerMatch AI Live in Browser →](https://carrermatch-ai.onrender.com)** 👈
+
+</div>
 
 ---
 
@@ -95,7 +108,7 @@ Set the following variables in your **Render Web Service** dashboard:
 | `GEMINI_API_KEY` | Google Gemini API Key for grounded LLM coaching | `AIzaSy...` |
 | `JWT_SECRET` | Secret key for signing student JWT auth tokens | Any secure 64-char string |
 | `APP_ENV` | Application environment flag | `production` |
-| `CORS_ORIGINS` | Allowed CORS origins (comma-separated) | `https://careermatch-ai.onrender.com` |
+| `CORS_ORIGINS` | Allowed CORS origins (comma-separated) | `https://carrermatch-ai.onrender.com` |
 | `ADZUNA_APP_ID` | *(Optional)* Adzuna Job Market App ID | Custom API ID |
 | `ADZUNA_APP_KEY` | *(Optional)* Adzuna Job Market API Key | Custom API Key |
 

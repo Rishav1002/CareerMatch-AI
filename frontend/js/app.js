@@ -259,20 +259,6 @@ function initNavigationAndTheme() {
       switchProfileSubTab(btn.getAttribute("data-profile-tab"));
     });
   });
-
-  const themeBtn = document.getElementById("themeToggleBtn");
-  if (themeBtn) {
-    const savedTheme = localStorage.getItem("cm_theme") || "dark";
-    if (savedTheme === "light") {
-      document.body.classList.add("theme-light");
-      themeBtn.textContent = "Dark Theme";
-    }
-    themeBtn.addEventListener("click", () => {
-      const isLight = document.body.classList.toggle("theme-light");
-      localStorage.setItem("cm_theme", isLight ? "light" : "dark");
-      themeBtn.textContent = isLight ? "Dark Theme" : "Light Theme";
-    });
-  }
 }
 
 // ============================================================================
@@ -1715,11 +1701,8 @@ function initCareerMatch2Listeners() {
       closeAuthModal();
     }
   });
-  document.getElementById("switchDemoAccountBtn")?.addEventListener("click", handleDemoLogin);
-
   document.getElementById("tabLoginBtn")?.addEventListener("click", () => setAuthModalMode("login"));
   document.getElementById("tabRegisterBtn")?.addEventListener("click", () => setAuthModalMode("register"));
-  document.getElementById("tabDemoQuickBtn")?.addEventListener("click", handleDemoLogin);
   document.getElementById("submitAuthFormBtn")?.addEventListener("click", submitAuthModalForm);
 }
 
@@ -1740,7 +1723,7 @@ async function loadJobMarketIntelligence(showNotif = false) {
       headers: authHeaders(),
       body: JSON.stringify({
         resume: state.activeResume,
-        resumeId: state.activeResume?.id || "demo-aarav-sharma",
+        resumeId: state.activeResume?.id || "",
         roleFilter,
         workModeFilter,
         locationFilter,
@@ -2014,7 +1997,7 @@ async function startNewInterviewSession() {
       headers: authHeaders(),
       body: JSON.stringify({
         resume: state.activeResume,
-        resumeId: state.activeResume?.id || "demo-aarav-sharma",
+        resumeId: state.activeResume?.id || "",
         targetRole,
         goalCompany,
         interviewRound,
@@ -2188,7 +2171,7 @@ function toggleWebSpeechVoiceInput() {
 
 async function loadInterviewHistory() {
   try {
-    const resId = state.activeResume?.id || "demo-aarav-sharma";
+    const resId = state.activeResume?.id || "";
     const res = await fetch(`/api/interview/history?resumeId=${encodeURIComponent(resId)}`, {
       headers: authHeaders(),
     });
@@ -2578,7 +2561,7 @@ async function loadSkillAssessment(showNotif = false) {
       body: JSON.stringify({
         topic,
         difficulty,
-        resumeId: state.activeResume?.id || "demo-aarav-sharma",
+        resumeId: state.activeResume?.id || "",
       }),
     });
     const data = await res.json();
@@ -2699,7 +2682,7 @@ async function submitActiveSkillAssessment() {
 
 async function loadAssessmentHistory() {
   try {
-    const resId = state.activeResume?.id || "demo-aarav-sharma";
+    const resId = state.activeResume?.id || "";
     const res = await fetch(`/api/assessment/history?resumeId=${encodeURIComponent(resId)}`, {
       headers: authHeaders(),
     });
@@ -2745,7 +2728,7 @@ async function loadCareerComparison(showNotif = false) {
       headers: authHeaders(),
       body: JSON.stringify({
         resume: state.activeResume,
-        resumeId: state.activeResume?.id || "demo-aarav-sharma",
+        resumeId: state.activeResume?.id || "",
         primaryRole,
         secondaryRole,
       }),
@@ -3110,7 +3093,7 @@ async function handleDemoLogin() {
     if (state.demos.length > 0) {
       selectDemoResume(0, true);
     }
-    showToast("Switched to Demo Student Profile (Aarav Sharma)");
+    showToast("Signed in as Demo Student");
   } catch (err) {
     showToast(err.message);
   }
