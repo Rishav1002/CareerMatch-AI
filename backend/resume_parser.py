@@ -23,6 +23,14 @@ from typing import Any, Dict, List
 logger = logging.getLogger(__name__)
 
 try:
+    import pymupdf as fitz  # type: ignore
+except ImportError:
+    try:
+        import fitz  # type: ignore
+    except ImportError:
+        fitz = None
+
+try:
     from pypdf import PdfReader  # type: ignore
 except ImportError:
     PdfReader = None

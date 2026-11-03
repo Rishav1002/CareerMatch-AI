@@ -14,7 +14,6 @@ def _ensure_dependencies() -> None:
     """Ensure pip3 and requirements.txt packages are available in fresh container environments."""
     try:
         import fastapi  # noqa: F401
-        import pypdf  # noqa: F401
         import uvicorn  # noqa: F401
         return
     except ImportError:
@@ -30,11 +29,14 @@ def _ensure_dependencies() -> None:
 
     req_file = Path(__file__).resolve().parent / "requirements.txt"
     if req_file.exists():
-        pip_cmd = shutil.which("pip3") or shutil.which("pip")
-        if pip_cmd:
-            subprocess.run([pip_cmd, "install", "-r", str(req_file)], check=True)
-        else:
-            subprocess.run([sys.executable, "-m", "pip", "install", "-r", str(req_file)], check=True)
+        try:
+            pip_cmd = shutil.which("pip3") or shutil.which("pip")
+            if pip_cmd:
+                subprocess.run([pip_cmd, "install", "-r", str(req_file)], check=True)
+            else:
+                subprocess.run([sys.executable, "-m", "pip", "install", "-r", str(req_file)], check=True)
+        except Exception as exc:
+            print(f"Notice: dependency install skipped ({exc}). Starting server with available modules.", file=sys.stderr)
 
 
 _ensure_dependencies()

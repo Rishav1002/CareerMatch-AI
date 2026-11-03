@@ -67,12 +67,18 @@ function authHeaders() {
   return h;
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+function startApp() {
   initNavigationAndTheme();
   initEventListeners();
   initCareerMatch2Listeners();
   bootstrapApplication();
-});
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", startApp);
+} else {
+  startApp();
+}
 
 function normalizeCourse(raw) {
   const c = raw || {};
@@ -149,6 +155,25 @@ function switchReportTab(tabId) {
 
 function switchWorkspaceView(viewName, scrollToToolkit = false) {
   if (!viewName) return;
+
+  if (window.__careermatch && window.__careermatch.router) {
+    const routeMap = {
+      match: "analyzer",
+      resume: "ats",
+      practice: "interview",
+      proof: "github",
+      pri: "readiness",
+      overview: "dashboard",
+      account: "profile",
+      career: "compare",
+      jobs: "market",
+      assessment: "skills",
+    };
+    const targetRoute = routeMap[viewName] || viewName;
+    if (window.location.hash !== `#/${targetRoute}`) {
+      window.__careermatch.router.navigate(targetRoute);
+    }
+  }
 
   if (viewName === "analyzer" || viewName === "match") {
     document.getElementById("analyzer")?.scrollIntoView({ behavior: "smooth" });
@@ -387,7 +412,7 @@ function initEventListeners() {
   document.querySelectorAll("[data-demo-index]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const idx = parseInt(btn.getAttribute("data-demo-index"), 10);
-      document.querySelectorAll(".demo-btn[data-demo-index]").forEach((b) => {
+      document.querySelectorAll("[data-demo-index]").forEach((b) => {
         b.classList.toggle("active", parseInt(b.getAttribute("data-demo-index"), 10) === idx);
       });
       selectDemoResume(idx, true);
@@ -452,11 +477,23 @@ function initEventListeners() {
   const dropZone = document.getElementById("uploadDropZone");
   if (fileInput) {
     fileInput.addEventListener("change", (e) => {
-      const file = e.target.files[0];
+      const file = e.target.files && e.target.files[0];
       if (file) handleFileUpload(file);
+    });
+    fileInput.addEventListener("click", (e) => {
+      e.stopPropagation();
     });
   }
   if (dropZone) {
+    dropZone.addEventListener("click", () => {
+      if (fileInput) fileInput.click();
+    });
+    dropZone.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        if (fileInput) fileInput.click();
+      }
+    });
     dropZone.addEventListener("dragover", (e) => {
       e.preventDefault();
       dropZone.classList.add("dragover");
@@ -467,7 +504,7 @@ function initEventListeners() {
     dropZone.addEventListener("drop", (e) => {
       e.preventDefault();
       dropZone.classList.remove("dragover");
-      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
         handleFileUpload(e.dataTransfer.files[0]);
       }
     });
@@ -665,6 +702,8 @@ function selectDemoResume(index, triggerAnalysis = false) {
 
 async function handleFileUpload(file) {
   const statusEl = document.getElementById("uploadStatusText");
+  const fileInput = document.getElementById("resumeFileInput");
+  if (fileInput) fileInput.value = "";
   if (statusEl) statusEl.textContent = `Parsing ${file.name}...`;
   hideErrorBanner();
 
@@ -687,7 +726,7 @@ async function handleFileUpload(file) {
     updateAnalyzerMiniCards();
     if (data.dashboard) renderDashboardMetrics(data.dashboard);
     if (statusEl) statusEl.textContent = `Parsed: ${file.name}`;
-    showToast(`Parsed ${file.name} (${state.activeResume.technicalSkills.length} skills detected)`);
+    showToast(`Parsed ${file.name} (${(state.activeResume.technicalSkills || []).length} skills detected)`);
     await runFullAnalysis(false);
   } catch (err) {
     if (statusEl) statusEl.textContent = "Click to upload or drag & drop";
@@ -739,28 +778,51 @@ function readFileAsDataURL(file) {
 
 function renderParsedResumePreview(resume) {
   if (!resume) return;
-  document.getElementById("parsedCandidateName").textContent = resume.contact?.name || "Candidate";
+
+  const nameEl = document.getElementById("parsedCandidateName");
+  if (nameEl) {
+    nameEl.textContent = resume.contact?.name || "Candidate";
+  }
+
+  const degreeEl = document.getElementById("parsedResumeDegree");
   const edu = resume.education?.[0];
-  document.getElementById("parsedResumeMeta").textContent = edu
-    ? `${edu.degree} · ${edu.institution}`
+  const degreeText = edu
+    ? `${edu.degree || "Degree"} · ${edu.institution || "Institution"}`
     : resume.summary || "Resume Profile";
+  if (degreeEl) {
+    degreeEl.textContent = degreeText;
+  }
 
   const skills = resume.technicalSkills || [];
-  document.getElementById("parsedSkillsCountBadge").textContent = `${skills.length} Skills`;
+  const countBadge = document.getElementById("parsedSkillsCountBadge");
+  if (countBadge) {
+    countBadge.textContent = `${skills.length} Skills Found`;
+  }
 
   const badgesContainer = document.getElementById("parsedSkillBadges");
-  badgesContainer.innerHTML = skills
-    .map((s) => `<span class="tag tag-match">${escapeHtml(s)}</span>`)
-    .join("");
+  if (badgesContainer) {
+    badgesContainer.innerHTML = skills
+      .map((s) => `<span class="tag tag-match">${escapeHtml(s)}</span>`)
+      .join("");
+  }
 
   const metaRow = document.getElementById("parsedMetaRow");
-  const projCount = (resume.projects || []).length;
-  const certCount = (resume.certifications || []).length;
-  metaRow.innerHTML = `
-    <span>📄 ${escapeHtml(resume.filename || "Resume.pdf")}</span>
-    <span>🛠️ ${projCount} Project(s)</span>
-    <span>🏅 ${certCount} Certification(s)</span>
-  `;
+  if (metaRow) {
+    const projCount = (resume.projects || []).length;
+    const certCount = (resume.certifications || []).length;
+    metaRow.innerHTML = `
+      <span>📄 ${escapeHtml(resume.filename || "Resume.pdf")}</span>
+      <span>🛠️ ${projCount} Project(s)</span>
+      <span>🏅 ${certCount} Certification(s)</span>
+    `;
+  }
+
+  const previewCard = document.getElementById("parsedResumeMeta");
+  if (previewCard) {
+    previewCard.style.display = "block";
+    previewCard.classList.remove("hidden");
+  }
+
   updateAnalyzerMiniCards();
 }
 
@@ -864,6 +926,13 @@ async function runFullAnalysis(persistRecord = true) {
 
     loadPlacementReadinessIndex(false);
     loadAtsSimulator(false);
+
+    if (window.__careermatch && window.__careermatch.historyDiff) {
+      window.__careermatch.historyDiff.recordAnalysis(data, state.activeResume, roleTitle);
+    }
+    if (window.__careermatch && window.__careermatch.router) {
+      window.__careermatch.router.navigate("report");
+    }
   } catch (err) {
     showErrorBanner(err.message);
   } finally {
@@ -1234,23 +1303,25 @@ function renderEvidenceAndGapsTab(data) {
     reqListEl.innerHTML = allReqs
       .map((item) => {
         const badgeClass =
-          item.bucket === "matched" ? "tag-match" : item.bucket === "adjacent" ? "tag-partial" : "tag-gap";
+          item.bucket === "matched" ? "status-matched" : item.bucket === "adjacent" ? "status-partial" : "status-missing";
+        const iconPrefix =
+          item.bucket === "matched" ? "● [✓]" : item.bucket === "adjacent" ? "◆ [▲]" : "⬡ [✕]";
         const statusText =
           item.bucket === "matched"
-            ? "Matched · Detected"
+            ? `${iconPrefix} Matched · Detected`
             : item.bucket === "adjacent"
-              ? `Adjacent · Knows ${item.resumeSkill}`
-              : "Missing · Not Found";
+              ? `${iconPrefix} Adjacent · Knows ${item.resumeSkill}`
+              : `${iconPrefix} Gap · Click to Fix`;
         const proofLine = item.resumeEvidence || "";
 
         return `
-          <div class="evidence-req-item" tabindex="0" role="button" data-proof="${escapeHtml(proofLine)}" data-skill="${escapeHtml(item.jobSkill)}">
+          <div class="evidence-req-item card" tabindex="0" role="button" data-proof="${escapeHtml(proofLine)}" data-skill="${escapeHtml(item.jobSkill)}" data-fix-skill="${escapeHtml(item.jobSkill)}" data-fix-status="${item.bucket}" style="padding: 10px 14px; margin-bottom: 6px; cursor: pointer;">
             <div style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;">
-              <strong>${escapeHtml(item.jobSkill)} <small style="color:var(--text-muted);font-weight:400;">(${escapeHtml(item.tier)})</small></strong>
-              <span class="tag ${badgeClass}">${escapeHtml(statusText)}</span>
+              <strong style="font-size: 0.9rem;">${escapeHtml(item.jobSkill)} <small style="color:var(--text-tertiary);font-weight:400;">(${escapeHtml(item.tier)})</small></strong>
+              <span class="status-badge ${badgeClass}">${escapeHtml(statusText)}</span>
             </div>
-            <p style="margin:0.3rem 0 0;font-size:0.8rem;color:var(--text-muted);">
-              ${item.bucket === "missing" ? "No proof line in resume — click to jump to roadmap node." : `Proof: "${escapeHtml(proofLine)}"`}
+            <p style="margin:4px 0 0;font-size:0.8125rem;color:var(--text-secondary);">
+              ${item.bucket === "missing" ? 'No proof line in resume — click to open Guided "Fix This" drawer.' : `Proof: "${escapeHtml(proofLine)}"`}
             </p>
           </div>
         `;
@@ -1494,10 +1565,14 @@ function renderEditableSkillsTab(resume) {
 
 function renderDashboardMetrics(dash) {
   if (!dash) return;
-  document.getElementById("dashTotalResumes").textContent = dash.totalResumes ?? 0;
-  document.getElementById("dashTotalAnalyses").textContent = dash.totalJobsCompared ?? 0;
-  document.getElementById("dashAvgScore").textContent = `${dash.averageCompatibilityScore ?? 0}%`;
-  document.getElementById("dashReadinessStatus").textContent = dash.readinessStatus || "Ready";
+  const totalRes = document.getElementById("dashTotalResumes");
+  if (totalRes) totalRes.textContent = dash.totalResumes ?? 0;
+  const totalAna = document.getElementById("dashTotalAnalyses");
+  if (totalAna) totalAna.textContent = dash.totalJobsCompared ?? 0;
+  const avgSc = document.getElementById("dashAvgScore");
+  if (avgSc) avgSc.textContent = `${dash.averageCompatibilityScore ?? 0}%`;
+  const readSt = document.getElementById("dashReadinessStatus");
+  if (readSt) readSt.textContent = dash.readinessStatus || "Ready";
 
   const matchedEl = document.getElementById("dashTopMatched");
   if (matchedEl) {
@@ -1586,16 +1661,21 @@ function renderDashboardMetrics(dash) {
 
 function showErrorBanner(msg) {
   const el = document.getElementById("analyzerErrorBanner");
-  if (!el) return;
-  el.textContent = msg;
-  el.classList.remove("hidden");
+  if (el) {
+    el.textContent = msg;
+    el.classList.remove("hidden");
+    el.style.display = "block";
+  }
+  showToast(msg);
 }
 
 function hideErrorBanner() {
   const el = document.getElementById("analyzerErrorBanner");
-  if (!el) return;
-  el.textContent = "";
-  el.classList.add("hidden");
+  if (el) {
+    el.textContent = "";
+    el.classList.add("hidden");
+    el.style.display = "none";
+  }
 }
 
 // ============================================================================
@@ -1766,25 +1846,26 @@ async function loadJobMarketIntelligence(showNotif = false) {
       cardsGrid.innerHTML = (data.jobs || [])
         .map(
           (j) => `
-          <div class="course-card">
+          <div class="card" style="padding: var(--space-2); display: flex; flex-direction: column; justify-content: space-between;">
             <div>
-              <div style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;">
-                <span class="step-badge">${escapeHtml(j.workMode)} · ${escapeHtml(j.experienceLevel)}</span>
-                <span class="status-pill tabular-nums">${Math.round(j.matchScore)}% Match</span>
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;margin-bottom:6px;">
+                <span class="score-pill" style="font-size:0.75rem;">${escapeHtml(j.workMode)} · ${escapeHtml(j.experienceLevel)}</span>
+                <span class="score-pill high tabular-nums">${Math.round(j.matchScore)}% Match</span>
               </div>
-              <h4 style="margin:0.45rem 0 0.15rem;">${escapeHtml(j.title)}</h4>
-              <p style="margin:0 0 0.45rem;"><strong>${escapeHtml(j.companyName)}</strong> · ${escapeHtml(j.location)} · <span class="tabular-nums" style="color:var(--accent-blue);">${escapeHtml(j.salaryRange)}</span></p>
-              <p style="margin-bottom:0.55rem;">${escapeHtml(j.descriptionSummary)}</p>
-              <div class="skill-tags">
-                ${(j.matchedSkills || []).map((s) => `<span class="tag tag-match">${escapeHtml(s)} ✓</span>`).join("")}
-                ${(j.missingSkills || []).map((s) => `<span class="tag tag-gap">${escapeHtml(s)} !</span>`).join("")}
+              <h4 style="margin:0 0 4px; font-size:1.05rem;">${escapeHtml(j.title)}</h4>
+              <p style="margin:0 0 6px; font-size:0.85rem;"><strong>${escapeHtml(j.companyName)}</strong> · ${escapeHtml(j.location)} · <span class="tabular-nums" style="color:var(--brand-accent); font-weight:600;">${escapeHtml(j.salaryRange)}</span></p>
+              <p style="margin-bottom:8px; font-size:0.8125rem; color:var(--text-secondary);">${escapeHtml(j.descriptionSummary)}</p>
+              <div style="display:flex; flex-wrap:wrap; gap:4px;">
+                ${(j.matchedSkills || []).map((s) => `<span class="status-badge status-matched" style="font-size:0.72rem;">● [✓] ${escapeHtml(s)}</span>`).join("")}
+                ${(j.missingSkills || []).map((s) => `<span class="status-badge status-missing" style="font-size:0.72rem;" data-fix-skill="${escapeHtml(s)}" data-fix-status="missing">⬡ [✕] ${escapeHtml(s)}</span>`).join("")}
               </div>
             </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.65rem;padding-top:0.55rem;border-top:1px solid var(--border-subtle);">
-              <small style="color:var(--text-muted);font-size:0.72rem;">${escapeHtml(j.dataSource)}</small>
-              <div style="display:flex;gap:0.5rem;">
-                <button type="button" class="demo-btn" data-match-job-role="${escapeHtml(j.roleCategory)}" data-match-job-co="${escapeHtml(j.companyName)}">Analyze Role</button>
-                <a href="${escapeHtml(j.applyUrl)}" target="_blank" rel="noopener noreferrer" class="course-link">Apply ↗</a>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:8px;border-top:1px solid var(--border-subtle);">
+              <small style="color:var(--text-tertiary);font-size:0.75rem;font-family:var(--font-mono);">${escapeHtml(j.dataSource)}</small>
+              <div style="display:flex;gap:6px;align-items:center;">
+                <button type="button" class="btn btn-ghost btn-sm" data-match-job-role="${escapeHtml(j.roleCategory)}" data-match-job-co="${escapeHtml(j.companyName)}">Analyze Role</button>
+                <button type="button" class="btn btn-secondary btn-sm" data-track-job="${encodeURIComponent(JSON.stringify(j))}">+ Track in Kanban</button>
+                <a href="${escapeHtml(j.applyUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">Apply ↗</a>
               </div>
             </div>
           </div>
@@ -2850,6 +2931,16 @@ async function loadPlacementReadinessIndex(showNotif = false) {
     state.priReportData = data;
     const priRounded = Math.round(data.priScore || 0);
 
+    if (window.__careermatch && window.__careermatch.store) {
+      window.__careermatch.store.set("priData", data);
+    }
+    const circle = document.getElementById("dashPriGaugeCircle");
+    if (circle) {
+      const circ = 2 * Math.PI * 42;
+      const offset = circ - (Math.min(100, priRounded) / 100) * circ;
+      circle.style.strokeDashoffset = offset;
+    }
+
     // Sync Sidebar & Overview KPIs
     const sbBadge = document.getElementById("sidebarPriBadge");
     if (sbBadge) sbBadge.textContent = `${priRounded}%`;
@@ -3050,3 +3141,15 @@ async function handleDemoLogin() {
     showToast(err.message);
   }
 }
+
+// Global window exposure for modular interoperability
+window.selectDemoResume = selectDemoResume;
+window.runFullAnalysis = runFullAnalysis;
+window.switchWorkspaceView = switchWorkspaceView;
+window.loadJobMarketIntelligence = loadJobMarketIntelligence;
+window.loadAtsSimulator = loadAtsSimulator;
+window.loadAdaptiveRoadmap = loadAdaptiveRoadmap;
+window.loadSkillAssessment = loadSkillAssessment;
+window.loadCareerComparison = loadCareerComparison;
+window.loadPlacementReadinessIndex = loadPlacementReadinessIndex;
+

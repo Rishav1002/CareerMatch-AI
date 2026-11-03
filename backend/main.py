@@ -617,6 +617,7 @@ try:
         app.mount("/frontend", StaticFiles(directory=FRONTEND_DIR), name="frontend")
 
     @app.get("/")
+    @app.get("/index.html")
     async def serve_index() -> Any:
         frontend_html = os.path.join(FRONTEND_DIR, "index.html")
         if os.path.isfile(frontend_html):
@@ -844,6 +845,8 @@ class CareerMatchHTTPHandler(BaseHTTPRequestHandler):
             self.send_header("Content-Type", ctype or "text/html; charset=utf-8")
             self.send_header("Content-Length", str(len(data)))
             self.send_header("X-Content-Type-Options", "nosniff")
+            self.send_header("X-Frame-Options", "SAMEORIGIN")
+            self.send_header("Referrer-Policy", "strict-origin-when-cross-origin")
             self.end_headers()
             self.wfile.write(data)
         except Exception:
@@ -852,17 +855,18 @@ class CareerMatchHTTPHandler(BaseHTTPRequestHandler):
 
 def run_server() -> None:
     port = int(os.environ.get("PORT", str(DEFAULT_PORT)))
+    host = os.environ.get("HOST", "127.0.0.1")
     try:
         import uvicorn  # type: ignore
         if app is not None:
-            print(f"Starting CareerMatch AI 2.0 (FastAPI/Uvicorn) on http://0.0.0.0:{port}")
-            uvicorn.run(app, host="0.0.0.0", port=port)
+            print(f"Starting CareerMatch AI 2.0 (FastAPI/Uvicorn) on http://{host}:{port}")
+            uvicorn.run("backend.main:app", host=host, port=port, log_level="info")
             return
     except ImportError:
         pass
 
-    print(f"Starting CareerMatch AI 2.0 Server on http://0.0.0.0:{port}")
-    server = ThreadingHTTPServer(("0.0.0.0", port), CareerMatchHTTPHandler)
+    print(f"Starting CareerMatch AI 2.0 Server on http://{host}:{port}")
+    server = ThreadingHTTPServer((host, port), CareerMatchHTTPHandler)
     server.serve_forever()
 
 

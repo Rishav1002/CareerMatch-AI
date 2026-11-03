@@ -1,0 +1,212 @@
+/**
+ * CareerMatch AI Design System: Tokens
+ * Direction: "Career Field Guide" & Editorial Ledger
+ * Neutral: Warm Paper (light) / Deep Mineral Ink (dark)
+ * Accent: Terracotta Rust
+ */
+
+:root {
+  /* ==========================================================================
+     COLOR SYSTEM - LIGHT THEME ("Warm Paper & Ledger")
+     ========================================================================== */
+  --bg-canvas: #FBF9F5;         /* Warm cream ledger paper */
+  --bg-card: #FFFFFF;           /* Pure paper white */
+  --bg-raised: #F5F2EB;         /* Subtle parchment tint for headers / toolbars */
+  --bg-sunken: #EFEBE1;         /* Sunken paper for inputs, well containers */
+  --bg-active: #E8E2D5;         /* Active state fill */
+
+  --border-subtle: #E5DFD3;     /* Hairline rule between cells & cards */
+  --border-medium: #D1C9BA;     /* Secondary borders & divider rules */
+  --border-strong: #A89F8E;     /* High contrast borders & focus rings */
+
+  --text-primary: #1E1B18;      /* Deep charcoal-ink (14.5:1 on canvas - AAA) */
+  --text-secondary: #57524A;    /* Muted graphite-ink (6.2:1 - AA) */
+  --text-tertiary: #80796E;     /* De-emphasized ink (4.6:1 - AA) */
+  --text-inverse: #FBF9F5;      /* Text on dark/accent fills */
+
+  /* ONE Brand Accent: Terracotta Rust */
+  --brand-accent: #B84D2B;
+  --brand-hover: #9E3E20;
+  --brand-active: #7E3118;
+  --brand-subtle: #FDF1ED;
+  --brand-border: #E8B9A9;
+
+  /* Score & Status Signals (Differentiated by Icon, Shape, Hue & Value) */
+  --score-high: #15803D;        /* Forest Pine - matched / high score */
+  --score-high-bg: #EBF5ED;
+  --score-high-border: #86EFAC;
+
+  --score-mid: #B45309;         /* Ochre Amber - partial / medium score */
+  --score-mid-bg: #FEF3C7;
+  --score-mid-border: #FCD34D;
+
+  --score-low: #B91C1C;         /* Crimson Ochre - gap / low score */
+  --score-low-bg: #FEF2F2;
+  --score-low-border: #FECACA;
+
+  --signal-info: #1D4ED8;       /* Deep Navy - informative notes */
+  --signal-info-bg: #EFF6FF;
+  --signal-info-border: #BFDBFE;
+
+  /* ==========================================================================
+     TYPOGRAPHY
+     ========================================================================== */
+  --font-display: "Newsreader", Georgia, "Times New Roman", serif;
+  --font-ui: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", "Space Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+
+  /* Fluid typography scale via clamp() */
+  --text-display: clamp(2rem, 3.2vw + 1rem, 3.25rem);
+  --text-h1: clamp(1.6rem, 2.2vw + 0.8rem, 2.25rem);
+  --text-h2: clamp(1.3rem, 1.4vw + 0.6rem, 1.65rem);
+  --text-h3: clamp(1.1rem, 1vw + 0.5rem, 1.3rem);
+  --text-body-lg: clamp(1.05rem, 0.3vw + 0.95rem, 1.15rem);
+  --text-body: clamp(0.95rem, 0.2vw + 0.9rem, 1rem);
+  --text-caption: 0.875rem;     /* 14px secondary */
+  --text-xs: 0.8125rem;         /* 13px micro metadata */
+
+  --leading-tight: 1.18;
+  --leading-snug: 1.35;
+  --leading-normal: 1.55;
+  --leading-loose: 1.7;
+
+  --measure-prose: 68ch;
+
+  /* ==========================================================================
+     SPACING GRID (8px rhythmic system)
+     ========================================================================== */
+  --space-05: 4px;
+  --space-1: 8px;
+  --space-15: 12px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 40px;
+  --space-6: 48px;
+  --space-8: 64px;
+  --space-10: 80px;
+
+  /* ==========================================================================
+     SHAPE & ELEVATION (2-3 radii max, hairline borders over heavy shadows)
+     ========================================================================== */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+
+  --shadow-hairline: 0 1px 2px rgba(30, 27, 24, 0.05);
+  --shadow-overlay: 0 4px 16px rgba(30, 27, 24, 0.12);
+  --shadow-popover: 0 8px 30px rgba(30, 27, 24, 0.16);
+
+  /* Transitions (purposeful, fast, disabled under prefers-reduced-motion) */
+  --transition-fast: 160ms cubic-bezier(0.2, 0, 0, 1);
+  --transition-normal: 220ms cubic-bezier(0.2, 0, 0, 1);
+
+  /* Layout dimensions */
+  --sidebar-width: 256px;
+  --sidebar-width-collapsed: 64px;
+  --topbar-height: 56px;
+  --mobile-nav-height: 60px;
+
+  /* Z-index layers */
+  --z-base: 1;
+  --z-raised: 10;
+  --z-sticky: 100;
+  --z-drawer: 500;
+  --z-modal: 1000;
+  --z-palette: 1100;
+  --z-toast: 1200;
+}
+
+/* ==========================================================================
+   COLOR SYSTEM - DARK THEME ("Deep Mineral Ink")
+   Activated by [data-theme="dark"] or prefers-color-scheme
+   ========================================================================== */
+[data-theme="dark"] {
+  --bg-canvas: #121417;         /* Deep mineral ink */
+  --bg-card: #181B20;           /* Slate ink paper */
+  --bg-raised: #20242B;         /* Layer 2 surface */
+  --bg-sunken: #15181D;         /* Sunken well / inputs */
+  --bg-active: #282E37;
+
+  --border-subtle: #2C323C;     /* Subtle hairline rule */
+  --border-medium: #3A4350;     /* Divider rules */
+  --border-strong: #5A6577;     /* High contrast borders */
+
+  --text-primary: #F3EFEA;      /* Warm parchment white (14:1 - AAA) */
+  --text-secondary: #A6A095;    /* Warm ash (5.8:1 - AA) */
+  --text-tertiary: #757067;     /* De-emphasized ash */
+  --text-inverse: #121417;
+
+  /* Brand Accent: Warm Bright Terracotta */
+  --brand-accent: #E06D46;
+  --brand-hover: #F0825E;
+  --brand-active: #C25633;
+  --brand-subtle: #2B1D17;
+  --brand-border: #663321;
+
+  /* Score & Status Signals */
+  --score-high: #4ADE80;
+  --score-high-bg: #132E1C;
+  --score-high-border: #1F5A32;
+
+  --score-mid: #FBBF24;
+  --score-mid-bg: #2B210E;
+  --score-mid-border: #5A4418;
+
+  --score-low: #F87171;
+  --score-low-bg: #2E1515;
+  --score-low-border: #5C2424;
+
+  --signal-info: #60A5FA;
+  --signal-info-bg: #152238;
+  --signal-info-border: #23456F;
+
+  --shadow-hairline: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-overlay: 0 4px 20px rgba(0, 0, 0, 0.5);
+  --shadow-popover: 0 8px 36px rgba(0, 0, 0, 0.7);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg-canvas: #121417;
+    --bg-card: #181B20;
+    --bg-raised: #20242B;
+    --bg-sunken: #15181D;
+    --bg-active: #282E37;
+
+    --border-subtle: #2C323C;
+    --border-medium: #3A4350;
+    --border-strong: #5A6577;
+
+    --text-primary: #F3EFEA;
+    --text-secondary: #A6A095;
+    --text-tertiary: #757067;
+    --text-inverse: #121417;
+
+    --brand-accent: #E06D46;
+    --brand-hover: #F0825E;
+    --brand-active: #C25633;
+    --brand-subtle: #2B1D17;
+    --brand-border: #663321;
+
+    --score-high: #4ADE80;
+    --score-high-bg: #132E1C;
+    --score-high-border: #1F5A32;
+
+    --score-mid: #FBBF24;
+    --score-mid-bg: #2B210E;
+    --score-mid-border: #5A4418;
+
+    --score-low: #F87171;
+    --score-low-bg: #2E1515;
+    --score-low-border: #5C2424;
+
+    --signal-info: #60A5FA;
+    --signal-info-bg: #152238;
+    --signal-info-border: #23456F;
+
+    --shadow-hairline: 0 1px 2px rgba(0, 0, 0, 0.35);
+    --shadow-overlay: 0 4px 20px rgba(0, 0, 0, 0.5);
+    --shadow-popover: 0 8px 36px rgba(0, 0, 0, 0.7);
+  }
+}
