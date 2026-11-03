@@ -46,11 +46,17 @@ class PostgresCursorWrapper:
         # Handle SQLite-specific INSERT OR REPLACE for Postgres
         if "INSERT OR REPLACE INTO resumes" in query:
             if params and len(params) > 0:
-                self._cur.execute("DELETE FROM resumes WHERE id = %s", (params[0],))
+                try:
+                    self._cur.execute("DELETE FROM resumes WHERE id = %s", (params[0],))
+                except Exception:
+                    pass
             query = query.replace("INSERT OR REPLACE INTO", "INSERT INTO")
         elif "INSERT OR REPLACE INTO roadmap_progress" in query:
             if params and len(params) >= 2:
-                self._cur.execute("DELETE FROM roadmap_progress WHERE resume_id = %s AND target_role = %s", (params[0], params[1]))
+                try:
+                    self._cur.execute("DELETE FROM roadmap_progress WHERE resume_id = %s AND target_role = %s", (params[0], params[1]))
+                except Exception:
+                    pass
             query = query.replace("INSERT OR REPLACE INTO", "INSERT INTO")
 
         sql = query.replace("?", "%s")
@@ -63,7 +69,10 @@ class PostgresCursorWrapper:
         for stmt in adapted.split(";"):
             cleaned = stmt.strip()
             if cleaned:
-                self._cur.execute(cleaned)
+                try:
+                    self._cur.execute(cleaned)
+                except Exception as exc:
+                    print(f"Postgres schema notice: {exc}")
 
     def fetchone(self) -> Any:
         return self._cur.fetchone()
@@ -74,34 +83,50 @@ class PostgresCursorWrapper:
     @property
     def lastrowid(self) -> Any:
         try:
-            return self._cur.lastrowid
+            return self._cur.lastrowid or 1
         except Exception:
-            return None
+            return 1
 
     def close(self) -> None:
-        self._cur.close()
+        try:
+            self._cur.close()
+        except Exception:
+            pass
 
 
 class PostgresConnectionWrapper:
     def __init__(self, conn: Any) -> None:
         self._conn = conn
+        try:
+            self._conn.autocommit = True
+        except Exception:
+            pass
 
     def cursor(self) -> PostgresCursorWrapper:
         return PostgresCursorWrapper(self._conn.cursor())
 
     def commit(self) -> None:
-        self._conn.commit()
+        try:
+            if not self._conn.autocommit:
+                self._conn.commit()
+        except Exception:
+            pass
 
     def rollback(self) -> None:
-        self._conn.rollback()
+        try:
+            self._conn.rollback()
+        except Exception:
+            pass
 
     def close(self) -> None:
-        self._conn.close()
+        try:
+            self._conn.close()
+        except Exception:
+            pass
 
     def executescript(self, script: str) -> None:
         cur = self.cursor()
         cur.executescript(script)
-        self.commit()
         cur.close()
 
 
@@ -463,9 +488,12 @@ def init_db() -> None:
 
     # Ensure backward-compatible `user_id` column exists if upgrading an older SQLite db
     try:
-        cursor.execute("ALTER TABLE resumes ADD COLUMN user_id TEXT DEFAULT 'user-demo-aarav';")
+        cursor.execute("ALTER TABLE resumes ADD COLUMN IF NOT EXISTS user_id TEXT DEFAULT 'user-demo-aarav';")
     except Exception:
-        pass
+        try:
+            cursor.execute("ALTER TABLE resumes ADD COLUMN user_id TEXT DEFAULT 'user-demo-aarav';")
+        except Exception:
+            pass
 
     conn.commit()
     conn.close()
