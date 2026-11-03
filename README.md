@@ -1,37 +1,35 @@
-# CareerMatch AI 2.0
+# CareerMatch AI
 
 **Team Token Titans**
 
 AI-Powered Career Intelligence, Skill Development, and Placement Readiness Platform for students and early-career software/data engineers.
 
-[![Tests](https://github.com/shubhamsharma200212-coder/Token_Titans/actions/workflows/test.yml/badge.svg)](https://github.com/shubhamsharma200212-coder/Token_Titans/actions/workflows/test.yml)
 ![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![FastAPI 0.115.6](https://img.shields.io/badge/FastAPI-0.115.6-009688?logo=fastapi&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 ![Built for Graviton 2026](https://img.shields.io/badge/Hackathon-Graviton%202026-8b5cf6)
 
-**Quick demo:** Click **Demo Mode (Aarav)** in the top bar or upload [`samples/sample_resume_aarav_sharma.txt`](samples/sample_resume_aarav_sharma.txt) and paste [`samples/sample_jd_data_engineer.txt`](samples/sample_jd_data_engineer.txt) (or click **Load sample Data Engineer JD**) to explore the resume analyzer and all 8 CareerMatch AI 2.0 modules.
+**Quick demo:** Click **Demo Mode (Aarav)** in the top bar or upload [`samples/sample_resume_aarav_sharma.txt`](samples/sample_resume_aarav_sharma.txt) and paste [`samples/sample_jd_data_engineer.txt`](samples/sample_jd_data_engineer.txt) (or click **Load sample Data Engineer JD**) to explore the resume analyzer and all 8 CareerMatch AI modules.
 
 ---
-
-## Demo
-
-- **Live Demo:** [ADD: live demo link]
-- **Demo Video (60–90s):** [ADD: 60-90s demo video link]
 
 | Hero & Analyzer | Career Report & Score Breakdown |
 | :---: | :---: |
 | ![Hero and Analyzer](docs/screenshots/hero.png) | ![Career Report](docs/screenshots/report.png) |
 
-| Skill Gaps & Evidence Table | Interactive Roadmap & Node Inspector | Mobile View |
+| Career Toolkit | Career Roadmap | 
+| :---: | :---: |
+| ![Evidence View](docs/screenshots/evidence-view.png) | ![Interactive Roadmap](docs/screenshots/roadmap.png) |
+
+| Online Courses Recommendations | Job Listing | Project Recommendation |
 | :---: | :---: | :---: |
-| ![Evidence View](docs/screenshots/evidence-view.png) | ![Interactive Roadmap](docs/screenshots/roadmap.png) | ![Mobile View](docs/screenshots/mobile.png) |
+| ![Online Courses](docs/screenshots/Courses.png) | ![Job Listing](docs/screenshots/Job-Market.png) | ![Project Recommendations](docs/screenshots/Planning&Projects.png) |
 
 ---
 
 ## Overview & Preserved Core Features
 
-CareerMatch AI 2.0 preserves all original resume-to-JD matching capabilities while expanding the platform into an 11-workspace Career Intelligence suite:
+CareerMatch AI preserves all original resume-to-JD matching capabilities while expanding the platform into an 11-workspace Career Intelligence suite:
 
 1. **Multi-format resume parsing:** Extracts contact details, education, work experience, projects, certifications, and 38 cataloged technical skills from PDF (`PyMuPDF` / `fitz` + `pypdf`), DOCX (`python-docx`), or plain text.
 2. **Heading-aware JD requirement extraction:** Splits job descriptions into Mandatory, Preferred, and Optional tiers using section headings (`Mandatory Requirements`, `Preferred Qualifications`, `Optional / Bonus`) or Gemini structured JSON extraction (`response_schema`).
@@ -43,7 +41,7 @@ CareerMatch AI 2.0 preserves all original resume-to-JD matching capabilities whi
 
 ---
 
-## CareerMatch AI 2.0 — 8 Advanced Modules
+## CareerMatch AI — 8 Advanced Modules
 
 ### Module 1: Live Job Market Intelligence (`/api/jobs/market`)
 - Fetches live public job postings (Remotive public API with timeout protection) and merges or falls back to a clearly labelled **Curated Benchmark Dataset** (`India & Global Tech Roles`) when offline or rate-limited.
@@ -273,6 +271,6 @@ python3 scripts/check_links.py
 
 ## Team, License & Acknowledgements
 
-- **Team Token Titans:** [ADD: names, roles, links]
+- **Team Token Titans**
 - **License:** Distributed under the [MIT License](LICENSE).
 - **Acknowledgements:** Built for **Graviton 2026** using the [Google Gemini API (`google-genai`)](https://ai.google.dev/), [FastAPI](https://fastapi.tiangolo.com/), and community learning paths referenced from [roadmap.sh](https://roadmap.sh/).
