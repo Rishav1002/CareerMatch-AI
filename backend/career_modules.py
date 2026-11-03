@@ -698,7 +698,16 @@ def fetch_job_market_intelligence(body: Dict[str, Any]) -> Dict[str, Any]:
 
         # Apply user filters
         if role_filter and role_filter.lower() not in ("all", "all roles"):
-            if role_filter.lower() not in j["roleCategory"].lower() and role_filter.lower() not in j["title"].lower():
+            rf_low = role_filter.lower().strip()
+            title_low = j.get("title", "").lower()
+            cat_low = j.get("roleCategory", "").lower()
+            matches_role = (
+                rf_low in title_low
+                or rf_low in cat_low
+                or all(tok in title_low or tok in cat_low for tok in rf_low.split())
+                or (rf_low == "data engineer" and ("data" in title_low or "data" in cat_low))
+            )
+            if not matches_role:
                 continue
         if location_filter and location_filter.lower() not in ("all", "any"):
             if location_filter.lower() not in j["location"].lower():

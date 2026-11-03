@@ -15,7 +15,7 @@ from backend.jobs.providers.remotive import RemotiveJobProvider
 FALLBACK_JOBS: List[Dict[str, Any]] = [
     {
         "id": "job-de-bengaluru",
-        "title": "Data Platform Engineer",
+        "title": "Data Engineer",
         "companyName": "Razorpay",
         "location": "Bengaluru, Karnataka",
         "workMode": "Hybrid",
@@ -136,10 +136,20 @@ class JobMarketService:
 
         # Otherwise fallback to verified benchmark dataset
         filtered_fallback = []
-        q_low = query.lower() if query else ""
+        q_low = query.lower().strip() if query else ""
         for j in FALLBACK_JOBS:
-            if not q_low or q_low in j["title"].lower() or q_low in j["roleCategory"].lower():
+            if not q_low:
                 filtered_fallback.append(j)
+            else:
+                title_l = j["title"].lower()
+                cat_l = j["roleCategory"].lower()
+                if (
+                    q_low in title_l
+                    or q_low in cat_l
+                    or all(tok in title_l or tok in cat_l for tok in q_low.split())
+                    or (q_low == "data engineer" and ("data" in title_l or "data" in cat_l))
+                ):
+                    filtered_fallback.append(j)
         return filtered_fallback if filtered_fallback else FALLBACK_JOBS
 
     def _read_cache(self, query: str, limit: int) -> Optional[List[Dict[str, Any]]]:
