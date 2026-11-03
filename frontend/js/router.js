@@ -6,10 +6,10 @@
 import { store } from "./store.js";
 
 const VIEW_TITLES = {
-  landing: "Explainable Career-Readiness Field Guide",
+  landing: "Field Guide & Overview",
   dashboard: "Placement Readiness Dashboard",
   analyzer: "Resume & Job Match Analyzer",
-  report: "Explainable Career Report & Evidence Ledger",
+  report: "Career Report & Evidence Ledger",
   ats: "ATS Resume Simulator & Optimizer",
   roadmap: "Adaptive Learning Roadmap",
   planner: "Weekly Study Planner & Milestone Tracker",
@@ -65,19 +65,14 @@ export class Router {
       activePanel.hidden = false;
     }
 
-    // Toggle landing vs app shell styling if needed
-    const appSidebar = document.querySelector(".app-sidebar");
-    const mobileNav = document.querySelector(".mobile-bottom-nav");
-    if (targetView === "landing") {
-      if (appSidebar) appSidebar.style.display = "none";
-      if (mobileNav) mobileNav.style.display = "none";
-    } else {
-      if (appSidebar && window.innerWidth > 768) appSidebar.style.display = "flex";
-      if (mobileNav && window.innerWidth <= 768) mobileNav.style.display = "flex";
-    }
+    // Auto-close More Tools drawer when navigating
+    const moreBackdrop = document.getElementById("moreToolsBackdrop");
+    const moreBtn = document.getElementById("moreToolsBtn");
+    if (moreBackdrop) moreBackdrop.style.display = "none";
+    if (moreBtn) moreBtn.setAttribute("aria-expanded", "false");
 
-    // Update active nav links (desktop rail + mobile bottom bar)
-    document.querySelectorAll(".nav-link, .mobile-nav-item").forEach((link) => {
+    // Update active state on topbar links, more-drawer items, and mobile nav
+    document.querySelectorAll(".topbar-nav-link, .more-module-item, .nav-link, .mobile-nav-item").forEach((link) => {
       const linkView = link.getAttribute("data-view");
       if (linkView === targetView) {
         link.classList.add("active");
@@ -86,7 +81,7 @@ export class Router {
       }
     });
 
-    // Update current view breadcrumb / topbar title
+    // Update current view breadcrumb / topbar title if element exists
     const topbarTitle = document.getElementById("topbarViewTitle");
     if (topbarTitle) {
       topbarTitle.textContent = VIEW_TITLES[targetView] || targetView;
@@ -94,6 +89,11 @@ export class Router {
 
     // Update document title
     document.title = `CareerMatch AI | ${VIEW_TITLES[targetView] || "Field Guide"}`;
+
+    // Refresh scroll animations
+    if (window.__careermatch && window.__careermatch.scrollReveal) {
+      window.__careermatch.scrollReveal.refresh();
+    }
 
     // Scroll to top
     window.scrollTo({ top: 0, behavior: "instant" });

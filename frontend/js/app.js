@@ -1,5 +1,20 @@
+
+function openAuthModal() {
+  const el = document.getElementById("authModalBackdrop");
+  if (!el) return;
+  el.classList.remove("hidden");
+  el.style.display = "flex";
+}
+
+function closeAuthModal() {
+  const el = document.getElementById("authModalBackdrop");
+  if (!el) return;
+  el.classList.add("hidden");
+  el.style.display = "none";
+}
+
 /**
- * CareerMatch AI 2.0 — Unified Frontend Controller
+ * CareerMatch AI — Unified Frontend Controller
  * Preserves 100% of existing Resume & Role Analyzer workflows while powering
  * all 11 SaaS Views, JWT Authentication, Dark/Light Theme Toggle, and the
  * 8 Advanced Career Intelligence Modules.
@@ -24,7 +39,7 @@ const state = {
   },
   sampleJdText: "",
   dontSaveResume: false,
-  // CareerMatch AI 2.0 State
+  // CareerMatch AI State
   activeView: "overview",
   jwtToken: localStorage.getItem("cm_jwt_token") || "",
   studentProfile: null,
@@ -1679,7 +1694,7 @@ function hideErrorBanner() {
 }
 
 // ============================================================================
-// CAREERMATCH AI 2.0 — 8 NEW MODULE CONTROLLERS & LISTENERS
+// CAREERMATCH AI — 8 CORE MODULE CONTROLLERS & LISTENERS
 // ============================================================================
 
 function initCareerMatch2Listeners() {
@@ -1756,14 +1771,13 @@ function initCareerMatch2Listeners() {
 
   // Module 11: Profile & JWT Auth Modal
   document.getElementById("saveProfileBtn")?.addEventListener("click", saveStudentCareerProfile);
-  document.getElementById("openAuthModalBtn")?.addEventListener("click", () => {
-    document.getElementById("authModalBackdrop")?.classList.remove("hidden");
-  });
-  document.getElementById("openLoginModalFromProfileBtn")?.addEventListener("click", () => {
-    document.getElementById("authModalBackdrop")?.classList.remove("hidden");
-  });
-  document.getElementById("closeAuthModalBtn")?.addEventListener("click", () => {
-    document.getElementById("authModalBackdrop")?.classList.add("hidden");
+  document.getElementById("openAuthModalBtn")?.addEventListener("click", openAuthModal);
+  document.getElementById("openLoginModalFromProfileBtn")?.addEventListener("click", openAuthModal);
+  document.getElementById("closeAuthModalBtn")?.addEventListener("click", closeAuthModal);
+  document.getElementById("authModalBackdrop")?.addEventListener("click", (e) => {
+    if (e.target === document.getElementById("authModalBackdrop")) {
+      closeAuthModal();
+    }
   });
   document.getElementById("switchDemoAccountBtn")?.addEventListener("click", handleDemoLogin);
 
@@ -3109,7 +3123,7 @@ async function submitAuthModalForm() {
     populateProfileForm();
 
     document.getElementById("authCurrentStatusText").textContent = `Signed in as ${data.user.fullName} (${data.user.email})`;
-    document.getElementById("authModalBackdrop")?.classList.add("hidden");
+    closeAuthModal();
     showToast(`Signed in as ${data.user.fullName}`);
   } catch (err) {
     if (errEl) {
@@ -3132,7 +3146,7 @@ async function handleDemoLogin() {
     populateProfileForm();
 
     document.getElementById("authCurrentStatusText").textContent = `Demo Student Session (${data.user.fullName})`;
-    document.getElementById("authModalBackdrop")?.classList.add("hidden");
+    closeAuthModal();
     if (state.demos.length > 0) {
       selectDemoResume(0, true);
     }

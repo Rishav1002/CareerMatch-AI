@@ -15,6 +15,10 @@
   --bg-sunken: #EFEBE1;         /* Sunken paper for inputs, well containers */
   --bg-active: #E8E2D5;         /* Active state fill */
 
+  /* Background Grid Pattern */
+  --bg-pattern: radial-gradient(circle, rgba(30, 27, 24, 0.055) 1px, transparent 1px);
+  --bg-pattern-size: 24px 24px;
+
   --border-subtle: #E5DFD3;     /* Hairline rule between cells & cards */
   --border-medium: #D1C9BA;     /* Secondary borders & divider rules */
   --border-strong: #A89F8E;     /* High contrast borders & focus rings */
@@ -58,22 +62,20 @@
   /* Fluid typography scale via clamp() */
   --text-display: clamp(2rem, 3.2vw + 1rem, 3.25rem);
   --text-h1: clamp(1.6rem, 2.2vw + 0.8rem, 2.25rem);
-  --text-h2: clamp(1.3rem, 1.4vw + 0.6rem, 1.65rem);
-  --text-h3: clamp(1.1rem, 1vw + 0.5rem, 1.3rem);
-  --text-body-lg: clamp(1.05rem, 0.3vw + 0.95rem, 1.15rem);
-  --text-body: clamp(0.95rem, 0.2vw + 0.9rem, 1rem);
-  --text-caption: 0.875rem;     /* 14px secondary */
-  --text-xs: 0.8125rem;         /* 13px micro metadata */
+  --text-h2: clamp(1.25rem, 1.4vw + 0.7rem, 1.65rem);
+  --text-h3: clamp(1.05rem, 0.8vw + 0.6rem, 1.25rem);
+  --text-h4: 1rem;
+  --text-body: 0.9375rem;       /* 15px */
+  --text-sm: 0.8125rem;         /* 13px */
+  --text-xs: 0.75rem;           /* 12px */
 
-  --leading-tight: 1.18;
-  --leading-snug: 1.35;
-  --leading-normal: 1.55;
-  --leading-loose: 1.7;
-
-  --measure-prose: 68ch;
+  --lh-tight: 1.15;
+  --lh-heading: 1.25;
+  --lh-body: 1.55;
+  --lh-relaxed: 1.7;
 
   /* ==========================================================================
-     SPACING GRID (8px rhythmic system)
+     SPACING SYSTEM (Based on 8px grid with 4px half-steps)
      ========================================================================== */
   --space-05: 4px;
   --space-1: 8px;
@@ -87,64 +89,75 @@
   --space-10: 80px;
 
   /* ==========================================================================
-     SHAPE & ELEVATION (2-3 radii max, hairline borders over heavy shadows)
+     SURFACE DEPTH & SHADOWS (Tactile Editorial)
      ========================================================================== */
+  --radius-xs: 2px;
   --radius-sm: 4px;
   --radius-md: 6px;
-  --radius-lg: 10px;
+  --radius-lg: 8px;
+  --radius-full: 9999px;
 
   --shadow-hairline: 0 1px 2px rgba(30, 27, 24, 0.05);
-  --shadow-overlay: 0 4px 16px rgba(30, 27, 24, 0.12);
-  --shadow-popover: 0 8px 30px rgba(30, 27, 24, 0.16);
+  --shadow-card: 0 1px 3px rgba(30, 27, 24, 0.06), 0 1px 2px rgba(30, 27, 24, 0.03);
+  --shadow-raised: 0 3px 6px -1px rgba(30, 27, 24, 0.08), 0 2px 4px -1px rgba(30, 27, 24, 0.04);
+  --shadow-overlay: 0 10px 25px -3px rgba(30, 27, 24, 0.12), 0 4px 10px -2px rgba(30, 27, 24, 0.06);
+  --shadow-popover: 0 20px 30px -4px rgba(30, 27, 24, 0.16);
 
-  /* Transitions (purposeful, fast, disabled under prefers-reduced-motion) */
-  --transition-fast: 160ms cubic-bezier(0.2, 0, 0, 1);
-  --transition-normal: 220ms cubic-bezier(0.2, 0, 0, 1);
+  /* Tactile Button Shadows */
+  --shadow-btn-inset: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  --shadow-btn-active: inset 0 2px 4px rgba(0, 0, 0, 0.2);
 
-  /* Layout dimensions */
-  --sidebar-width: 256px;
-  --sidebar-width-collapsed: 64px;
+  /* ==========================================================================
+     MOTION & TRANSITIONS
+     ========================================================================== */
+  --transition-fast: 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-normal: 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-slow: 350ms cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ==========================================================================
+     LAYOUT CONSTANTS
+     ========================================================================== */
   --topbar-height: 56px;
-  --mobile-nav-height: 60px;
+  --container-max: 1240px;
+  --container-reading: 68ch;
 
-  /* Z-index layers */
   --z-base: 1;
-  --z-raised: 10;
   --z-sticky: 100;
-  --z-drawer: 500;
-  --z-modal: 1000;
-  --z-palette: 1100;
-  --z-toast: 1200;
+  --z-drawer: 200;
+  --z-modal: 500;
+  --z-toast: 1000;
 }
 
 /* ==========================================================================
    COLOR SYSTEM - DARK THEME ("Deep Mineral Ink")
-   Activated by [data-theme="dark"] or prefers-color-scheme
    ========================================================================== */
 [data-theme="dark"] {
-  --bg-canvas: #121417;         /* Deep mineral ink */
-  --bg-card: #181B20;           /* Slate ink paper */
-  --bg-raised: #20242B;         /* Layer 2 surface */
-  --bg-sunken: #15181D;         /* Sunken well / inputs */
-  --bg-active: #282E37;
+  --bg-canvas: #121417;         /* Deep mineral ink (not pure black) */
+  --bg-card: #181B20;           /* Dark slate paper */
+  --bg-raised: #20242B;         /* Raised slate */
+  --bg-sunken: #15181D;         /* Sunken input field */
+  --bg-active: #282E37;         /* Active state fill */
 
-  --border-subtle: #2C323C;     /* Subtle hairline rule */
-  --border-medium: #3A4350;     /* Divider rules */
-  --border-strong: #5A6577;     /* High contrast borders */
+  /* Dark Background Grid Pattern */
+  --bg-pattern: radial-gradient(circle, rgba(243, 239, 234, 0.045) 1px, transparent 1px);
+  --bg-pattern-size: 24px 24px;
 
-  --text-primary: #F3EFEA;      /* Warm parchment white (14:1 - AAA) */
-  --text-secondary: #A6A095;    /* Warm ash (5.8:1 - AA) */
-  --text-tertiary: #757067;     /* De-emphasized ash */
+  --border-subtle: #2C323C;
+  --border-medium: #3A4350;
+  --border-strong: #5A6577;
+
+  --text-primary: #F3EFEA;      /* Warm bone white (15:1) */
+  --text-secondary: #A6A095;    /* Muted limestone (6:1) */
+  --text-tertiary: #757067;     /* Darker stone (4.5:1) */
   --text-inverse: #121417;
 
-  /* Brand Accent: Warm Bright Terracotta */
+  /* Terracotta in Dark Mode (Shifted slightly brighter for contrast) */
   --brand-accent: #E06D46;
   --brand-hover: #F0825E;
   --brand-active: #C25633;
   --brand-subtle: #2B1D17;
   --brand-border: #663321;
 
-  /* Score & Status Signals */
   --score-high: #4ADE80;
   --score-high-bg: #132E1C;
   --score-high-border: #1F5A32;
@@ -164,6 +177,9 @@
   --shadow-hairline: 0 1px 2px rgba(0, 0, 0, 0.35);
   --shadow-overlay: 0 4px 20px rgba(0, 0, 0, 0.5);
   --shadow-popover: 0 8px 36px rgba(0, 0, 0, 0.7);
+
+  --shadow-btn-inset: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  --shadow-btn-active: inset 0 2px 4px rgba(0, 0, 0, 0.45);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -173,6 +189,9 @@
     --bg-raised: #20242B;
     --bg-sunken: #15181D;
     --bg-active: #282E37;
+
+    --bg-pattern: radial-gradient(circle, rgba(243, 239, 234, 0.045) 1px, transparent 1px);
+    --bg-pattern-size: 24px 24px;
 
     --border-subtle: #2C323C;
     --border-medium: #3A4350;
@@ -208,5 +227,8 @@
     --shadow-hairline: 0 1px 2px rgba(0, 0, 0, 0.35);
     --shadow-overlay: 0 4px 20px rgba(0, 0, 0, 0.5);
     --shadow-popover: 0 8px 36px rgba(0, 0, 0, 0.7);
+
+    --shadow-btn-inset: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    --shadow-btn-active: inset 0 2px 4px rgba(0, 0, 0, 0.45);
   }
 }

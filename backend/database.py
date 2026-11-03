@@ -1,5 +1,5 @@
 """
-Relational Database Layer for CareerMatch AI 2.0 (MySQL 8.0+ / SQLite Dual Engine).
+Relational Database Layer for CareerMatch AI (PostgreSQL / MySQL / SQLite Dual Engine).
 Uses parameterized SQL statements to prevent SQL injection and persists all 17
 normalized tables for the Unified AI Career Intelligence Engine:
 1. users
@@ -27,12 +27,98 @@ import sqlite3
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from backend.config import DATABASE_PATH
+from backend.config import DATABASE_PATH, DATABASE_URL
 
 DB_PATH = os.environ.get("DATABASE_PATH", DATABASE_PATH)
 
+try:
+    import psycopg2  # type: ignore
+    import psycopg2.extras  # type: ignore
+except ImportError:
+    psycopg2 = None
 
-def get_connection() -> sqlite3.Connection:
+
+class PostgresCursorWrapper:
+    def __init__(self, cursor: Any) -> None:
+        self._cur = cursor
+
+    def execute(self, query: str, params: Any = None) -> Any:
+        # Handle SQLite-specific INSERT OR REPLACE for Postgres
+        if "INSERT OR REPLACE INTO resumes" in query:
+            if params and len(params) > 0:
+                self._cur.execute("DELETE FROM resumes WHERE id = %s", (params[0],))
+            query = query.replace("INSERT OR REPLACE INTO", "INSERT INTO")
+        elif "INSERT OR REPLACE INTO roadmap_progress" in query:
+            if params and len(params) >= 2:
+                self._cur.execute("DELETE FROM roadmap_progress WHERE resume_id = %s AND target_role = %s", (params[0], params[1]))
+            query = query.replace("INSERT OR REPLACE INTO", "INSERT INTO")
+
+        sql = query.replace("?", "%s")
+        if params is None:
+            return self._cur.execute(sql)
+        return self._cur.execute(sql, params)
+
+    def executescript(self, script: str) -> None:
+        adapted = script.replace("INTEGER PRIMARY KEY AUTOINCREMENT", "SERIAL PRIMARY KEY")
+        for stmt in adapted.split(";"):
+            cleaned = stmt.strip()
+            if cleaned:
+                self._cur.execute(cleaned)
+
+    def fetchone(self) -> Any:
+        return self._cur.fetchone()
+
+    def fetchall(self) -> Any:
+        return self._cur.fetchall()
+
+    @property
+    def lastrowid(self) -> Any:
+        try:
+            return self._cur.lastrowid
+        except Exception:
+            return None
+
+    def close(self) -> None:
+        self._cur.close()
+
+
+class PostgresConnectionWrapper:
+    def __init__(self, conn: Any) -> None:
+        self._conn = conn
+
+    def cursor(self) -> PostgresCursorWrapper:
+        return PostgresCursorWrapper(self._conn.cursor())
+
+    def commit(self) -> None:
+        self._conn.commit()
+
+    def rollback(self) -> None:
+        self._conn.rollback()
+
+    def close(self) -> None:
+        self._conn.close()
+
+    def executescript(self, script: str) -> None:
+        cur = self.cursor()
+        cur.executescript(script)
+        self.commit()
+        cur.close()
+
+
+def get_connection() -> Any:
+    db_url = os.environ.get("DATABASE_URL", DATABASE_URL).strip()
+    if db_url and psycopg2 is not None and (db_url.startswith("postgres://") or db_url.startswith("postgresql://")):
+        try:
+            # Ensure proper Postgres scheme & SSL for Neon
+            if db_url.startswith("postgres://"):
+                db_url = db_url.replace("postgres://", "postgresql://", 1)
+            if "sslmode=" not in db_url:
+                db_url += ("&" if "?" in db_url else "?") + "sslmode=require"
+            pg_conn = psycopg2.connect(db_url, cursor_factory=psycopg2.extras.RealDictCursor)
+            return PostgresConnectionWrapper(pg_conn)
+        except Exception as exc:
+            print(f"Warning: PostgreSQL connection failed, falling back to SQLite: {exc}")
+
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON;")
@@ -40,7 +126,7 @@ def get_connection() -> sqlite3.Connection:
 
 
 def init_db() -> None:
-    """Create all 17 CareerMatch AI 2.0 relational tables if they do not exist."""
+    """Create all 17 CareerMatch AI relational tables if they do not exist."""
     conn = get_connection()
     cursor = conn.cursor()
 

@@ -1,5 +1,5 @@
 /**
- * CareerMatch AI Design System: Base & Reset
+ * CareerMatch AI Design System: Base Styles & Reset
  */
 
 *, *::before, *::after {
@@ -10,17 +10,20 @@
 
 html {
   font-size: 16px;
-  -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
   accent-color: var(--brand-accent);
 }
 
 body {
   background-color: var(--bg-canvas);
+  background-image: var(--bg-pattern);
+  background-size: var(--bg-pattern-size);
+  background-attachment: fixed;
   color: var(--text-primary);
   font-family: var(--font-ui);
   font-size: var(--text-body);
-  line-height: var(--leading-normal);
+  line-height: var(--lh-body);
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -41,62 +44,67 @@ h1, h2, h3, h4, .font-serif {
 
 h1 {
   font-size: var(--text-h1);
-  line-height: var(--leading-tight);
+  line-height: var(--lh-tight);
 }
 
 h2 {
   font-size: var(--text-h2);
-  line-height: var(--leading-snug);
+  line-height: var(--lh-heading);
 }
 
 h3 {
   font-size: var(--text-h3);
-  line-height: var(--leading-snug);
+  line-height: var(--lh-heading);
 }
 
 h4 {
-  font-size: 1.05rem;
-  line-height: var(--leading-snug);
-  font-family: var(--font-ui);
-  font-weight: 600;
+  font-size: var(--text-h4);
+  line-height: var(--lh-heading);
 }
 
 p {
   color: var(--text-secondary);
-  line-height: var(--leading-normal);
+  line-height: var(--lh-body);
 }
 
-p.lead {
-  font-size: var(--text-body-lg);
-  color: var(--text-primary);
-  line-height: var(--leading-snug);
+.font-mono {
+  font-family: var(--font-mono);
+  letter-spacing: -0.02em;
 }
 
-.measure-prose {
-  max-width: var(--measure-prose);
-}
-
-code, kbd, samp, pre, .font-mono {
+code, pre, kbd, samp {
   font-family: var(--font-mono);
   font-size: 0.875em;
-  font-variant-numeric: tabular-nums;
 }
 
-.tabular-nums, .metric-value, .score-num, td.num {
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
+code {
+  background-color: var(--bg-sunken);
+  color: var(--text-primary);
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-subtle);
+}
+
+pre {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2);
+  overflow-x: auto;
+  line-height: 1.5;
 }
 
 a {
   color: var(--brand-accent);
-  text-decoration: none;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
   transition: color var(--transition-fast);
 }
 
 a:hover {
   color: var(--brand-hover);
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  text-decoration-thickness: 2px;
 }
 
 hr {
@@ -105,28 +113,33 @@ hr {
   margin: var(--space-3) 0;
 }
 
-img, svg {
-  max-width: 100%;
-  display: block;
+/* ==========================================================================
+   SCROLL REVEAL ANIMATIONS
+   ========================================================================== */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 400ms cubic-bezier(0.16, 1, 0.3, 1), transform 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
 }
 
-button, input, select, textarea {
-  font: inherit;
-  color: inherit;
+.scroll-reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* ==========================================================================
-   ACCESSIBILITY & FOCUS RINGS
+   ACCESSIBILITY
    ========================================================================== */
 .skip-link {
   position: absolute;
-  top: -9999px;
+  top: -100px;
   left: var(--space-2);
-  background: var(--brand-accent);
+  background-color: var(--brand-accent);
   color: var(--text-inverse);
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
-  z-index: var(--z-modal);
+  z-index: var(--z-toast);
   font-weight: 600;
   text-decoration: none;
 }
@@ -160,6 +173,12 @@ button, input, select, textarea {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+
+  .scroll-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
 }
 
 /* ==========================================================================
@@ -168,6 +187,7 @@ button, input, select, textarea {
 @media print {
   body {
     background: #FFF !important;
+    background-image: none !important;
     color: #111 !important;
     font-size: 11pt;
   }
@@ -176,6 +196,7 @@ button, input, select, textarea {
   .app-topbar,
   .mobile-bottom-nav,
   .cmd-palette-backdrop,
+  .more-drawer-backdrop,
   .toast-container,
   .btn,
   .no-print {

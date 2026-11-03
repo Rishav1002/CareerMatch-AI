@@ -1,5 +1,5 @@
 """
-Backend Server for CareerMatch AI 2.0.
+Backend Server for CareerMatch AI.
 Provides REST APIs for:
 - Existing Core Features:
   1. AI-powered resume parsing (PDF via PyMuPDF + pypdf, DOCX via python-docx, TXT)
@@ -8,7 +8,7 @@ Provides REST APIs for:
   4. Interactive roadmap node graph generation
   5. Resume improvement suggestions
   6. Relational Database Student Dashboard & analysis history
-- CareerMatch AI 2.0 Advanced Modules:
+- CareerMatch AI Advanced Modules:
   - JWT Authentication & Central Student Career Profile (`/api/auth/*`, `/api/profile`)
   - Module 1: Live Job Market Intelligence (`/api/jobs/market`)
   - Module 2: AI Mock Interview Simulator (`/api/interview/*`)
@@ -355,9 +355,9 @@ try:
     from fastapi.staticfiles import StaticFiles  # type: ignore
 
     app = FastAPI(
-        title="CareerMatch AI 2.0 API",
+        title="CareerMatch AI API",
         description="Unified AI Career Intelligence, Skill Development & Placement Readiness Platform",
-        version="2.0.0",
+        version="1.0.0",
     )
 
     app.add_middleware(
@@ -387,7 +387,7 @@ try:
 
     @app.get("/api/health")
     async def api_health() -> Dict[str, str]:
-        return {"status": "ok", "version": "2.0.0", "stack": "CareerMatch AI 2.0 (Python + Relational DB + Google Gemini)"}
+        return {"status": "ok", "version": "1.0.0", "stack": "CareerMatch AI (Python + Relational DB + Google Gemini)"}
 
     @app.get("/api/bootstrap")
     async def api_bootstrap(request: Request) -> Dict[str, Any]:
@@ -462,7 +462,7 @@ try:
         delete_analysis_record(analysis_id)
         return {"dashboard": get_dashboard_metrics(res_id)}
 
-    # ---- CareerMatch AI 2.0 Endpoints ----
+    # ---- CareerMatch AI Endpoints ----
 
     @app.post("/api/auth/register")
     async def api_auth_register(request: Request) -> Dict[str, Any]:
@@ -675,7 +675,7 @@ class CareerMatchHTTPHandler(BaseHTTPRequestHandler):
                     return
 
         if path == "/api/health":
-            self._send_json({"status": "ok", "version": "2.0.0", "stack": "CareerMatch AI 2.0"})
+            self._send_json({"status": "ok", "version": "1.0.0", "stack": "CareerMatch AI"})
             return
         if path == "/api/bootstrap":
             try:
@@ -855,17 +855,17 @@ class CareerMatchHTTPHandler(BaseHTTPRequestHandler):
 
 def run_server() -> None:
     port = int(os.environ.get("PORT", str(DEFAULT_PORT)))
-    host = os.environ.get("HOST", "127.0.0.1")
+    host = os.environ.get("HOST", "0.0.0.0" if "PORT" in os.environ else "127.0.0.1")
     try:
         import uvicorn  # type: ignore
         if app is not None:
-            print(f"Starting CareerMatch AI 2.0 (FastAPI/Uvicorn) on http://{host}:{port}")
+            print(f"Starting CareerMatch AI (FastAPI/Uvicorn) on http://{host}:{port}")
             uvicorn.run("backend.main:app", host=host, port=port, log_level="info")
             return
     except ImportError:
         pass
 
-    print(f"Starting CareerMatch AI 2.0 Server on http://{host}:{port}")
+    print(f"Starting CareerMatch AI Server on http://{host}:{port}")
     server = ThreadingHTTPServer((host, port), CareerMatchHTTPHandler)
     server.serve_forever()
 

@@ -36,227 +36,52 @@
 
     <div class="app-shell">
       <!-- ======================================================================
-           LEFT RAIL NAVIGATION (Desktop / Tablet Persistent & Collapsible)
+           TOP HORIZONTAL NAVIGATION BAR (Unified Sticky Header)
            ====================================================================== -->
-      <aside class="app-sidebar" id="appSidebar" aria-label="Main Navigation">
-        <div class="sidebar-header">
-          <a href="#/landing" class="brand-badge">
-            <span class="brand-mark">CM</span>
-            <span class="brand-name">CareerMatch</span>
-            <span class="brand-edition">Guide</span>
-          </a>
-          <button class="btn btn-ghost btn-sm btn-icon" id="sidebarCollapseBtn" aria-label="Collapse Navigation Rail" title="Collapse sidebar">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="3" y1="12" x2="21" y2="12"></line>
-              <line x1="3" y1="6" x2="21" y2="6"></line>
-              <line x1="3" y1="18" x2="21" y2="18"></line>
-            </svg>
-          </button>
-        </div>
-
-        <nav class="sidebar-nav">
-          <!-- Overview -->
-          <div class="nav-group">
-            <a href="#/dashboard" class="nav-link" data-view="dashboard">
-              <svg class="nav-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <rect x="3" y="3" width="7" height="9"></rect>
-                <rect x="14" y="3" width="7" height="5"></rect>
-                <rect x="14" y="12" width="7" height="9"></rect>
-                <rect x="3" y="16" width="7" height="5"></rect>
-              </svg>
-              <span class="nav-link-text" data-i18n="nav_dashboard">Overview Dashboard</span>
+      <header class="app-topbar" id="appTopbar" aria-label="Main Navigation">
+        <div class="topbar-container">
+          <!-- Left: Brand Identity -->
+          <div class="topbar-brand">
+            <a href="#/landing" class="brand-badge" title="CareerMatch AI">
+              <span class="brand-mark">CM</span>
+              <div class="brand-titles">
+                <span class="brand-name">CareerMatch</span>
+                <span class="brand-edition">AI</span>
+              </div>
             </a>
           </div>
 
-          <!-- Group 1: DIAGNOSE -->
-          <div class="nav-group">
-            <div class="nav-group-title">
-              <span data-i18n="nav_group_diagnose">Diagnose</span>
-            </div>
-            <ul class="nav-group-items">
-              <li>
-                <a href="#/analyzer" class="nav-link" data-view="analyzer" id="navAnalyzerLink">
-                  <svg class="nav-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                    <line x1="16" y1="17" x2="8" y2="17"></line>
-                  </svg>
-                  <span class="nav-link-text" data-i18n="nav_analyzer">Resume &amp; JD Match</span>
-                </a>
-              </li>
-              <li>
-                <a href="#/report" class="nav-link" data-view="report" id="navResultsLink">
-                  <svg class="nav-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
-                    <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
-                  </svg>
-                  <span class="nav-link-text" data-i18n="nav_report">Career Report &amp; Ledger</span>
-                </a>
-              </li>
-              <li>
-                <a href="#/ats" class="nav-link" data-view="ats">
-                  <svg class="nav-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <polyline points="9 11 12 14 22 4"></polyline>
-                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-                  </svg>
-                  <span class="nav-link-text" data-i18n="nav_ats">ATS Resume Simulator</span>
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <!-- Group 2: PREPARE -->
-          <div class="nav-group">
-            <div class="nav-group-title">
-              <span data-i18n="nav_group_prepare">Prepare</span>
-            </div>
-            <ul class="nav-group-items">
-              <li>
-                <a href="#/roadmap" class="nav-link" data-view="roadmap">
-                  <svg class="nav-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
-                    <line x1="8" y1="2" x2="8" y2="18"></line>
-                    <line x1="16" y1="6" x2="16" y2="22"></line>
-                  </svg>
-                  <span class="nav-link-text" data-i18n="nav_roadmap">Adaptive Roadmap</span>
-                </a>
-              </li>
-              <li>
-                <a href="#/planner" class="nav-link" data-view="planner">
-                  <svg class="nav-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                  </svg>
-                  <span class="nav-link-text" data-i18n="nav_planner">Study Planner</span>
-                  <span class="nav-link-badge">🔥 3d</span>
-                </a>
-              </li>
-              <li>
-                <a href="#/interview" class="nav-link" data-view="interview">
-                  <svg class="nav-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                  </svg>
-                  <span class="nav-link-text" data-i18n="nav_interview">AI Mock Interview</span>
-                </a>
-              </li>
-              <li>
-                <a href="#/skills" class="nav-link" data-view="skills">
-                  <svg class="nav-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <polyline points="16 18 22 12 16 6"></polyline>
-                    <polyline points="8 6 2 12 8 18"></polyline>
-                  </svg>
-                  <span class="nav-link-text" data-i18n="nav_skills">Skill Assessment Lab</span>
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <!-- Group 3: PROVE -->
-          <div class="nav-group">
-            <div class="nav-group-title">
-              <span data-i18n="nav_group_prove">Prove</span>
-            </div>
-            <ul class="nav-group-items">
-              <li>
-                <a href="#/github" class="nav-link" data-view="github">
-                  <svg class="nav-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
-                  </svg>
-                  <span class="nav-link-text" data-i18n="nav_github">GitHub Proof &amp; Repos</span>
-                </a>
-              </li>
-              <li>
-                <a href="#/readiness" class="nav-link" data-view="readiness">
-                  <svg class="nav-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <polygon points="12 6 12 12 16 14"></polygon>
-                  </svg>
-                  <span class="nav-link-text" data-i18n="nav_readiness">Placement Index (PRI)</span>
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <!-- Group 4: DECIDE -->
-          <div class="nav-group">
-            <div class="nav-group-title">
-              <span data-i18n="nav_group_decide">Decide</span>
-            </div>
-            <ul class="nav-group-items">
-              <li>
-                <a href="#/market" class="nav-link" data-view="market">
-                  <svg class="nav-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <line x1="18" y1="20" x2="18" y2="10"></line>
-                    <line x1="12" y1="20" x2="12" y2="4"></line>
-                    <line x1="6" y1="20" x2="6" y2="14"></line>
-                  </svg>
-                  <span class="nav-link-text" data-i18n="nav_market">Job Market Intel</span>
-                </a>
-              </li>
-              <li>
-                <a href="#/tracker" class="nav-link" data-view="tracker">
-                  <svg class="nav-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <rect x="3" y="3" width="18" height="18" rx="2"></rect>
-                    <line x1="9" y1="3" x2="9" y2="21"></line>
-                    <line x1="15" y1="3" x2="15" y2="21"></line>
-                  </svg>
-                  <span class="nav-link-text" data-i18n="nav_tracker">Application Tracker</span>
-                </a>
-              </li>
-              <li>
-                <a href="#/compare" class="nav-link" data-view="compare">
-                  <svg class="nav-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M16 3h5v5"></path>
-                    <path d="M4 20L21 3"></path>
-                    <path d="M21 16v5h-5"></path>
-                    <path d="M15 15l6 6"></path>
-                    <path d="M4 4l5 5"></path>
-                  </svg>
-                  <span class="nav-link-text" data-i18n="nav_compare">Role &amp; Salary Benchmark</span>
-                </a>
-              </li>
-            </ul>
-          </div>
-        </nav>
-
-        <div class="sidebar-footer">
-          <a href="#/profile" class="sidebar-user-card" id="sidebarUserCard" title="View Profile">
-            <div class="sidebar-user-avatar" id="sidebarUserAvatar">AS</div>
-            <div class="sidebar-user-info">
-              <div class="sidebar-user-name" id="sidebarUserName">Aarav Sharma</div>
-              <div class="sidebar-user-role" id="sidebarUserRole">Aspiring Data Engineer</div>
-            </div>
-            <span class="score-pill high" id="sidebarPriBadge">83%</span>
-          </a>
-        </div>
-      </aside>
-
-      <!-- ======================================================================
-           MAIN CONTENT WRAPPER & SLIM TOPBAR
-           ====================================================================== -->
-      <div class="app-main">
-        <header class="app-topbar">
-          <div class="topbar-left">
-            <a href="#/landing" class="btn btn-ghost btn-sm" style="font-family: var(--font-display); font-size: 1.05rem; font-weight: 600;">
-              CareerMatch AI
+          <!-- Center: Primary Feature Navigation Links -->
+          <nav class="topbar-nav" id="topbarNav" aria-label="Primary Navigation">
+            <a href="#/landing" class="topbar-nav-link" data-view="landing">
+              <span data-i18n="nav_guide">Guide</span>
             </a>
-            <span style="color: var(--border-medium);">/</span>
-            <span id="topbarViewTitle" style="font-size: 0.875rem; color: var(--text-secondary); font-weight: 500;">
-              Field Guide
-            </span>
-          </div>
+            <a href="#/dashboard" class="topbar-nav-link" data-view="dashboard">
+              <span data-i18n="nav_dashboard">Overview</span>
+            </a>
+            <a href="#/analyzer" class="topbar-nav-link" data-view="analyzer" id="navAnalyzerLink">
+              <span data-i18n="nav_analyzer">Analyzer</span>
+            </a>
+            <a href="#/report" class="topbar-nav-link" data-view="report" id="navResultsLink">
+              <span data-i18n="nav_report">Report &amp; Gaps</span>
+            </a>
+            <a href="#/roadmap" class="topbar-nav-link" data-view="roadmap">
+              <span data-i18n="nav_roadmap">Roadmap</span>
+            </a>
+            <a href="#/market" class="topbar-nav-link" data-view="market">
+              <span data-i18n="nav_market">Job Market</span>
+            </a>
+          </nav>
 
-          <div class="topbar-right">
+          <!-- Right: Actions & Three-Line Expandable More Menu -->
+          <div class="topbar-actions">
             <!-- Command Palette Trigger -->
             <button type="button" class="cmd-palette-trigger" id="cmdPaletteTrigger" aria-label="Open Command Palette (Ctrl+K)">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="11" cy="11" r="8"></circle>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
               </svg>
-              <span class="cmd-text" data-i18n="action_cmd_palette">Search &amp; Jump...</span>
+              <span class="cmd-text" data-i18n="action_cmd_palette">Jump...</span>
               <kbd class="cmd-shortcut-badge">⌘K</kbd>
             </button>
 
@@ -293,9 +118,143 @@
             <button type="button" class="btn btn-secondary btn-sm" id="openAuthModalBtn">
               Sign In
             </button>
-          </div>
-        </header>
 
+            <!-- ☰ Three-line "More Tools" Expandable Button -->
+            <button type="button" class="btn btn-ghost btn-sm more-tools-trigger" id="moreToolsBtn" aria-expanded="false" aria-controls="moreToolsDrawer" title="Explore All Modules &amp; Tools">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="4" y1="6" x2="20" y2="6"></line>
+                <line x1="4" y1="12" x2="20" y2="12"></line>
+                <line x1="4" y1="18" x2="20" y2="18"></line>
+              </svg>
+              <span class="more-tools-text">More</span>
+              <svg class="more-tools-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- ======================================================================
+           MORE TOOLS EXPANDABLE DRAWER
+           ====================================================================== -->
+      <div class="more-drawer-backdrop" id="moreToolsBackdrop" style="display: none;">
+        <div class="more-drawer" id="moreToolsDrawer" role="dialog" aria-modal="true" aria-label="All Tools &amp; Modules">
+          <div class="more-drawer-header">
+            <div>
+              <div style="font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary);">CareerMatch Suite</div>
+              <h3 style="font-size: 1.15rem; margin: 0; font-family: var(--font-display);">All Modules &amp; Tools</h3>
+            </div>
+            <button type="button" class="btn btn-ghost btn-sm btn-icon" id="closeMoreToolsBtn" aria-label="Close tools menu">✕</button>
+          </div>
+
+          <div class="more-drawer-grid">
+            <!-- Section 1: Audit & Verification -->
+            <div class="more-drawer-col">
+              <div class="more-col-title">Audit &amp; Verification</div>
+              <a href="#/ats" class="more-module-item" data-view="ats">
+                <div class="more-item-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                </div>
+                <div class="more-item-content">
+                  <div class="more-item-name">ATS Resume Simulator</div>
+                  <div class="more-item-desc">4-pillar formatting, section checks &amp; bullet rewrites</div>
+                </div>
+              </a>
+              <a href="#/github" class="more-module-item" data-view="github">
+                <div class="more-item-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+                </div>
+                <div class="more-item-content">
+                  <div class="more-item-name">GitHub Skill Verification</div>
+                  <div class="more-item-desc">Verify commits against claimed resume skills</div>
+                </div>
+              </a>
+            </div>
+
+            <!-- Section 2: Practice & Preparation -->
+            <div class="more-drawer-col">
+              <div class="more-col-title">Practice &amp; Preparation</div>
+              <a href="#/interview" class="more-module-item" data-view="interview">
+                <div class="more-item-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                </div>
+                <div class="more-item-content">
+                  <div class="more-item-name">AI Mock Interview</div>
+                  <div class="more-item-desc">Adaptive 5-rubric technical &amp; behavioral simulator</div>
+                </div>
+              </a>
+              <a href="#/skills" class="more-module-item" data-view="skills">
+                <div class="more-item-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                </div>
+                <div class="more-item-content">
+                  <div class="more-item-name">Skill Assessment Lab</div>
+                  <div class="more-item-desc">AST code analyzer &amp; timed MCQ tests</div>
+                </div>
+              </a>
+              <a href="#/planner" class="more-module-item" data-view="planner">
+                <div class="more-item-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                </div>
+                <div class="more-item-content">
+                  <div class="more-item-name">Study Planner &amp; Streaks</div>
+                  <div class="more-item-desc">Structured 7-day milestone planner</div>
+                </div>
+              </a>
+            </div>
+
+            <!-- Section 3: Decide & Compare -->
+            <div class="more-drawer-col">
+              <div class="more-col-title">Career Benchmarks &amp; Tracking</div>
+              <a href="#/readiness" class="more-module-item" data-view="readiness">
+                <div class="more-item-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><polygon points="12 6 12 12 16 14"></polygon></svg>
+                </div>
+                <div class="more-item-content">
+                  <div class="more-item-name">Placement Readiness (PRI)</div>
+                  <div class="more-item-desc">6-pillar placement readiness index score</div>
+                </div>
+              </a>
+              <a href="#/compare" class="more-module-item" data-view="compare">
+                <div class="more-item-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 3h5v5"></path><path d="M4 20L21 3"></path><path d="M21 16v5h-5"></path><path d="M15 15l6 6"></path><path d="M4 4l5 5"></path></svg>
+                </div>
+                <div class="more-item-content">
+                  <div class="more-item-name">Role &amp; Salary Benchmark</div>
+                  <div class="more-item-desc">India tech salary ranges &amp; skill transition bridge</div>
+                </div>
+              </a>
+              <a href="#/tracker" class="more-module-item" data-view="tracker">
+                <div class="more-item-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+                </div>
+                <div class="more-item-content">
+                  <div class="more-item-name">Application Tracker</div>
+                  <div class="more-item-desc">Kanban pipeline for your applications</div>
+                </div>
+              </a>
+            </div>
+          </div>
+
+          <!-- Drawer Footer: Profile & Session Info -->
+          <div class="more-drawer-footer">
+            <a href="#/profile" class="sidebar-user-card" id="sidebarUserCard" title="View Profile">
+              <div class="sidebar-user-avatar" id="sidebarUserAvatar">AS</div>
+              <div class="sidebar-user-info">
+                <div class="sidebar-user-name" id="sidebarUserName">Aarav Sharma</div>
+                <div class="sidebar-user-role" id="sidebarUserRole">Aspiring Data Engineer</div>
+              </div>
+              <span class="score-pill high" id="sidebarPriBadge">83%</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================================================================
+           MAIN CONTENT WRAPPER
+           ====================================================================== -->
+      <div class="app-main">
         <main id="mainContent" class="app-content">
           <!-- ==================================================================
                VIEW 1: PUBLIC LANDING PAGE & FIELD GUIDE (#/landing)
@@ -303,7 +262,7 @@
           <section id="view-landing" class="view-panel landing-view active">
             <div class="landing-hero">
               <div class="landing-eyebrow">
-                <span>Field Guide Edition 2.0</span>
+                <span>Field Guide Edition</span>
                 <span>·</span>
                 <span>Deterministic &amp; Transparent Scoring</span>
               </div>
@@ -324,7 +283,7 @@
             </div>
 
             <!-- Interactive Sample Report Preview -->
-            <div class="landing-preview-card">
+            <div class="landing-preview-card scroll-reveal">
               <div class="landing-preview-header">
                 <div>
                   <span class="status-badge status-matched">Sample Interactive Ledger</span>
@@ -377,7 +336,7 @@
             <!-- 3 Steps Explanation -->
             <div style="margin: var(--space-6) 0;">
               <h2 style="text-align: center; margin-bottom: var(--space-3);">How the Field Guide Works in 3 Steps</h2>
-              <div class="steps-grid">
+              <div class="steps-grid scroll-reveal">
                 <div class="step-card">
                   <div class="step-num">01</div>
                   <h3>Submit or Paste Resume</h3>
@@ -403,7 +362,7 @@
                 From resume diagnosis to salary benchmarking, each workspace addresses a key hurdle in the Indian placement journey.
               </p>
 
-              <div class="modules-outcomes-grid">
+              <div class="modules-outcomes-grid scroll-reveal">
                 <div class="outcome-group-card">
                   <div class="outcome-title">
                     <span>1. Diagnose Readiness</span>
@@ -490,22 +449,29 @@
               </div>
             </div>
 
-            <!-- Scoring Transparency Section -->
-            <div class="transparency-section">
-              <h2 style="margin-bottom: var(--space-1);">How Scoring Works (Mathematical Transparency)</h2>
-              <p style="font-size: 0.95rem;">
-                Unlike generic LLM wrappers that output random scores, CareerMatch AI calculates weighted indices using transparent formulas:
-              </p>
-              <div class="formula-box">
-                Overall Match Score = (Mandatory Match Pct × 0.50) + (Preferred Match Pct × 0.30) + (Project Evidence Pct × 0.20)
-              </div>
-              <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0;">
-                Every matched skill requires a verifiable text anchor from your resume. If a skill does not exist in your resume, it receives exactly 0 points until verified.
-              </p>
+            <!-- Scoring Transparency Accordion -->
+            <div style="margin: var(--space-6) 0;" class="scroll-reveal">
+              <details class="accordion-card">
+                <summary class="accordion-header">
+                  <span>📐 Scoring Mathematics &amp; Formula Transparency</span>
+                  <span class="accordion-icon">+</span>
+                </summary>
+                <div class="accordion-body">
+                  <p style="margin-bottom: var(--space-15);">
+                    Unlike generic LLM wrappers that output random scores, CareerMatch AI calculates weighted indices using strictly transparent formulas:
+                  </p>
+                  <div class="formula-box">
+                    Overall Match Score = (Mandatory Match Pct × 0.50) + (Preferred Match Pct × 0.30) + (Project Evidence Pct × 0.20)
+                  </div>
+                  <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0;">
+                    Every matched skill requires a verifiable text anchor from your resume. If a skill does not exist in your resume, it receives exactly 0 points until verified.
+                  </p>
+                </div>
+              </details>
             </div>
 
             <!-- Privacy Promise -->
-            <div class="card" style="margin: var(--space-6) 0; padding: var(--space-3); border-color: var(--border-medium);">
+            <div class="card scroll-reveal" style="margin: var(--space-6) 0; padding: var(--space-3); border-color: var(--border-medium);">
               <h3 style="margin-bottom: var(--space-1);">Our Privacy Promise</h3>
               <p style="font-size: 0.9rem; margin-bottom: var(--space-15);">
                 We believe your career data is strictly yours. When you check <strong>"Do not save my resume"</strong>, parsing occurs exclusively in memory and no resume document or personal identification is stored in our database. We never sell student data or train external models on your resume.
@@ -515,38 +481,83 @@
               </a>
             </div>
 
-            <!-- FAQ Section -->
+            <!-- Collapsible FAQ Section -->
             <div style="margin: var(--space-6) 0;">
-              <h2 style="text-align: center; margin-bottom: var(--space-3);">Frequently Asked Questions</h2>
-              <div class="faq-list">
-                <details class="faq-item" open>
-                  <summary>How is CareerMatch AI different from generic resume score checkers?</summary>
-                  <p>Most online checkers generate superficial keyword percentages without context. CareerMatch AI verifies mandatory vs. preferred requirements, locates sentence-level evidence quotes, checks GitHub commit history, and generates a personalized learning roadmap with curated courses.</p>
+              <h2 style="text-align: center; margin-bottom: var(--space-3);" class="scroll-reveal">Frequently Asked Questions</h2>
+              <div class="scroll-reveal">
+                <details class="accordion-card">
+                  <summary class="accordion-header">
+                    <span>How is CareerMatch AI different from generic resume score checkers?</span>
+                    <span class="accordion-icon">+</span>
+                  </summary>
+                  <div class="accordion-body">
+                    Most online checkers generate superficial keyword percentages without context. CareerMatch AI verifies mandatory vs. preferred requirements, locates sentence-level evidence quotes, checks GitHub commit history, and generates a personalized learning roadmap with curated courses.
+                  </div>
                 </details>
-                <details class="faq-item">
-                  <summary>Is this platform tailored to the Indian tech hiring ecosystem?</summary>
-                  <p>Yes. The salary benchmarks, role matrices (TCS Digital, Razorpay, Flipkart, Swiggy, tier-1 tech GCCs), and ATS evaluation criteria are calibrated specifically for Indian engineering colleges and lateral hiring tracks in Bengaluru, Hyderabad, Pune, Gurugram, and Noida.</p>
+                <details class="accordion-card">
+                  <summary class="accordion-header">
+                    <span>Is this platform tailored to the Indian tech hiring ecosystem?</span>
+                    <span class="accordion-icon">+</span>
+                  </summary>
+                  <div class="accordion-body">
+                    Yes. The salary benchmarks, role matrices (TCS Digital, Razorpay, Flipkart, Swiggy, tier-1 tech GCCs), and ATS evaluation criteria are calibrated specifically for Indian engineering colleges and lateral hiring tracks in Bengaluru, Hyderabad, Pune, Gurugram, and Noida.
+                  </div>
                 </details>
-                <details class="faq-item">
-                  <summary>Can I export my career report as a clean PDF?</summary>
-                  <p>Yes. CareerMatch AI features a bespoke field-guide print stylesheet. Pressing Print or "Export PDF" strips away all navigation and formats your career report as an editorial ledger suitable for mentors or placement coordinators.</p>
+                <details class="accordion-card">
+                  <summary class="accordion-header">
+                    <span>Can I export my career report as a clean PDF?</span>
+                    <span class="accordion-icon">+</span>
+                  </summary>
+                  <div class="accordion-body">
+                    Yes. CareerMatch AI features a bespoke field-guide print stylesheet. Pressing Print or "Export PDF" strips away all navigation and formats your career report as an editorial ledger suitable for mentors or placement coordinators.
+                  </div>
                 </details>
               </div>
             </div>
 
-            <!-- Landing Footer -->
-            <footer class="landing-footer">
-              <div>
-                <strong>CareerMatch AI</strong> · Explainable Career Intelligence
+            <!-- Modern Editorial 4-Column Footer -->
+            <footer class="editorial-footer scroll-reveal">
+              <div class="footer-grid">
+                <div>
+                  <div class="brand-badge" style="margin-bottom: var(--space-15);">
+                    <span class="brand-mark">CM</span>
+                    <span class="brand-name">CareerMatch AI</span>
+                  </div>
+                  <p style="font-size: 0.85rem; color: var(--text-secondary); max-width: 320px; line-height: 1.5;">
+                    Explainable career intelligence, skill development, and placement readiness platform for engineering students and job seekers.
+                  </p>
+                </div>
+                <div>
+                  <div class="footer-col-title">Core Modules</div>
+                  <ul class="footer-links">
+                    <li><a href="#/analyzer">Resume Analyzer</a></li>
+                    <li><a href="#/report">Career Ledger &amp; Gaps</a></li>
+                    <li><a href="#/roadmap">Skill Roadmap</a></li>
+                    <li><a href="#/market">Job Market Intel</a></li>
+                  </ul>
+                </div>
+                <div>
+                  <div class="footer-col-title">Practice &amp; Proof</div>
+                  <ul class="footer-links">
+                    <li><a href="#/ats">ATS Simulator</a></li>
+                    <li><a href="#/interview">AI Mock Interview</a></li>
+                    <li><a href="#/github">GitHub Verifier</a></li>
+                    <li><a href="#/skills">Assessment Lab</a></li>
+                  </ul>
+                </div>
+                <div>
+                  <div class="footer-col-title">Account &amp; Trust</div>
+                  <ul class="footer-links">
+                    <li><a href="#/profile">Student Profile</a></li>
+                    <li><a href="#/readiness">Readiness Index (PRI)</a></li>
+                    <li><a href="#/tracker">Job Kanban</a></li>
+                    <li><span style="font-size: 0.82rem; color: var(--text-tertiary);">Zero Black-Box Math</span></li>
+                  </ul>
+                </div>
               </div>
-              <div>
-                <a href="#/landing" style="margin-right: 16px;">Guide</a>
-                <a href="#/dashboard" style="margin-right: 16px;">Dashboard</a>
-                <a href="#/analyzer" style="margin-right: 16px;">Analyzer</a>
-                <a href="#/market">Job Market</a>
-              </div>
-              <div>
-                <span>WCAG AA Compliant · Zero Black-Box Scoring</span>
+              <div class="footer-bottom">
+                <div>&copy; CareerMatch AI. MIT Licensed. Open placement intelligence.</div>
+                <div>WCAG AA Compliant · Deterministic &amp; Transparent</div>
               </div>
             </footer>
           </section>
@@ -874,6 +885,9 @@
                 </div>
 
                 <div style="display: flex; gap: var(--space-1);">
+                  <button type="button" class="btn btn-secondary btn-sm" id="shareScorecardBtn">
+                    Share Scorecard
+                  </button>
                   <button type="button" class="btn btn-secondary btn-sm" id="printReportBtn">
                     Print / Export PDF
                   </button>
@@ -1829,7 +1843,7 @@
     <!-- ======================================================================
          AUTH / REGISTER / DEMO LOGIN MODAL
          ====================================================================== -->
-    <div class="modal-backdrop" id="authModalBackdrop" style="display: none;">
+    <div class="modal-backdrop hidden" id="authModalBackdrop" style="display: none;">
       <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="authModalHeading">
         <div class="modal-header">
           <h3 id="authModalHeading">Sign In to CareerMatch</h3>

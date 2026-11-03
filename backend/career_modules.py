@@ -1,5 +1,5 @@
 """
-CareerMatch AI 2.0 — Advanced Career Intelligence Modules & Unified Engine.
+CareerMatch AI — Advanced Career Intelligence Modules & Unified Engine.
 Implements:
 - JWT Authentication & Central Student Career Profile
 - Module 1: Live Job Market Intelligence (Live API + Labelled Benchmark Dataset)
@@ -590,7 +590,7 @@ def _try_fetch_live_remotive_jobs(role_filter: str = "") -> Tuple[List[Dict[str,
     """
     try:
         url = "https://remotive.com/api/remote-jobs?category=software-dev&limit=16"
-        req = urllib.request.Request(url, headers={"User-Agent": "CareerMatchAI/2.0"})
+        req = urllib.request.Request(url, headers={"User-Agent": "CareerMatchAI/1.0"})
         with urllib.request.urlopen(req, timeout=3.2) as resp:
             raw = json.loads(resp.read().decode("utf-8", errors="ignore"))
             jobs_raw = raw.get("jobs", [])
@@ -1618,7 +1618,7 @@ def analyze_github_portfolio(body: Dict[str, Any]) -> Dict[str, Any]:
 
     headers = {
         "Accept": "application/vnd.github+json",
-        "User-Agent": "CareerMatchAI-PortfolioVerifier/2.0",
+        "User-Agent": "CareerMatchAI-PortfolioVerifier/1.0",
     }
     if GITHUB_TOKEN:
         headers["Authorization"] = f"Bearer {GITHUB_TOKEN}"

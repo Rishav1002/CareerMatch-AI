@@ -1,7 +1,7 @@
 {
   "name": "careermatch-ai-python",
   "private": true,
-  "version": "2.0.0",
+  "version": "1.0.0",
   "scripts": {
     "dev": "python3 app.py",
     "start": "python3 app.py",
@@ -10,4 +10,3 @@
     "lint": "python3 -m py_compile app.py backend/__init__.py backend/config.py backend/database.py backend/resume_parser.py backend/matching_engine.py backend/ai_service.py backend/career_modules.py backend/main.py scripts/check_links.py tests/test_basic.py"
   }
 }
-

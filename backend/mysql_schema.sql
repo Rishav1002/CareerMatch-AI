@@ -1,5 +1,5 @@
 -- ============================================================================
--- CareerMatch AI 2.0 — Normalized MySQL 8.0+ Relational Database Schema
+-- CareerMatch AI — Normalized Relational Database Schema
 -- Includes all 17 core tables with foreign keys, JSON columns, and indexes.
 -- ============================================================================
 

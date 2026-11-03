@@ -85,12 +85,20 @@ export class ScorecardShare {
       });
     }
 
-    // Attach to existing downloadReportJsonBtn or printReportBtn
+    // Attach to shareScorecardBtn or printReportBtn
+    document.addEventListener("click", (e) => {
+      const shareBtn = e.target.closest("#shareScorecardBtn");
+      if (shareBtn) {
+        e.preventDefault();
+        this.open();
+      }
+    });
+
     const printReportBtn = document.getElementById("printReportBtn");
     if (printReportBtn) {
       printReportBtn.addEventListener("click", (e) => {
         e.preventDefault();
-        this.open();
+        window.print();
       });
     }
   }

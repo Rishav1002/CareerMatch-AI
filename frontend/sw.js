@@ -2,7 +2,7 @@
  * CareerMatch AI: Service Worker for Shell Caching
  */
 
-const CACHE_NAME = "careermatch-shell-v2";
+const CACHE_NAME = "careermatch-shell-v3";
 const SHELL_ASSETS = [
   "/",
   "/frontend/index.html",
@@ -26,6 +26,7 @@ const SHELL_ASSETS = [
   "/frontend/js/components/planner.js",
   "/frontend/js/components/historyDiff.js",
   "/frontend/js/components/shareScorecard.js",
+  "/frontend/js/components/scrollReveal.js",
   "/frontend/assets/icon-192.svg",
 ];
 
@@ -50,31 +51,36 @@ self.addEventListener("activate", (evt) => {
 });
 
 self.addEventListener("fetch", (evt) => {
+  if (evt.request.method !== "GET") return;
+
   const url = new URL(evt.request.url);
 
-  // Always use network for /api/ routes
+  // Network-first for dynamic API routes
   if (url.pathname.startsWith("/api/")) {
     evt.respondWith(
       fetch(evt.request).catch(() => {
-        return new Response(JSON.stringify({ error: "Offline / Network failure" }), {
-          status: 503,
+        return new Response(JSON.stringify({ error: "Offline mode: network unavailable" }), {
           headers: { "Content-Type": "application/json" },
+          status: 503,
         });
       })
     );
     return;
   }
 
-  // Cache-first falling back to network for shell assets
+  // Cache-first for static shell assets
   evt.respondWith(
     caches.match(evt.request).then((cached) => {
       if (cached) return cached;
-      return fetch(evt.request).then((response) => {
-        if (response.status === 200) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(evt.request, clone));
+      return fetch(evt.request).then((resp) => {
+        if (!resp || resp.status !== 200 || resp.type !== "basic") {
+          return resp;
         }
-        return response;
+        const toCache = resp.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(evt.request, toCache);
+        });
+        return resp;
       });
     })
   );

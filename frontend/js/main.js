@@ -1,6 +1,6 @@
 /**
  * CareerMatch AI: Main Application Entry Point
- * Orchestrates Router, Store, i18n, and Components
+ * Orchestrates Router, Store, i18n, ScrollReveal, and Components
  */
 
 import { store } from "./store.js";
@@ -14,6 +14,7 @@ import { tracker } from "./components/tracker.js";
 import { planner } from "./components/planner.js";
 import { historyDiff } from "./components/historyDiff.js";
 import { scorecardShare } from "./components/shareScorecard.js";
+import { scrollReveal } from "./components/scrollReveal.js";
 
 function initApp() {
   // 1. Initialize Theme from store
@@ -29,6 +30,7 @@ function initApp() {
   planner.init();
   historyDiff.init();
   scorecardShare.init();
+  scrollReveal.init();
 
   // 3. Initialize Language
   applyTranslations();
@@ -36,7 +38,7 @@ function initApp() {
   // 4. Attach Shell Listeners
   attachShellListeners();
 
-  // 5. Expose globals for app.js interoperability
+  // 5. Expose globals for app.js and router interoperability
   window.__careermatch = {
     store,
     api,
@@ -48,19 +50,64 @@ function initApp() {
     planner,
     historyDiff,
     scorecardShare,
+    scrollReveal,
   };
 }
 
 function attachShellListeners() {
-  // Sidebar Collapse Toggle
-  const collapseBtn = document.getElementById("sidebarCollapseBtn");
-  const sidebar = document.getElementById("appSidebar");
-  if (collapseBtn && sidebar) {
-    collapseBtn.addEventListener("click", () => {
-      sidebar.classList.toggle("collapsed");
-      store.set("sidebarCollapsed", sidebar.classList.contains("collapsed"));
+  // Three-line "More Tools" Expandable Drawer Toggle
+  const moreBtn = document.getElementById("moreToolsBtn");
+  const moreBackdrop = document.getElementById("moreToolsBackdrop");
+  const closeMoreBtn = document.getElementById("closeMoreToolsBtn");
+
+  function openMoreTools() {
+    if (moreBackdrop) {
+      moreBackdrop.style.display = "flex";
+      moreBtn?.setAttribute("aria-expanded", "true");
+    }
+  }
+
+  function closeMoreTools() {
+    if (moreBackdrop) {
+      moreBackdrop.style.display = "none";
+      moreBtn?.setAttribute("aria-expanded", "false");
+    }
+  }
+
+  if (moreBtn) {
+    moreBtn.addEventListener("click", () => {
+      const isExpanded = moreBtn.getAttribute("aria-expanded") === "true";
+      if (isExpanded) {
+        closeMoreTools();
+      } else {
+        openMoreTools();
+      }
     });
   }
+
+  if (closeMoreBtn) {
+    closeMoreBtn.addEventListener("click", closeMoreTools);
+  }
+
+  if (moreBackdrop) {
+    moreBackdrop.addEventListener("click", (e) => {
+      if (e.target === moreBackdrop) {
+        closeMoreTools();
+      }
+    });
+  }
+
+  // Close drawer on Escape
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      closeMoreTools();
+      const authBackdrop = document.getElementById("authModalBackdrop");
+      if (authBackdrop && authBackdrop.style.display !== "none") {
+        authBackdrop.style.display = "none";
+        authBackdrop.classList.add("hidden");
+      }
+    }
+  });
 
   // Theme Toggle Button
   const themeBtn = document.getElementById("themeToggleBtn");
@@ -110,26 +157,9 @@ function attachShellListeners() {
   const mobileMoreTrigger = document.getElementById("mobileMoreTrigger");
   if (mobileMoreTrigger) {
     mobileMoreTrigger.addEventListener("click", () => {
-      commandPalette.open();
+      openMoreTools();
     });
   }
-
-  // Report Sub-tabs Switching
-  document.querySelectorAll("[data-report-tab]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const targetId = btn.getAttribute("data-report-tab");
-
-      document.querySelectorAll("[data-report-tab]").forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
-
-      document.querySelectorAll(".report-tab-panel").forEach((p) => {
-        p.hidden = true;
-      });
-
-      const panel = document.getElementById(targetId);
-      if (panel) panel.hidden = false;
-    });
-  });
 
   // Track Job Button Click Delegation from Job Market
   document.addEventListener("click", (e) => {

@@ -1,13 +1,10 @@
 # CareerMatch AI
 
-**Team Token Titans**
-
 AI-Powered Career Intelligence, Skill Development, and Placement Readiness Platform for students and early-career software/data engineers.
 
 ![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![FastAPI 0.115.6](https://img.shields.io/badge/FastAPI-0.115.6-009688?logo=fastapi&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
-![Built for Graviton 2026](https://img.shields.io/badge/Hackathon-Graviton%202026-8b5cf6)
 
 **Quick demo:** Click **Demo Mode (Aarav)** in the top bar or upload [`samples/sample_resume_aarav_sharma.txt`](samples/sample_resume_aarav_sharma.txt) and paste [`samples/sample_jd_data_engineer.txt`](samples/sample_jd_data_engineer.txt) (or click **Load sample Data Engineer JD**) to explore the resume analyzer and all 8 CareerMatch AI modules.
 
@@ -142,8 +139,8 @@ Each job requirement is evaluated once and assigned a single status: **Matched**
 
 ### Windows (Command Prompt / PowerShell)
 ```bat
-git clone https://github.com/shubhamsharma200212-coder/Token_Titans.git
-cd Token_Titans
+git clone https://github.com/your-username/CareerMatch.git
+cd CareerMatch
 python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
@@ -154,8 +151,8 @@ uvicorn backend.main:app --reload --host 127.0.0.1 --port 3000
 
 ### macOS / Linux
 ```bash
-git clone https://github.com/shubhamsharma200212-coder/Token_Titans.git
-cd Token_Titans
+git clone https://github.com/your-username/CareerMatch.git
+cd CareerMatch
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
@@ -183,7 +180,7 @@ Open `http://127.0.0.1:3000` in your browser (or `http://127.0.0.1:3000/docs` fo
 ## Project Structure
 
 ```text
-Token_Titans/
+CareerMatch/
 ├── .github/
 │   └── workflows/
 │       └── test.yml              # GitHub Actions CI workflow running pytest on every push
@@ -192,7 +189,7 @@ Token_Titans/
 │   ├── __init__.py               # Backend package marker
 │   ├── config.py                 # Centralized env config (GEMINI_API_KEY, GEMINI_MODEL, DATABASE_PATH, JWT_SECRET, PORT)
 │   ├── main.py                   # FastAPI routes, ThreadingHTTPServer fallback, and static file mounting
-│   ├── career_modules.py         # JWT auth, Central Student Profile, and CareerMatch AI 2.0 Modules 1–8
+│   ├── career_modules.py         # JWT auth, Central Student Profile, and CareerMatch AI Modules 1–8
 │   ├── matching_engine.py        # 8 role templates, JD heading parser, 100-pt scorer, and roadmap node builder
 │   ├── resume_parser.py          # PDF (PyMuPDF + pypdf), DOCX & TXT extraction, 38-skill catalog, whole-word matcher
 │   ├── ai_service.py             # Gemini API calls, response_schema verification, and template fallbacks
@@ -212,7 +209,7 @@ Token_Titans/
 ├── scripts/
 │   └── check_links.py            # Utility script that requests every URL in backend/resources.json
 ├── tests/
-│   └── test_basic.py             # Pytest suite verifying core matching + CareerMatch AI 2.0 Modules 1–8
+│   └── test_basic.py             # Pytest suite verifying core matching + CareerMatch AI Modules 1–8
 ├── docs/
 │   └── screenshots/
 │       └── README.txt            # Checklist of the 5 screenshots referenced in this README
@@ -269,8 +266,7 @@ python3 scripts/check_links.py
 
 ---
 
-## Team, License & Acknowledgements
+## License & Acknowledgements
 
-- **Team Token Titans**
 - **License:** Distributed under the [MIT License](LICENSE).
-- **Acknowledgements:** Built for **Graviton 2026** using the [Google Gemini API (`google-genai`)](https://ai.google.dev/), [FastAPI](https://fastapi.tiangolo.com/), and community learning paths referenced from [roadmap.sh](https://roadmap.sh/).
+- **Acknowledgements:** Built using the [Google Gemini API (google-genai)](https://ai.google.dev/), [FastAPI](https://fastapi.tiangolo.com/), and community learning paths referenced from [roadmap.sh](https://roadmap.sh/).
