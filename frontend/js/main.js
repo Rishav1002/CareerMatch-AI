@@ -28,40 +28,65 @@ function initApp() {
   document.documentElement.setAttribute("data-theme", savedTheme);
   document.documentElement.style.colorScheme = savedTheme;
 
-  // 2. Initialize Components
-  router.init();
-  commandPalette.init();
-  guidedFix.init();
-  notifications.init();
-  tracker.init();
-  planner.init();
-  historyDiff.init();
-  scorecardShare.init();
-  scrollReveal.init();
-  askAiAdvisor.init();
-  profileManager.init();
-  authManager.init();
+  // 2. Initialize Components safely with per-component try/catch
+  const components = [
+    ["router", () => router.init()],
+    ["commandPalette", () => commandPalette.init()],
+    ["guidedFix", () => guidedFix.init()],
+    ["notifications", () => notifications.init()],
+    ["tracker", () => tracker.init()],
+    ["planner", () => planner.init()],
+    ["historyDiff", () => historyDiff.init()],
+    ["scorecardShare", () => scorecardShare.init()],
+    ["scrollReveal", () => scrollReveal.init()],
+    ["askAiAdvisor", () => askAiAdvisor.init()],
+    ["profileManager", () => profileManager.init()],
+    ["authManager", () => authManager.init()],
+    ["floatingAskAi", () => {
+      const floatingAi = new FloatingAskAiManager();
+      floatingAi.init();
+    }],
+    ["landingCarousel", () => {
+      const carouselEl = document.getElementById("landingCarouselBg");
+      if (carouselEl) {
+        const carousel = new LandingCarousel(carouselEl);
+        carousel.init();
+        window.__careermatch_carousel = carousel;
+      }
+    }]
+  ];
 
-  // Floating Ask AI (Section 13 D)
-  const floatingAi = new FloatingAskAiManager();
-  floatingAi.init();
-
-  // Landing Carousel (Section 13 B)
-  const carouselEl = document.getElementById("landingCarouselBg");
-  if (carouselEl) {
-    const carousel = new LandingCarousel(carouselEl);
-    carousel.init();
-    window.__careermatch_carousel = carousel;
+  for (const [name, initFn] of components) {
+    try {
+      initFn();
+    } catch (err) {
+      console.error(`[Boot] Component "${name}" failed to initialize:`, err);
+      if (typeof window.showToast === "function") {
+        window.showToast(`Warning: ${name} component failed to initialize`, "warning");
+      }
+    }
   }
 
   // Specular Highlight on primary buttons
-  document.querySelectorAll(".btn-primary").forEach(attachSpecularHighlight);
+  try {
+    document.querySelectorAll(".btn-primary").forEach(attachSpecularHighlight);
+  } catch (err) {
+    console.error("[Boot] Specular highlight failed:", err);
+  }
 
   // 3. Initialize Language
-  applyTranslations();
+  try {
+    applyTranslations();
+  } catch (err) {
+    console.error("[Boot] i18n applyTranslations failed:", err);
+  }
 
   // 4. Attach Shell Listeners
-  attachShellListeners();
+  try {
+    attachShellListeners();
+  } catch (err) {
+    console.error("[Boot] Shell listeners failed:", err);
+  }
 
   // 5. Expose globals for app.js and router interoperability
   window.__careermatch = {
@@ -80,6 +105,10 @@ function initApp() {
     profileManager,
     authManager,
   };
+
+  // Mark boot complete for the watchdog safety net
+  window.__cmBooted = true;
+  console.info("CareerMatch AI: application successfully booted (__cmBooted = true).");
 }
 
 function attachShellListeners() {

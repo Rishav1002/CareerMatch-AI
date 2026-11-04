@@ -48,6 +48,12 @@
     <div id="serverColdStartBanner" class="server-cold-start-banner" role="alert">
       <span>Waking up server instance... Render free tier and Neon DB resume automatically in ~15-30s.</span>
     </div>
+
+    <!-- Boot Failure Safety Net Banner -->
+    <div id="cmBootFailureBanner" class="boot-failure-banner" style="display: none;" role="alert">
+      <span>Something failed to load.</span>
+      <button type="button" class="btn btn-secondary btn-reload" onclick="window.location.reload()">Reload</button>
+    </div>
     <a href="#mainContent" class="skip-link">Skip to main content</a>
 
     <div class="app-shell">
@@ -2101,6 +2107,17 @@
     <!-- Core Modular Application Entry -->
     <script type="module" src="/frontend/js/main.js"></script>
     <script src="/frontend/js/app.js" defer></script>
+
+    <!-- Boot Watchdog Safety Net -->
+    <script>
+      setTimeout(function() {
+        if (!window.__cmBooted) {
+          console.error("Boot Watchdog: CareerMatch AI failed to boot within 3 seconds.");
+          var banner = document.getElementById("cmBootFailureBanner");
+          if (banner) banner.style.display = "flex";
+        }
+      }, 3000);
+    </script>
     <script>
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
