@@ -22,6 +22,14 @@ import { profileManager } from "./components/profileManager.js";
 import { authManager } from "./components/authManager.js";
 import { attachSpecularHighlight } from "./motion.js";
 
+export function bindOnce(el, event, handler) {
+  if (!el) return;
+  const key = `__cm_bound_${event}`;
+  if (el[key]) return;
+  el[key] = true;
+  el.addEventListener(event, handler);
+}
+
 function initApp() {
   // 1. Initialize Theme from store or system
   const savedTheme = store.get("theme") || "light";
@@ -108,6 +116,7 @@ function initApp() {
 
   // Mark boot complete for the watchdog safety net
   window.__cmBooted = true;
+  window.dispatchEvent(new CustomEvent("careermatch:booted"));
   console.info("CareerMatch AI: application successfully booted (__cmBooted = true).");
 
   // Populate build SHA from health endpoint
@@ -195,10 +204,10 @@ function attachShellListeners() {
     }
   }
 
-  // Theme Toggle Buttons
-  document.getElementById("themeToggleBtn")?.addEventListener("click", toggleAppTheme);
-  document.getElementById("landingThemeToggleBtn")?.addEventListener("click", toggleAppTheme);
-  document.getElementById("settingsThemeToggleBtn")?.addEventListener("click", toggleAppTheme);
+  // Theme Toggle Buttons (guarded with bindOnce to prevent double-toggling)
+  bindOnce(document.getElementById("themeToggleBtn"), "click", toggleAppTheme);
+  bindOnce(document.getElementById("landingThemeToggleBtn"), "click", toggleAppTheme);
+  bindOnce(document.getElementById("settingsThemeToggleBtn"), "click", toggleAppTheme);
 
   // Settings Actions: Export JSON
   document.getElementById("settingsExportJsonBtn")?.addEventListener("click", () => {

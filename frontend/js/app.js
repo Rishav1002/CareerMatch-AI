@@ -83,16 +83,25 @@ function authHeaders() {
 }
 
 function startApp() {
+  if (window.__cmAppStarted) return;
+  window.__cmAppStarted = true;
   initNavigationAndTheme();
   initEventListeners();
   initCareerMatch2Listeners();
   bootstrapApplication();
 }
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", startApp);
-} else {
+if (window.__cmBooted) {
   startApp();
+} else {
+  window.addEventListener("careermatch:booted", startApp, { once: true });
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
+      setTimeout(() => { if (!window.__cmAppStarted) startApp(); }, 400);
+    });
+  } else {
+    setTimeout(() => { if (!window.__cmAppStarted) startApp(); }, 400);
+  }
 }
 
 function normalizeCourse(raw) {
@@ -476,7 +485,8 @@ function initEventListeners() {
   }
 
   const runBtn = document.getElementById("runAnalysisBtn");
-  if (runBtn) {
+  if (runBtn && !runBtn.__cm_bound_click) {
+    runBtn.__cm_bound_click = true;
     runBtn.addEventListener("click", () => runFullAnalysis(true));
   }
 
