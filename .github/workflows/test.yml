@@ -25,3 +25,13 @@ jobs:
         env:
           PYTHONPATH: .
         run: python -m pytest
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run frontend smoke test & module audit
+        env:
+          PYTHONPATH: .
+        run: node scripts/smoke_frontend.mjs
