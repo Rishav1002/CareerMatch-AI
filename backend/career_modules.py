@@ -130,66 +130,16 @@ def decode_jwt_token(token: str) -> Optional[Dict[str, Any]]:
 
 
 def seed_demo_user_and_profile() -> None:
-    """Ensure the default demo student user and rich career profile exist on startup."""
-    conn = get_connection()
-    cursor = conn.cursor()
-    now_iso = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
-    demo_uid = "user-demo-aarav"
-
-    cursor.execute("SELECT id FROM users WHERE id = ?", (demo_uid,))
-    if not cursor.fetchone():
-        cursor.execute(
-            """
-            INSERT INTO users (id, full_name, email, password_hash, role, created_at, last_login_at)
-            VALUES (?, ?, ?, ?, 'student', ?, ?)
-            """,
-            (
-                demo_uid,
-                "Aarav Sharma",
-                "aarav.sharma@iitd.ac.in",
-                hash_password("Demo@2026"),
-                now_iso,
-                now_iso,
-            ),
-        )
-
-    cursor.execute("SELECT user_id FROM student_profiles WHERE user_id = ?", (demo_uid,))
-    if not cursor.fetchone():
-        cursor.execute(
-            """
-            INSERT INTO student_profiles (
-                user_id, full_name, email, education_degree, institution, graduation_year,
-                experience_level, target_role, secondary_roles_json, preferred_locations_json,
-                target_companies_json, github_username, linkedin_url, active_resume_id,
-                pri_weights_json, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                demo_uid,
-                "Aarav Sharma",
-                "aarav.sharma@iitd.ac.in",
-                "B.Tech in Computer Science & Engineering",
-                "Indian Institute of Technology Delhi",
-                "2026",
-                "Entry Level / Final Year (0-1 Yrs)",
-                "Full Stack Developer",
-                json.dumps(["Data Engineer", "Python Backend Developer", "Machine Learning Engineer"]),
-                json.dumps(["Bengaluru", "Hyderabad", "Pune", "Remote"]),
-                json.dumps(["Google", "Microsoft", "Atlassian", "Razorpay", "Stripe"]),
-                "",
-                "https://www.linkedin.com/in/aarav-sharma-demo",
-                "demo-aarav-sharma",
-                json.dumps(DEFAULT_PRI_WEIGHTS),
-                now_iso,
-            ),
-        )
-    else:
-        cursor.execute(
-            "UPDATE student_profiles SET github_username = '' WHERE user_id = ? AND github_username = 'tiangolo'",
-            (demo_uid,),
-        )
-    conn.commit()
-    conn.close()
+    """Purge legacy demo user and profile rows to ensure clean, honest empty state."""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM student_profiles WHERE user_id LIKE '%demo%' OR user_id = 'user-demo-aarav'")
+        cursor.execute("DELETE FROM users WHERE id LIKE '%demo%' OR email LIKE '%demo%' OR email LIKE '%aarav%'")
+        conn.commit()
+        conn.close()
+    except Exception:
+        pass
 
 
 def register_user(body: Dict[str, Any]) -> Dict[str, Any]:
@@ -335,30 +285,26 @@ def import_student_profile(user_id: str, body: Dict[str, Any]) -> Dict[str, Any]
 
 
 def login_demo_user() -> Dict[str, Any]:
-    seed_demo_user_and_profile()
-    user_id = "user-demo-aarav"
-    token = create_jwt_token(user_id, "aarav.sharma@iitd.ac.in", "Aarav Sharma", "student")
+    """Deprecated: Guest/demo accounts removed. Return empty guest session."""
     return {
-        "token": token,
+        "token": "",
         "user": {
-            "id": user_id,
-            "fullName": "Aarav Sharma",
-            "email": "aarav.sharma@iitd.ac.in",
-            "role": "student",
+            "id": "guest",
+            "fullName": "Guest Student",
+            "email": "",
+            "role": "guest",
         },
-        "profile": get_student_profile(user_id),
+        "profile": {},
     }
 
 
-def get_student_profile(user_id: str = "user-demo-aarav") -> Dict[str, Any]:
-    seed_demo_user_and_profile()
+def get_student_profile(user_id: Optional[str] = None) -> Dict[str, Any]:
+    if not user_id or user_id in ("guest", "user-demo-aarav"):
+        return {}
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM student_profiles WHERE user_id = ?", (user_id,))
     row = cursor.fetchone()
-    if not row:
-        cursor.execute("SELECT * FROM student_profiles WHERE user_id = 'user-demo-aarav'")
-        row = cursor.fetchone()
     conn.close()
 
     if not row:
@@ -370,35 +316,34 @@ def get_student_profile(user_id: str = "user-demo-aarav") -> Dict[str, Any]:
         "email": row["email"],
         "educationDegree": row["education_degree"] or "",
         "institution": row["institution"] or "",
-        "graduationYear": row["graduation_year"] or "2026",
-        "experienceLevel": row["experience_level"] or "Entry Level / Final Year (0-1 Yrs)",
-        "targetRole": row["target_role"] or "Full Stack Developer",
+        "graduationYear": row["graduation_year"] or "",
+        "experienceLevel": row["experience_level"] or "",
+        "targetRole": row["target_role"] or "",
         "secondaryRoles": json.loads(row["secondary_roles_json"] or "[]"),
         "preferredLocations": json.loads(row["preferred_locations_json"] or "[]"),
         "targetCompanies": json.loads(row["target_companies_json"] or "[]"),
         "githubUsername": row["github_username"] or "",
         "linkedinUrl": row["linkedin_url"] or "",
-        "activeResumeId": row["active_resume_id"] or "demo-aarav-sharma",
+        "activeResumeId": row["active_resume_id"] or "",
         "priWeights": json.loads(row["pri_weights_json"] or json.dumps(DEFAULT_PRI_WEIGHTS)),
         "updatedAt": row["updated_at"],
     }
 
 
-def update_student_profile(body: Dict[str, Any], user_id: str = "user-demo-aarav") -> Dict[str, Any]:
-    seed_demo_user_and_profile()
-    current = get_student_profile(user_id)
-    target_uid = current.get("userId", "user-demo-aarav")
+def update_student_profile(body: Dict[str, Any], user_id: Optional[str] = None) -> Dict[str, Any]:
+    current = get_student_profile(user_id) if user_id else {}
+    target_uid = user_id or "guest"
 
-    full_name = sanitize_short_field(body.get("fullName", current.get("fullName", "Aarav Sharma")), 100)
-    email = sanitize_short_field(body.get("email", current.get("email", "aarav.sharma@iitd.ac.in")), 140)
+    full_name = sanitize_short_field(body.get("fullName", current.get("fullName", "")), 100)
+    email = sanitize_short_field(body.get("email", current.get("email", "")), 140)
     edu_deg = sanitize_short_field(body.get("educationDegree", current.get("educationDegree", "")), 160)
     inst = sanitize_short_field(body.get("institution", current.get("institution", "")), 160)
-    grad_yr = sanitize_short_field(body.get("graduationYear", current.get("graduationYear", "2026")), 20)
+    grad_yr = sanitize_short_field(body.get("graduationYear", current.get("graduationYear", "")), 20)
     exp_lvl = sanitize_short_field(body.get("experienceLevel", current.get("experienceLevel", "")), 60)
-    target_role = sanitize_short_field(body.get("targetRole", current.get("targetRole", "Full Stack Developer")), 120)
+    target_role = sanitize_short_field(body.get("targetRole", current.get("targetRole", "")), 120)
     gh_user = sanitize_short_field(body.get("githubUsername", current.get("githubUsername", "")), 80)
     linkedin = sanitize_short_field(body.get("linkedinUrl", current.get("linkedinUrl", "")), 220)
-    active_res = sanitize_short_field(body.get("activeResumeId", current.get("activeResumeId", "demo-aarav-sharma")), 64)
+    active_res = sanitize_short_field(body.get("activeResumeId", current.get("activeResumeId", "")), 64)
 
     sec_roles = body.get("secondaryRoles", current.get("secondaryRoles", []))
     if isinstance(sec_roles, str):

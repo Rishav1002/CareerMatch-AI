@@ -337,11 +337,10 @@ export class Router {
   }
 
   init() {
-    if (!window.location.hash || window.location.hash === "#/") {
+    if (!window.location.hash || window.location.hash === "#" || window.location.hash === "#/") {
       window.location.hash = "#/landing";
-    } else {
-      this.handleRoute();
     }
+    this.handleRoute();
   }
 
   navigate(viewName) {

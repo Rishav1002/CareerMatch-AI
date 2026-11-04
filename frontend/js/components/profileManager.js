@@ -13,8 +13,8 @@ export class ProfileManager {
   constructor() {
     this.profile = {
       basics: { name: "", email: "", phone: "", location: "" },
-      targetRole: { primaryRole: "Data Engineer", companies: "Razorpay, Swiggy, Cred", targetCtc: "12 - 18 LPA" },
-      skills: { technical: ["Python", "SQL", "FastAPI"], soft: ["Problem Solving", "Collaboration"] },
+      targetRole: { primaryRole: "", companies: "", targetCtc: "" },
+      skills: { technical: [], soft: [] },
       experience: [],
       education: [],
       projects: [],

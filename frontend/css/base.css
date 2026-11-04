@@ -18,6 +18,16 @@ svg {
   flex-shrink: 0;
 }
 
+.rail-nav-link svg,
+.btn-icon svg,
+.mobile-nav-item svg {
+  width: 18px !important;
+  height: 18px !important;
+  max-width: 18px !important;
+  max-height: 18px !important;
+  flex-shrink: 0;
+}
+
 /* Enforce min-width: 0 on all flex and grid containers to prevent text overflow blowouts */
 .app-shell,
 .app-main-wrapper,

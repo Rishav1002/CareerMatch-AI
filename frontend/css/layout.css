@@ -59,6 +59,18 @@
   -webkit-backdrop-filter: var(--blur);
 }
 
+.landing-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+@media (max-width: 900px) {
+  .landing-nav-links {
+    display: none !important;
+  }
+}
+
 .landing-hero-center {
   position: relative;
   z-index: 5;
@@ -411,8 +423,10 @@
 }
 
 .rail-nav-link svg {
-  width: 17px;
-  height: 17px;
+  width: 18px !important;
+  height: 18px !important;
+  max-width: 18px !important;
+  max-height: 18px !important;
   stroke-width: 2;
   flex-shrink: 0;
 }

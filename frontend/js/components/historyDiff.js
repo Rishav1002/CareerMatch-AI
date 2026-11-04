@@ -5,38 +5,11 @@
 
 import { store } from "../store.js";
 
-const DEFAULT_RESUME_HISTORY = [
-  {
-    id: "hist-1",
-    timestamp: "2026-10-20 14:30",
-    role: "Data Engineer",
-    filename: "aarav_sharma_v1_draft.pdf",
-    score: 64.5,
-    matchedCount: 5,
-    missingCount: 6,
-    matchedSkills: ["Python", "SQL", "Git", "Linux", "Docker"],
-    missingSkills: ["Apache Spark", "AWS", "Data Warehousing", "Airflow", "Kafka", "Snowflake"],
-  },
-  {
-    id: "hist-2",
-    timestamp: "2026-11-01 10:15",
-    role: "Data Engineer",
-    filename: "sample_resume_aarav_sharma.txt",
-    score: 83.2,
-    matchedCount: 9,
-    missingCount: 2,
-    matchedSkills: ["Python", "SQL", "Apache Spark", "AWS", "Data Warehousing", "Git", "Docker", "PostgreSQL", "ETL Pipelines"],
-    missingSkills: ["Snowflake", "Kafka Streaming"],
-  },
-];
+const DEFAULT_RESUME_HISTORY = [];
 
 export class HistoryDiff {
   constructor() {
-    this.history = store.get("resumeHistory");
-    if (!this.history || this.history.length === 0) {
-      this.history = DEFAULT_RESUME_HISTORY;
-      store.set("resumeHistory", this.history);
-    }
+    this.history = store.get("resumeHistory") || [];
   }
 
   init() {
