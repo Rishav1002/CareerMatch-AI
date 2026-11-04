@@ -93,13 +93,9 @@ FRONTEND_DIR = os.path.join(ROOT_DIR, "frontend")
 
 
 def seed_initial_sqlite_data() -> None:
-    """Initialize relational tables and seed demo resumes and demo student profile."""
+    """Initialize relational tables and purge legacy demo rows."""
     init_db()
     seed_demo_user_and_profile()
-    metrics = get_dashboard_metrics()
-    if metrics["totalResumes"] == 0:
-        for demo in SAMPLE_RESUMES:
-            save_resume(demo)
 
 
 # Initialize database on module load
@@ -200,11 +196,9 @@ def handle_bootstrap(user_id: Optional[str] = None) -> Dict[str, Any]:
 
     return {
         "dashboard": get_dashboard_metrics(active_resume_id),
-        "roles": ROLE_TEMPLATES,
-        "demos": [],
+        "roles": get_roles_catalog(),
         "defaultWeights": DEFAULT_WEIGHTS,
         "defaultPriWeights": DEFAULT_PRI_WEIGHTS,
-        "sampleJdText": "",
         "studentProfile": student_profile,
     }
 
@@ -624,7 +618,7 @@ try:
         try:
             uid = _extract_user_id_from_auth_header(request.headers.get("Authorization"))
             body = await request.json()
-            return {"profile": update_student_profile(body, uid or "user-demo-aarav")}
+            return {"profile": update_student_profile(body, uid or "guest")}
         except PermissionError as exc:
             raise HTTPException(status_code=401, detail=str(exc))
         except ValueError as exc:
@@ -990,7 +984,7 @@ class CareerMatchHTTPHandler(BaseHTTPRequestHandler):
                 self._send_json(handle_update_roadmap_progress_payload(body))
                 return
             if parsed.path == "/api/profile":
-                self._send_json({"profile": update_student_profile(body, uid or "user-demo-aarav")})
+                self._send_json({"profile": update_student_profile(body, uid or "guest")})
                 return
             self._send_json({"detail": "Not found"}, 404)
         except PermissionError as exc:

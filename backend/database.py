@@ -194,7 +194,7 @@ def init_db() -> None:
 
         CREATE TABLE IF NOT EXISTS resumes (
             id TEXT PRIMARY KEY,
-            user_id TEXT DEFAULT 'user-demo-aarav',
+            user_id TEXT DEFAULT 'guest',
             candidate_name TEXT NOT NULL,
             email TEXT,
             phone TEXT,
@@ -240,7 +240,7 @@ def init_db() -> None:
 
         CREATE TABLE IF NOT EXISTS resume_analyses (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id TEXT DEFAULT 'user-demo-aarav',
+            user_id TEXT DEFAULT 'guest',
             resume_id TEXT NOT NULL,
             candidate_name TEXT NOT NULL,
             target_role TEXT NOT NULL,
@@ -295,7 +295,7 @@ def init_db() -> None:
 
         CREATE TABLE IF NOT EXISTS job_matches (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id TEXT DEFAULT 'user-demo-aarav',
+            user_id TEXT DEFAULT 'guest',
             resume_id TEXT NOT NULL,
             job_id TEXT NOT NULL,
             match_score REAL NOT NULL,
@@ -332,7 +332,7 @@ def init_db() -> None:
 
         CREATE TABLE IF NOT EXISTS interview_sessions (
             id TEXT PRIMARY KEY,
-            user_id TEXT DEFAULT 'user-demo-aarav',
+            user_id TEXT DEFAULT 'guest',
             resume_id TEXT,
             target_role TEXT NOT NULL,
             goal_company TEXT,
@@ -378,7 +378,7 @@ def init_db() -> None:
 
         CREATE TABLE IF NOT EXISTS github_profiles (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id TEXT DEFAULT 'user-demo-aarav',
+            user_id TEXT DEFAULT 'guest',
             resume_id TEXT,
             github_username TEXT NOT NULL,
             data_source TEXT NOT NULL,
@@ -396,7 +396,7 @@ def init_db() -> None:
 
         CREATE TABLE IF NOT EXISTS learning_roadmaps (
             id TEXT PRIMARY KEY,
-            user_id TEXT DEFAULT 'user-demo-aarav',
+            user_id TEXT DEFAULT 'guest',
             resume_id TEXT NOT NULL,
             target_role TEXT NOT NULL,
             overall_progress_pct REAL NOT NULL DEFAULT 0.0,
@@ -426,7 +426,7 @@ def init_db() -> None:
 
         CREATE TABLE IF NOT EXISTS assessment_sessions (
             id TEXT PRIMARY KEY,
-            user_id TEXT DEFAULT 'user-demo-aarav',
+            user_id TEXT DEFAULT 'guest',
             resume_id TEXT,
             topic TEXT NOT NULL,
             difficulty TEXT NOT NULL,
@@ -440,7 +440,7 @@ def init_db() -> None:
         CREATE TABLE IF NOT EXISTS assessment_results (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             session_id TEXT NOT NULL,
-            user_id TEXT DEFAULT 'user-demo-aarav',
+            user_id TEXT DEFAULT 'guest',
             resume_id TEXT,
             topic TEXT NOT NULL,
             difficulty TEXT NOT NULL,
@@ -459,7 +459,7 @@ def init_db() -> None:
 
         CREATE TABLE IF NOT EXISTS career_comparisons (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id TEXT DEFAULT 'user-demo-aarav',
+            user_id TEXT DEFAULT 'guest',
             resume_id TEXT,
             primary_role TEXT NOT NULL,
             compared_roles_json TEXT NOT NULL,
@@ -470,7 +470,7 @@ def init_db() -> None:
 
         CREATE TABLE IF NOT EXISTS placement_readiness_reports (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id TEXT DEFAULT 'user-demo-aarav',
+            user_id TEXT DEFAULT 'guest',
             resume_id TEXT NOT NULL,
             target_role TEXT NOT NULL,
             pri_score REAL NOT NULL,
@@ -501,10 +501,10 @@ def init_db() -> None:
 
     # Ensure backward-compatible `user_id` column exists if upgrading an older SQLite db
     try:
-        cursor.execute("ALTER TABLE resumes ADD COLUMN IF NOT EXISTS user_id TEXT DEFAULT 'user-demo-aarav';")
+        cursor.execute("ALTER TABLE resumes ADD COLUMN IF NOT EXISTS user_id TEXT DEFAULT 'guest';")
     except Exception:
         try:
-            cursor.execute("ALTER TABLE resumes ADD COLUMN user_id TEXT DEFAULT 'user-demo-aarav';")
+            cursor.execute("ALTER TABLE resumes ADD COLUMN user_id TEXT DEFAULT 'guest';")
         except Exception:
             pass
 
@@ -516,7 +516,7 @@ def init_db() -> None:
 # EXISTING RESUME & ANALYSIS CRUD (100% Backward Compatible)
 # ============================================================================
 
-def save_resume(profile: Dict[str, Any], user_id: str = "user-demo-aarav") -> Dict[str, Any]:
+def save_resume(profile: Dict[str, Any], user_id: str = "guest") -> Dict[str, Any]:
     """Insert or replace a parsed candidate resume into SQLite and sync skill_records."""
     conn = get_connection()
     cursor = conn.cursor()

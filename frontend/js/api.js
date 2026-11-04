@@ -194,7 +194,6 @@ export const api = {
   auth: {
     login: (email, password) => request("/api/auth/login", { method: "POST", body: { email, password } }),
     register: (fullName, email, password) => request("/api/auth/register", { method: "POST", body: { fullName, email, password } }),
-    demo: () => request("/api/auth/demo", { method: "POST", body: {} }),
   },
 
   // Student Profile & Bootstrap

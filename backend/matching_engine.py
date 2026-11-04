@@ -132,17 +132,17 @@ ROLE_TEMPLATES: List[Dict[str, Any]] = [
 
 DEFAULT_BENCHMARK_RESUME: Dict[str, Any] = {
     "id": "benchmark-candidate",
-    "filename": "Candidate_Profile.pdf",
+    "filename": "Resume_Template.pdf",
     "uploadedAt": "2026-11-01 00:00 UTC",
     "rawText": (
-        "Engineering Candidate | candidate@careermatch.ai | Location: India\n"
+        "Engineering Candidate | candidate@example.org | Location: India\n"
         "B.Tech in Computer Science & Engineering (2022-2026)\n"
         "Technical Skills: Python, SQL, JavaScript, React, FastAPI, REST APIs, Git, Pandas & NumPy, Docker, Linux.\n"
         "Projects: Built full-stack web and analytics applications using Python, SQL, REST APIs, and Docker.\n"
     ),
     "contact": {
         "name": "Candidate",
-        "email": "candidate@careermatch.ai",
+        "email": "candidate@example.org",
         "phone": "+91 98000 00000",
         "location": "India",
     },

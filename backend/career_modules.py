@@ -130,12 +130,13 @@ def decode_jwt_token(token: str) -> Optional[Dict[str, Any]]:
 
 
 def seed_demo_user_and_profile() -> None:
-    """Purge legacy demo user and profile rows to ensure clean, honest empty state."""
+    """Purge legacy seeded demo candidate and resumes to ensure clean, empty database."""
     try:
         conn = get_connection()
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM student_profiles WHERE user_id LIKE '%demo%' OR user_id = 'user-demo-aarav'")
-        cursor.execute("DELETE FROM users WHERE id LIKE '%demo%' OR email LIKE '%demo%' OR email LIKE '%aarav%'")
+        cursor.execute("DELETE FROM student_profiles WHERE user_id LIKE '%demo%' OR user_id = 'user-demo-aarav' OR user_id = 'benchmark-candidate'")
+        cursor.execute("DELETE FROM users WHERE email = 'candidate@careermatch.ai' OR email LIKE '%@careermatch.ai' OR id LIKE '%demo%' OR id = 'user-demo-aarav'")
+        cursor.execute("DELETE FROM resumes WHERE id = 'benchmark-candidate' OR id = 'demo-aarav-sharma' OR filename = 'Candidate_Profile.pdf'")
         conn.commit()
         conn.close()
     except Exception:
@@ -196,7 +197,7 @@ def register_user(body: Dict[str, Any]) -> Dict[str, Any]:
             json.dumps(["Google", "Microsoft", "Amazon"]),
             "",
             "",
-            "demo-aarav-sharma",
+            "",
             json.dumps(DEFAULT_PRI_WEIGHTS),
             now_iso,
         ),
@@ -299,7 +300,7 @@ def login_demo_user() -> Dict[str, Any]:
 
 
 def get_student_profile(user_id: Optional[str] = None) -> Dict[str, Any]:
-    if not user_id or user_id in ("guest", "user-demo-aarav"):
+    if not user_id or user_id in ("guest", ""):
         return {}
     conn = get_connection()
     cursor = conn.cursor()
@@ -645,7 +646,7 @@ def fetch_job_market_intelligence(body: Dict[str, Any]) -> Dict[str, Any]:
     Combines live API jobs (when reachable) with our benchmark dataset, filters by role,
     location, experience, skill, and work mode, and calculates candidate resume match %.
     """
-    resume_id = sanitize_short_field(body.get("resumeId", "demo-aarav-sharma"), 80)
+    resume_id = sanitize_short_field(body.get("resumeId", ""), 80)
     resume = body.get("resume") or get_resume_by_id(resume_id) or SAMPLE_RESUMES[0]
     candidate_skills = set(resume.get("technicalSkills", []))
 
@@ -959,7 +960,7 @@ def _build_tailored_interview_questions(
 
 
 def start_interview_session(body: Dict[str, Any]) -> Dict[str, Any]:
-    resume_id = sanitize_short_field(body.get("resumeId", "demo-aarav-sharma"), 80)
+    resume_id = sanitize_short_field(body.get("resumeId", ""), 80)
     resume = body.get("resume") or get_resume_by_id(resume_id) or SAMPLE_RESUMES[0]
     target_role = sanitize_short_field(body.get("targetRole", "Full Stack Developer"), 100)
     goal_company = sanitize_short_field(body.get("goalCompany", "Industry Tech Bar"), 100)
@@ -1347,7 +1348,7 @@ def evaluate_ats_resume(body: Dict[str, Any]) -> Dict[str, Any]:
     Evaluates resume vs target role / JD with explainable ATS score, section audit,
     formatting/readability checks, truthful before/after bullet rewrites, and downloadable template.
     """
-    resume_id = sanitize_short_field(body.get("resumeId", "demo-aarav-sharma"), 80)
+    resume_id = sanitize_short_field(body.get("resumeId", ""), 80)
     resume = body.get("resume") or get_resume_by_id(resume_id) or SAMPLE_RESUMES[0]
     target_role = sanitize_short_field(body.get("targetRole", "Full Stack Developer"), 100)
     goal_company = sanitize_short_field(body.get("goalCompany", ""), 100)
@@ -1609,7 +1610,7 @@ def analyze_github_portfolio(body: Dict[str, Any]) -> Dict[str, Any]:
             "message": "Enter a GitHub username.",
         }
 
-    resume_id = sanitize_short_field(body.get("resumeId", "demo-aarav-sharma"), 80)
+    resume_id = sanitize_short_field(body.get("resumeId", ""), 80)
     resume = body.get("resume") or get_resume_by_id(resume_id) or SAMPLE_RESUMES[0]
     target_role = sanitize_short_field(body.get("targetRole", "Full Stack Developer"), 100)
     resume_skills = list(resume.get("technicalSkills", []))
@@ -1913,7 +1914,7 @@ def get_adaptive_roadmap(body: Dict[str, Any]) -> Dict[str, Any]:
     Creates or retrieves a persistent, task-driven roadmap with daily/weekly tasks,
     stage quizzes, skill-wise progress charts, and adaptive remediation tasks.
     """
-    resume_id = sanitize_short_field(body.get("resumeId", "demo-aarav-sharma"), 80)
+    resume_id = sanitize_short_field(body.get("resumeId", ""), 80)
     resume = body.get("resume") or get_resume_by_id(resume_id) or SAMPLE_RESUMES[0]
     target_role = sanitize_short_field(body.get("targetRole", "Full Stack Developer"), 100)
     weekly_hours = int(body.get("weeklyHoursGoal", 10))
@@ -2420,7 +2421,7 @@ def generate_skill_assessment(body: Dict[str, Any]) -> Dict[str, Any]:
     """
     topic = sanitize_short_field(body.get("topic", "Python"), 60) or "Python"
     difficulty = sanitize_short_field(body.get("difficulty", "Intermediate"), 40) or "Intermediate"
-    resume_id = sanitize_short_field(body.get("resumeId", "demo-aarav-sharma"), 80)
+    resume_id = sanitize_short_field(body.get("resumeId", ""), 80)
 
     bank_entry = ASSESSMENT_TOPICS_BANK.get(topic)
     if not bank_entry:
@@ -2862,7 +2863,7 @@ def compare_career_paths(body: Dict[str, Any]) -> Dict[str, Any]:
     Compares multiple roles against the student's current resume, calculates a
     Role-to-Role Skill Bridge, and provides cited salary benchmarks.
     """
-    resume_id = sanitize_short_field(body.get("resumeId", "demo-aarav-sharma"), 80)
+    resume_id = sanitize_short_field(body.get("resumeId", ""), 80)
     resume = body.get("resume") or get_resume_by_id(resume_id) or SAMPLE_RESUMES[0]
     primary_role = sanitize_short_field(body.get("primaryRole", "Full Stack Developer"), 100)
     secondary_role = sanitize_short_field(body.get("secondaryRole", "Data Engineer"), 100)
@@ -2933,7 +2934,7 @@ def compute_placement_readiness_index(body: Dict[str, Any]) -> Dict[str, Any]:
     - Assessment performance: 15%
     - Job-market alignment: 10%
     """
-    resume_id = sanitize_short_field(body.get("resumeId", "demo-aarav-sharma"), 80)
+    resume_id = sanitize_short_field(body.get("resumeId", ""), 80)
     resume = body.get("resume") or get_resume_by_id(resume_id) or SAMPLE_RESUMES[0]
     target_role = sanitize_short_field(body.get("targetRole", "Full Stack Developer"), 100)
     custom_weights = body.get("weights") or DEFAULT_PRI_WEIGHTS
