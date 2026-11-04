@@ -74,12 +74,14 @@ def test_no_skill_in_two_statuses_at_once() -> None:
 
 
 def test_jwt_auth_and_student_profile() -> None:
+    import time
     from backend.career_modules import (
         create_jwt_token,
         decode_jwt_token,
         get_student_profile,
         hash_password,
-        login_demo_user,
+        login_user,
+        register_user,
         verify_password,
     )
     from backend.database import init_db
@@ -95,11 +97,16 @@ def test_jwt_auth_and_student_profile() -> None:
     assert decoded["sub"] == "user-test"
     assert decoded["email"] == "test@careermatch.ai"
 
-    demo = login_demo_user()
-    assert "token" in demo
-    assert demo["user"]["id"] == "user-demo-aarav"
-    profile = get_student_profile("user-demo-aarav")
-    assert profile["fullName"] == "Aarav Sharma"
+    test_email = f"student_{int(time.time())}@careermatch.ai"
+    reg = register_user({"email": test_email, "password": "SecurePass123!", "fullName": "Verified Student"})
+    assert "token" in reg
+    assert reg["user"]["email"] == test_email
+
+    login_res = login_user({"email": test_email, "password": "SecurePass123!"})
+    assert "token" in login_res
+    assert login_res["user"]["email"] == test_email
+    profile = get_student_profile(login_res["user"]["id"])
+    assert profile["fullName"] == "Verified Student"
 
 
 def test_module_1_job_market_intelligence() -> None:

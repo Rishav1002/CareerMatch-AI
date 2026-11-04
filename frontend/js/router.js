@@ -176,6 +176,51 @@ export const ROUTE_REGISTRY = {
       if (window.populateProfileForm) window.populateProfileForm();
     },
   },
+  login: {
+    id: "login",
+    hash: "#/login",
+    panelId: "view-login",
+    title: "Sign In or Register",
+    requiresResume: false,
+    group: "auth",
+    loader: null,
+  },
+  settings: {
+    id: "settings",
+    hash: "#/settings",
+    panelId: "view-settings",
+    title: "Settings & Data Privacy",
+    requiresResume: false,
+    group: "account",
+    loader: null,
+  },
+  privacy: {
+    id: "privacy",
+    hash: "#/privacy",
+    panelId: "view-privacy",
+    title: "Privacy Policy",
+    requiresResume: false,
+    group: "legal",
+    loader: null,
+  },
+  terms: {
+    id: "terms",
+    hash: "#/terms",
+    panelId: "view-terms",
+    title: "Terms of Service",
+    requiresResume: false,
+    group: "legal",
+    loader: null,
+  },
+  cookies: {
+    id: "cookies",
+    hash: "#/cookies",
+    panelId: "view-cookies",
+    title: "Cookie & Storage Policy",
+    requiresResume: false,
+    group: "legal",
+    loader: null,
+  },
   "404": {
     id: "404",
     hash: "#/404",
@@ -188,6 +233,10 @@ export const ROUTE_REGISTRY = {
 };
 
 export const ROUTE_ALIASES = {
+  "": "landing",
+  "/": "landing",
+  signup: "login",
+  auth: "login",
   jobs: "market",
   assessment: "skills",
   career: "compare",
@@ -318,6 +367,21 @@ export class Router {
 
     this.currentRoute = activeRouteKey;
     store.set("currentView", activeRouteKey);
+
+    // Update shell view mode (landing, auth, workspace)
+    const appShell = document.querySelector(".app-shell");
+    if (appShell) {
+      if (activeRouteKey === "landing") {
+        appShell.classList.add("is-landing");
+        appShell.classList.remove("is-auth");
+      } else if (activeRouteKey === "login") {
+        appShell.classList.add("is-auth");
+        appShell.classList.remove("is-landing");
+      } else {
+        appShell.classList.remove("is-landing");
+        appShell.classList.remove("is-auth");
+      }
+    }
 
     // Hide all view panels
     document.querySelectorAll(".view-panel").forEach((panel) => {

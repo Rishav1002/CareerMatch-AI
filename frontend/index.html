@@ -44,6 +44,10 @@
     <link rel="stylesheet" href="/frontend/css/styles.css" />
   </head>
   <body>
+    <!-- Cold Start Reconnect Alert -->
+    <div id="serverColdStartBanner" class="server-cold-start-banner" role="alert">
+      <span>Waking up server instance... Render free tier and Neon DB resume automatically in ~15-30s.</span>
+    </div>
     <a href="#mainContent" class="skip-link">Skip to main content</a>
 
     <div class="app-shell">
@@ -245,309 +249,277 @@
         <div class="app-main">
           <main id="mainContent" class="app-content">
           <!-- ==================================================================
-               VIEW 1: PUBLIC LANDING PAGE & FIELD GUIDE (#/landing)
+               VIEW 1: PUBLIC LANDING PAGE (#/landing, #/)
                ================================================================== -->
-          <section id="view-landing" class="view-panel landing-view active">
-            <div class="landing-hero">
-              <div class="landing-eyebrow">
-                <span>Field Guide Edition</span>
-                <span>·</span>
-                <span>Deterministic &amp; Transparent Scoring</span>
-              </div>
-              <h1 class="landing-headline">
-                The career-readiness field guide for Indian engineering students.
-              </h1>
-              <p class="landing-lead measure-prose">
-                High-stakes career decisions shouldn’t rely on black-box hype. CareerMatch AI breaks down your resume against live industry benchmarks with complete mathematical explainability, verifiable evidence quotes, and targeted remediation steps.
-              </p>
-              <div class="landing-cta-row">
-                <a href="#/analyzer" class="btn btn-primary btn-lg" id="landingTryDemoBtn">
-                  Analyze Your Resume →
-                </a>
-                <a href="#/analyzer" class="btn btn-secondary btn-lg">
-                  Analyze Your Resume
-                </a>
-              </div>
-            </div>
-
-            <!-- Interactive Sample Report Preview -->
-            <div class="landing-preview-card scroll-reveal">
-              <div class="landing-preview-header">
-                <div>
-                  <span class="status-badge status-matched">Sample Interactive Ledger</span>
-                  <strong style="margin-left: 8px; font-size: 0.95rem;">Candidate Profile — Target Role Benchmarks</strong>
-                </div>
-                <span class="score-pill high">83.2% Placement Match</span>
-              </div>
-              <div style="padding: var(--space-3); display: grid; grid-template-columns: 1fr 2fr; gap: var(--space-3);">
-                <div style="display: flex; flex-direction: column; gap: var(--space-15); justify-content: center; border-right: 1px solid var(--border-subtle); padding-right: var(--space-2);">
-                  <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-tertiary); text-transform: uppercase;">
-                    Placement Readiness Index
-                  </span>
-                  <div style="font-family: var(--font-display); font-size: 3rem; font-weight: 600; line-height: 1; color: var(--text-primary);">
-                    83.2<span style="font-size: 1.25rem; color: var(--text-tertiary);">/100</span>
-                  </div>
-                  <div class="status-badge status-matched" style="align-self: flex-start;">
-                    Tier 1: Industry Ready
-                  </div>
-                  <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0;">
-                    Exceeds mandatory threshold for Tier 1 tech product companies and high-growth analytics scaleups in India.
-                  </p>
-                </div>
-
-                <div>
-                  <h4 style="font-size: 0.9rem; margin-bottom: var(--space-1);">Skill Breakdown &amp; Evidence Quotes:</h4>
-                  <div style="display: flex; flex-direction: column; gap: 6px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: var(--bg-sunken); border-radius: var(--radius-sm); font-size: 0.85rem;">
-                      <span class="status-badge status-matched">● [✓] Python &amp; PySpark</span>
-                      <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-tertiary);">Evidence: "Built PySpark ETL pipelines on AWS"</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: var(--bg-sunken); border-radius: var(--radius-sm); font-size: 0.85rem;">
-                      <span class="status-badge status-matched">● [✓] SQL &amp; Data Warehousing</span>
-                      <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-tertiary);">Evidence: "PostgreSQL partitioning &amp; Star Schema"</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: var(--bg-sunken); border-radius: var(--radius-sm); font-size: 0.85rem;">
-                      <span class="status-badge status-partial">◆ [▲] Cloud Analytics (AWS Athena)</span>
-                      <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--score-mid);">Adjacent: AWS S3 + Athena queries</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: var(--bg-sunken); border-radius: var(--radius-sm); font-size: 0.85rem;">
-                      <span class="status-badge status-missing">⬡ [✕] Snowflake / BigQuery</span>
-                      <button class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 2px 8px;" data-fix-skill="Snowflake" data-fix-status="missing">
-                        Fix This (+12 pts) →
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- 3 Steps Explanation -->
-            <div style="margin: var(--space-6) 0;">
-              <h2 style="text-align: center; margin-bottom: var(--space-3);">How the Field Guide Works in 3 Steps</h2>
-              <div class="steps-grid scroll-reveal">
-                <div class="step-card">
-                  <div class="step-num">01</div>
-                  <h3>Submit or Paste Resume</h3>
-                  <p>Upload a PDF, DOCX, or paste raw plain text. You can also select the "Do not save my resume" option for complete transient session privacy.</p>
-                </div>
-                <div class="step-card">
-                  <div class="step-num">02</div>
-                  <h3>Semantic Match &amp; Mathematical Scoring</h3>
-                  <p>Requirements are parsed with weighted mandatory/preferred ratios. Every score matches a direct quote from your resume—no fabricated numbers.</p>
-                </div>
-                <div class="step-card">
-                  <div class="step-num">03</div>
-                  <h3>Guided Remediation &amp; Study Plan</h3>
-                  <p>Click any skill gap to inspect curated free &amp; paid courses, tailored STAR bullet rewrites, and immediate calendar scheduling.</p>
-                </div>
-              </div>
-            </div>
-
-            <!-- 11 Modules Grouped by Outcome -->
-            <div style="margin: var(--space-6) 0;">
-              <h2 style="text-align: center; margin-bottom: var(--space-15);">11 Specialised Modules Grouped by Outcome</h2>
-              <p style="text-align: center; max-width: 600px; margin: 0 auto var(--space-4); font-size: 0.95rem;">
-                From resume diagnosis to salary benchmarking, each workspace addresses a key hurdle in the Indian placement journey.
-              </p>
-
-              <div class="modules-outcomes-grid scroll-reveal">
-                <div class="outcome-group-card">
-                  <div class="outcome-title">
-                    <span>1. Diagnose Readiness</span>
-                  </div>
-                  <p style="font-size: 0.85rem;">Identify semantic skill gaps, ATS formatting failures, and missing keywords before submitting applications.</p>
-                  <ul class="outcome-modules-list">
-                    <li class="outcome-module-item">
-                      <strong>Resume &amp; JD Match Analyzer</strong>
-                      <span class="status-badge status-info">Deterministic</span>
-                    </li>
-                    <li class="outcome-module-item">
-                      <strong>Career Report &amp; Evidence Ledger</strong>
-                      <span class="status-badge status-matched">Explainable</span>
-                    </li>
-                    <li class="outcome-module-item">
-                      <strong>ATS Resume Simulator (4-Pillars)</strong>
-                      <span class="status-badge status-partial">Audit</span>
-                    </li>
-                  </ul>
-                </div>
-
-                <div class="outcome-group-card">
-                  <div class="outcome-title">
-                    <span>2. Prepare &amp; Practice</span>
-                  </div>
-                  <p style="font-size: 0.85rem;">Master technical concepts and practice interview rounds with structured rubrics.</p>
-                  <ul class="outcome-modules-list">
-                    <li class="outcome-module-item">
-                      <strong>Adaptive Learning Roadmap</strong>
-                      <span class="status-badge status-matched">Interactive</span>
-                    </li>
-                    <li class="outcome-module-item">
-                      <strong>Weekly Study Planner &amp; Streaks</strong>
-                      <span class="status-badge status-info">Milestones</span>
-                    </li>
-                    <li class="outcome-module-item">
-                      <strong>AI Mock Interview Simulator</strong>
-                      <span class="status-badge status-matched">Voice &amp; Text</span>
-                    </li>
-                    <li class="outcome-module-item">
-                      <strong>AI Skill Assessment Lab</strong>
-                      <span class="status-badge status-partial">MCQ + Code</span>
-                    </li>
-                  </ul>
-                </div>
-
-                <div class="outcome-group-card">
-                  <div class="outcome-title">
-                    <span>3. Prove Capabilities</span>
-                  </div>
-                  <p style="font-size: 0.85rem;">Back up claims with code evidence, commit histories, and multi-factor placement indices.</p>
-                  <ul class="outcome-modules-list">
-                    <li class="outcome-module-item">
-                      <strong>GitHub Proof &amp; Portfolio Analyzer</strong>
-                      <span class="status-badge status-matched">Code Verified</span>
-                    </li>
-                    <li class="outcome-module-item">
-                      <strong>Placement Readiness Index (PRI)</strong>
-                      <span class="status-badge status-info">6 Pillars</span>
-                    </li>
-                  </ul>
-                </div>
-
-                <div class="outcome-group-card">
-                  <div class="outcome-title">
-                    <span>4. Decide Next Steps</span>
-                  </div>
-                  <p style="font-size: 0.85rem;">Benchmark compensation, discover hiring companies in Bengaluru/Hyderabad/Pune, and track job applications.</p>
-                  <ul class="outcome-modules-list">
-                    <li class="outcome-module-item">
-                      <strong>Live Job Market Intelligence</strong>
-                      <span class="status-badge status-matched">Live Matrix</span>
-                    </li>
-                    <li class="outcome-module-item">
-                      <strong>Application Kanban Tracker</strong>
-                      <span class="status-badge status-info">Drag &amp; Drop</span>
-                    </li>
-                    <li class="outcome-module-item">
-                      <strong>Role &amp; Salary Benchmark</strong>
-                      <span class="status-badge status-partial">Percentiles</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            <!-- Scoring Transparency Accordion -->
-            <div style="margin: var(--space-6) 0;" class="scroll-reveal">
-              <details class="accordion-card">
-                <summary class="accordion-header">
-                  <span>📐 Scoring Mathematics &amp; Formula Transparency</span>
-                  <span class="accordion-icon">+</span>
-                </summary>
-                <div class="accordion-body">
-                  <p style="margin-bottom: var(--space-15);">
-                    Unlike generic LLM wrappers that output random scores, CareerMatch AI calculates weighted indices using strictly transparent formulas:
-                  </p>
-                  <div class="formula-box">
-                    Overall Match Score = (Mandatory Match Pct × 0.50) + (Preferred Match Pct × 0.30) + (Project Evidence Pct × 0.20)
-                  </div>
-                  <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0;">
-                    Every matched skill requires a verifiable text anchor from your resume. If a skill does not exist in your resume, it receives exactly 0 points until verified.
-                  </p>
-                </div>
-              </details>
-            </div>
-
-            <!-- Privacy Promise -->
-            <div class="card scroll-reveal" style="margin: var(--space-6) 0; padding: var(--space-3); border-color: var(--border-medium);">
-              <h3 style="margin-bottom: var(--space-1);">Our Privacy Promise</h3>
-              <p style="font-size: 0.9rem; margin-bottom: var(--space-15);">
-                We believe your career data is strictly yours. When you check <strong>"Do not save my resume"</strong>, parsing occurs exclusively in memory and no resume document or personal identification is stored in our database. We never sell student data or train external models on your resume.
-              </p>
-              <a href="#/analyzer" class="btn btn-secondary btn-sm">
-                Launch Analyzer with Transient Session →
+          <section id="view-landing" class="view-panel landing-viewport active">
+            <!-- Minimal Landing Topbar (Section 13 B) -->
+            <header class="landing-topbar">
+              <a href="#/landing" class="rail-brand" style="text-decoration: none;">
+                <span class="brand-mark">CM</span>
+                <span class="brand-name" style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin-left: 8px;">CareerMatch AI</span>
               </a>
-            </div>
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <button type="button" class="btn btn-secondary btn-sm" id="landingThemeToggleBtn" aria-label="Toggle Theme">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                  <span class="btn-text">Theme</span>
+                </button>
+                <a href="#/login" class="btn btn-secondary btn-sm" id="landingAuthBtn">
+                  Log in
+                </a>
+              </div>
+            </header>
 
-            <!-- Collapsible FAQ Section -->
-            <div style="margin: var(--space-6) 0;">
-              <h2 style="text-align: center; margin-bottom: var(--space-3);" class="scroll-reveal">Frequently Asked Questions</h2>
-              <div class="scroll-reveal">
-                <details class="accordion-card">
-                  <summary class="accordion-header">
-                    <span>How is CareerMatch AI different from generic resume score checkers?</span>
-                    <span class="accordion-icon">+</span>
-                  </summary>
-                  <div class="accordion-body">
-                    Most online checkers generate superficial keyword percentages without context. CareerMatch AI verifies mandatory vs. preferred requirements, locates sentence-level evidence quotes, checks GitHub commit history, and generates a personalized learning roadmap with curated courses.
+            <!-- Full-Viewport Hero with 4 Animated SVG Background Scenes -->
+            <div class="landing-hero-center">
+              <div class="carousel-bg-wrap" id="landingCarouselBg" aria-hidden="true">
+                <div class="carousel-track">
+                  <!-- Scene 1: Upload Once -->
+                  <div class="carousel-scene" data-scene="0">
+                    <svg viewBox="0 0 1000 600" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M200 120 h220 l60 60 v260 h-280 z" stroke="var(--brand-accent)" fill="var(--glass-bg-subtle)" stroke-width="2"/>
+                      <line x1="240" y1="220" x2="420" y2="220" stroke="var(--text-tertiary)" stroke-dasharray="4 4"/>
+                      <line x1="240" y1="260" x2="400" y2="260" stroke="var(--text-tertiary)" stroke-dasharray="4 4"/>
+                      <line x1="240" y1="300" x2="380" y2="300" stroke="var(--text-tertiary)" stroke-dasharray="4 4"/>
+                      <rect x="540" y="160" width="110" height="34" rx="10" stroke="var(--brand-accent)" fill="var(--glass-bg)"/>
+                      <rect x="670" y="160" width="130" height="34" rx="10" stroke="var(--brand-accent)" fill="var(--glass-bg)"/>
+                      <rect x="540" y="220" width="140" height="34" rx="10" stroke="var(--brand-accent)" fill="var(--glass-bg)"/>
+                      <rect x="700" y="220" width="100" height="34" rx="10" stroke="var(--brand-accent)" fill="var(--glass-bg)"/>
+                      <path d="M480 250 C 510 220, 520 200, 540 180" stroke="var(--brand-accent)" stroke-width="2" stroke-dasharray="3 3"/>
+                      <path d="M480 270 C 510 260, 520 240, 540 235" stroke="var(--brand-accent)" stroke-width="2" stroke-dasharray="3 3"/>
+                    </svg>
                   </div>
-                </details>
-                <details class="accordion-card">
-                  <summary class="accordion-header">
-                    <span>Is this platform tailored to the Indian tech hiring ecosystem?</span>
-                    <span class="accordion-icon">+</span>
-                  </summary>
-                  <div class="accordion-body">
-                    Yes. The salary benchmarks, role matrices (TCS Digital, Razorpay, Flipkart, Swiggy, tier-1 tech GCCs), and ATS evaluation criteria are calibrated specifically for Indian engineering colleges and lateral hiring tracks in Bengaluru, Hyderabad, Pune, Gurugram, and Noida.
+                  <!-- Scene 2: See Real Gaps -->
+                  <div class="carousel-scene" data-scene="1">
+                    <svg viewBox="0 0 1000 600" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M150 400 C 300 380, 450 300, 500 250" stroke="var(--score-high)" stroke-width="3"/>
+                      <path d="M150 150 C 300 170, 450 220, 500 250" stroke="var(--brand-accent)" stroke-width="3"/>
+                      <circle cx="500" cy="250" r="14" fill="var(--brand-accent)" stroke="var(--text-primary)" stroke-width="2"/>
+                      <path d="M500 250 C 650 300, 750 350, 850 380" stroke="var(--score-low)" stroke-width="2.5" stroke-dasharray="6 6"/>
+                      <circle cx="680" cy="310" r="8" fill="var(--score-low)"/>
+                      <circle cx="850" cy="380" r="10" fill="var(--score-mid)"/>
+                    </svg>
                   </div>
-                </details>
-                <details class="accordion-card">
-                  <summary class="accordion-header">
-                    <span>Can I export my career report as a clean PDF?</span>
-                    <span class="accordion-icon">+</span>
-                  </summary>
-                  <div class="accordion-body">
-                    Yes. CareerMatch AI features a bespoke field-guide print stylesheet. Pressing Print or "Export PDF" strips away all navigation and formats your career report as an editorial ledger suitable for mentors or placement coordinators.
+                  <!-- Scene 3: Follow a Clear Path -->
+                  <div class="carousel-scene" data-scene="2">
+                    <svg viewBox="0 0 1000 600" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M180 320 Q 320 180 460 300 T 740 280 T 880 200" stroke="var(--brand-accent)" stroke-width="3"/>
+                      <circle cx="180" cy="320" r="12" fill="var(--glass-bg)" stroke="var(--brand-accent)" stroke-width="3"/>
+                      <circle cx="460" cy="300" r="12" fill="var(--glass-bg)" stroke="var(--brand-accent)" stroke-width="3"/>
+                      <circle cx="740" cy="280" r="12" fill="var(--glass-bg)" stroke="var(--brand-accent)" stroke-width="3"/>
+                      <circle cx="880" cy="200" r="14" fill="var(--brand-accent)" stroke="var(--brand-accent)"/>
+                    </svg>
                   </div>
-                </details>
+                  <!-- Scene 4: Match Live Jobs -->
+                  <div class="carousel-scene" data-scene="3">
+                    <svg viewBox="0 0 1000 600" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <line x1="200" y1="350" x2="380" y2="240" stroke="var(--brand-accent)" stroke-width="2" stroke-dasharray="4 4"/>
+                      <line x1="380" y1="240" x2="560" y2="320" stroke="var(--brand-accent)" stroke-width="2" stroke-dasharray="4 4"/>
+                      <line x1="560" y1="320" x2="780" y2="210" stroke="var(--brand-accent)" stroke-width="2" stroke-dasharray="4 4"/>
+                      <rect x="180" y="340" width="24" height="24" rx="6" fill="var(--glass-bg)" stroke="var(--brand-accent)" stroke-width="2"/>
+                      <rect x="368" y="228" width="24" height="24" rx="6" fill="var(--glass-bg)" stroke="var(--brand-accent)" stroke-width="2"/>
+                      <rect x="548" y="308" width="24" height="24" rx="6" fill="var(--glass-bg)" stroke="var(--brand-accent)" stroke-width="2"/>
+                      <rect x="768" y="198" width="24" height="24" rx="6" fill="var(--brand-accent)" stroke="var(--brand-accent)" stroke-width="2"/>
+                    </svg>
+                  </div>
+                </div>
+
+                <!-- Scene Captions (<= 5 words each) -->
+                <div class="scene-caption" style="opacity: 1;">Parse skills with deterministic evidence</div>
+                <div class="scene-caption" style="opacity: 0;">Pinpoint gaps across live benchmarks</div>
+                <div class="scene-caption" style="opacity: 0;">Follow an adaptive weekly roadmap</div>
+                <div class="scene-caption" style="opacity: 0;">Connect with verified hiring pipelines</div>
+
+                <!-- Segmented Progress Indicator -->
+                <div class="carousel-progress" role="tablist" aria-label="Landing background scenes">
+                  <button type="button" class="progress-segment active" aria-label="Scene 1: Upload Once" aria-current="true"></button>
+                  <button type="button" class="progress-segment" aria-label="Scene 2: Real Gaps"></button>
+                  <button type="button" class="progress-segment" aria-label="Scene 3: Clear Path"></button>
+                  <button type="button" class="progress-segment" aria-label="Scene 4: Live Jobs"></button>
+                </div>
+              </div>
+
+              <!-- Hero Glass Card -->
+              <div class="landing-hero-card">
+                <h1 style="font-family: var(--font-display); font-size: clamp(2rem, 4.2vw, 3.4rem); font-weight: 700; line-height: 1.15; color: var(--text-primary); margin: 0 0 16px;">
+                  Transparent Career-Readiness Intelligence for Engineers
+                </h1>
+                <p style="font-size: clamp(0.95rem, 1.4vw, 1.15rem); color: var(--text-secondary); line-height: 1.6; max-width: 620px; margin: 0 auto 28px;">
+                  Evaluate your resume against live market benchmarks with mathematical explainability and targeted learning roadmaps.
+                </p>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap;">
+                  <a href="#/analyzer" class="btn btn-primary btn-lg" id="landingAnalyzeCtaBtn" style="min-width: 200px;">
+                    Analyze your resume →
+                  </a>
+                  <a href="#landingHowItWorks" class="btn btn-secondary btn-lg" style="color: var(--text-secondary);">
+                    How it works
+                  </a>
+                </div>
               </div>
             </div>
 
-            <!-- Modern Editorial 4-Column Footer -->
-            <footer class="editorial-footer scroll-reveal">
-              <div class="footer-grid">
-                <div>
-                  <div class="brand-badge" style="margin-bottom: var(--space-15);">
-                    <span class="brand-mark">CM</span>
-                    <span class="brand-name">CareerMatch AI</span>
-                  </div>
-                  <p style="font-size: 0.85rem; color: var(--text-secondary); max-width: 320px; line-height: 1.5;">
-                    Explainable career intelligence, skill development, and placement readiness platform for engineering students and job seekers.
+            <!-- Below the Fold: Slim 3-Step Strip (Upload, Analyze, Improve) -->
+            <div class="landing-steps-strip" id="landingHowItWorks">
+              <div style="text-align: center; max-width: 600px; margin: 0 auto 36px;">
+                <h2 style="font-family: var(--font-display); font-size: clamp(1.5rem, 2.8vw, 2rem); margin: 0 0 8px; color: var(--text-primary);">
+                  How It Works in 3 Steps
+                </h2>
+                <p style="font-size: 0.92rem; color: var(--text-secondary); margin: 0;">
+                  Deterministic, zero-hallucination analysis backed by verifiable text anchors.
+                </p>
+              </div>
+
+              <div class="steps-3-grid">
+                <div class="step-liquid-card">
+                  <div style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; color: var(--brand-accent); margin-bottom: 8px;">01 · UPLOAD</div>
+                  <h3 style="font-size: 1.15rem; margin: 0 0 10px; color: var(--text-primary);">Upload Once</h3>
+                  <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6; margin: 0;">
+                    Drop your PDF or DOCX resume, or paste plain text. Private transient sessions are always supported—nothing saved without consent.
                   </p>
                 </div>
+                <div class="step-liquid-card">
+                  <div style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; color: var(--brand-accent); margin-bottom: 8px;">02 · ANALYZE</div>
+                  <h3 style="font-size: 1.15rem; margin: 0 0 10px; color: var(--text-primary);">See Real Gaps</h3>
+                  <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6; margin: 0;">
+                    Deterministic semantic parsing checks requirements against live Indian and global job descriptions with exact evidence quotes.
+                  </p>
+                </div>
+                <div class="step-liquid-card">
+                  <div style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; color: var(--brand-accent); margin-bottom: 8px;">03 · IMPROVE</div>
+                  <h3 style="font-size: 1.15rem; margin: 0 0 10px; color: var(--text-primary);">Follow a Clear Path</h3>
+                  <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6; margin: 0;">
+                    Close skill gaps with structured weekly study roadmaps, ATS formatting fixes, coding challenges, and mock interview practice.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Professional Full Footer (Section 13 B) -->
+            <footer class="editorial-footer" style="padding: clamp(36px, 5vw, 64px) clamp(16px, 4vw, 48px); background: var(--bg-card); border-top: 1px solid var(--border-subtle);">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 32px; max-width: 1200px; margin: 0 auto 36px;">
                 <div>
-                  <div class="footer-col-title">Core Modules</div>
-                  <ul class="footer-links">
-                    <li><a href="#/analyzer">Resume Analyzer</a></li>
-                    <li><a href="#/report">Career Ledger &amp; Gaps</a></li>
-                    <li><a href="#/roadmap">Skill Roadmap</a></li>
-                    <li><a href="#/market">Job Market Intel</a></li>
+                  <div class="rail-brand" style="margin-bottom: 12px;">
+                    <span class="brand-mark">CM</span>
+                    <span class="brand-name" style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin-left: 8px;">CareerMatch AI</span>
+                  </div>
+                  <p style="font-size: 0.84rem; color: var(--text-secondary); line-height: 1.5; margin: 0;">
+                    Deterministic, evidence-grounded career intelligence for engineering students and tech professionals.
+                  </p>
+                </div>
+
+                <div>
+                  <div style="font-family: var(--font-mono); font-size: 0.78rem; text-transform: uppercase; color: var(--text-tertiary); letter-spacing: 0.05em; margin-bottom: 12px; font-weight: 600;">Product</div>
+                  <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; font-size: 0.86rem;">
+                    <li><a href="#/analyzer" style="color: var(--text-secondary); text-decoration: none;">Resume Analyzer</a></li>
+                    <li><a href="#/ats" style="color: var(--text-secondary); text-decoration: none;">ATS Check &amp; Simulator</a></li>
+                    <li><a href="#/roadmap" style="color: var(--text-secondary); text-decoration: none;">Adaptive Roadmap</a></li>
+                    <li><a href="#/market" style="color: var(--text-secondary); text-decoration: none;">Live Job Market</a></li>
+                    <li><a href="#/interview" style="color: var(--text-secondary); text-decoration: none;">Mock Interview</a></li>
                   </ul>
                 </div>
+
                 <div>
-                  <div class="footer-col-title">Practice &amp; Proof</div>
-                  <ul class="footer-links">
-                    <li><a href="#/ats">ATS Simulator</a></li>
-                    <li><a href="#/interview">AI Mock Interview</a></li>
-                    <li><a href="#/github">GitHub Verifier</a></li>
-                    <li><a href="#/skills">Assessment Lab</a></li>
+                  <div style="font-family: var(--font-mono); font-size: 0.78rem; text-transform: uppercase; color: var(--text-tertiary); letter-spacing: 0.05em; margin-bottom: 12px; font-weight: 600;">Resources</div>
+                  <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; font-size: 0.86rem;">
+                    <li><a href="#/readiness" style="color: var(--text-secondary); text-decoration: none;">How Scoring Works (PRI)</a></li>
+                    <li><a href="#/market" style="color: var(--text-secondary); text-decoration: none;">Data Sources &amp; Coverage</a></li>
+                    <li><a href="#/github" style="color: var(--text-secondary); text-decoration: none;">Code Evidence &amp; Proof</a></li>
+                    <li><a href="/api/health" target="_blank" rel="noopener" style="color: var(--score-high); text-decoration: none;">● System Health: Operational</a></li>
                   </ul>
                 </div>
+
                 <div>
-                  <div class="footer-col-title">Account &amp; Trust</div>
-                  <ul class="footer-links">
-                    <li><a href="#/profile">Student Profile</a></li>
-                    <li><a href="#/readiness">Readiness Index (PRI)</a></li>
-                    <li><a href="#/tracker">Job Kanban</a></li>
-                    <li><span style="font-size: 0.82rem; color: var(--text-tertiary);">Zero Black-Box Math</span></li>
+                  <div style="font-family: var(--font-mono); font-size: 0.78rem; text-transform: uppercase; color: var(--text-tertiary); letter-spacing: 0.05em; margin-bottom: 12px; font-weight: 600;">Company &amp; Legal</div>
+                  <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; font-size: 0.86rem;">
+                    <li><a href="https://github.com/Rishav1002/CareerMatch-AI" target="_blank" rel="noopener" style="color: var(--text-secondary); text-decoration: none;">GitHub Repository</a></li>
+                    <li><a href="#/privacy" style="color: var(--text-secondary); text-decoration: none;">Privacy Policy</a></li>
+                    <li><a href="#/terms" style="color: var(--text-secondary); text-decoration: none;">Terms of Service</a></li>
+                    <li><a href="#/cookies" style="color: var(--text-secondary); text-decoration: none;">Cookie &amp; Storage Policy</a></li>
                   </ul>
                 </div>
               </div>
-              <div class="footer-bottom">
-                <div>&copy; CareerMatch AI. MIT Licensed. Open placement intelligence.</div>
-                <div>WCAG AA Compliant · Deterministic &amp; Transparent</div>
+
+              <div style="border-top: 1px solid var(--border-subtle); padding-top: 20px; max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; font-size: 0.8rem; color: var(--text-tertiary);">
+                <div>
+                  Live job feeds aggregated from Arbeitnow, Remotive, Adzuna, and verified Indian tech benchmark datasets.
+                </div>
+                <div>
+                  &copy; <span id="landingCopyrightYear">2026</span> CareerMatch AI. Built for engineering excellence.
+                </div>
               </div>
             </footer>
+          </section>
+
+          <!-- ==================================================================
+               VIEW 0: AUTHENTICATION (#/login, #/signup)
+               ================================================================== -->
+          <section id="view-login" class="view-panel auth-viewport" hidden>
+            <div class="auth-glass-card">
+              <div style="text-align: center; margin-bottom: 24px;">
+                <a href="#/landing" class="rail-brand" style="justify-content: center; margin-bottom: 8px; text-decoration: none;">
+                  <span class="brand-mark">CM</span>
+                  <span class="brand-name" style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin-left: 8px;">CareerMatch AI</span>
+                </a>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;" id="authHeaderSubtitle">
+                  Sign in or create your career intelligence workspace
+                </p>
+              </div>
+
+              <!-- Segmented Control [Log in | Sign up] -->
+              <div class="segmented-nav" style="display: flex; width: 100%; margin-bottom: 20px; background: var(--glass-bg-subtle); padding: 4px; border-radius: var(--r-sm);">
+                <button type="button" class="tab-btn active" id="authSegmentLoginBtn" style="flex: 1; text-align: center; border-radius: var(--r-sm);">Log in</button>
+                <button type="button" class="tab-btn" id="authSegmentSignupBtn" style="flex: 1; text-align: center; border-radius: var(--r-sm);">Sign up</button>
+              </div>
+
+              <form id="authPageForm" onsubmit="return false;">
+                <div class="form-group" id="authPageNameGroup" style="display: none; margin-bottom: 14px;">
+                  <label class="form-label" for="authPageNameInput">Full Name</label>
+                  <input type="text" id="authPageNameInput" class="form-input" placeholder="Your Name" autocomplete="name" />
+                </div>
+
+                <div class="form-group" style="margin-bottom: 14px;">
+                  <label class="form-label" for="authPageEmailInput">Email Address</label>
+                  <input type="email" id="authPageEmailInput" class="form-input" placeholder="name@college.edu" required autocomplete="email" />
+                </div>
+
+                <div class="form-group" style="margin-bottom: 8px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <label class="form-label" for="authPagePasswordInput">Password</label>
+                    <button type="button" id="authTogglePasswordBtn" class="btn btn-ghost btn-sm" style="font-size: 0.75rem; padding: 2px 6px;">
+                      Show
+                    </button>
+                  </div>
+                  <input type="password" id="authPagePasswordInput" class="form-input" placeholder="••••••••" required autocomplete="current-password" />
+                </div>
+
+                <!-- Password Strength Meter -->
+                <div id="authPasswordStrengthWrap" style="display: none; margin-bottom: 14px;">
+                  <div style="height: 4px; background: var(--bg-sunken); border-radius: 999px; overflow: hidden; margin-bottom: 4px;">
+                    <div id="authPasswordStrengthBar" style="height: 100%; width: 0%; background: var(--score-low); transition: all 200ms ease;"></div>
+                  </div>
+                  <span id="authPasswordStrengthLabel" style="font-size: 0.72rem; color: var(--text-tertiary);">Password strength</span>
+                </div>
+
+                <div id="authPageErrorMsg" style="font-size: 0.82rem; color: var(--score-low); margin-bottom: 12px; display: none;"></div>
+
+                <button type="button" class="btn btn-primary" id="authPageSubmitBtn" style="width: 100%; margin-bottom: 14px;">
+                  Sign In →
+                </button>
+              </form>
+
+              <div style="display: flex; align-items: center; gap: 10px; margin: 16px 0; color: var(--text-tertiary); font-size: 0.8rem;">
+                <div style="flex: 1; height: 1px; background: var(--border-subtle);"></div>
+                <span>or</span>
+                <div style="flex: 1; height: 1px; background: var(--border-subtle);"></div>
+              </div>
+
+              <!-- Guest Mode Button -->
+              <a href="#/analyzer" class="btn btn-secondary" id="authContinueGuestBtn" style="width: 100%; text-align: center; display: block; margin-bottom: 12px;">
+                Continue without an account
+              </a>
+              <p style="font-size: 0.76rem; color: var(--text-tertiary); text-align: center; margin: 0; line-height: 1.4;">
+                Scoped guest mode keeps all your analyses safely stored in private browser memory. You can link your account at any time.
+              </p>
+            </div>
           </section>
 
           <!-- ==================================================================
@@ -722,7 +694,7 @@
                     <!-- Parsed Meta Preview -->
                     <div id="parsedResumeMeta" style="margin-top: var(--space-2); padding: 12px; background: var(--bg-sunken); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); display: none;">
                       <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                        <strong id="parsedCandidateName" style="font-size: 0.95rem;">Aarav Sharma</strong>
+                        <strong id="parsedCandidateName" style="font-size: 0.95rem;">Candidate Profile</strong>
                         <span class="score-pill" id="parsedSkillsCountBadge">9 Skills Found</span>
                       </div>
                       <div id="parsedResumeDegree" style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 3px;"></div>
@@ -734,8 +706,8 @@
 
                 <!-- Mini Cards -->
                 <div class="card" style="padding: 12px; background: var(--bg-raised); border-color: var(--border-subtle); display: none;" id="miniCardsContainer">
-                  <div style="font-size: 0.8rem; color: var(--text-tertiary);" id="miniCardCandidate">Aarav Sharma</div>
-                  <div style="font-size: 0.75rem; color: var(--text-secondary);" id="miniCardCandidateSub">aarav.sharma@example.com</div>
+                  <div style="font-size: 0.8rem; color: var(--text-tertiary);" id="miniCardCandidate">Candidate Profile</div>
+                  <div style="font-size: 0.75rem; color: var(--text-secondary);" id="miniCardCandidateSub">candidate@example.com</div>
                   <div id="miniCardRole" style="font-size: 0.8rem; font-weight: 600;">Data Engineer</div>
                   <div id="miniCardCompany" style="font-size: 0.75rem; color: var(--text-tertiary);">NexusCloud India</div>
                 </div>
@@ -1665,7 +1637,7 @@
                 <div>
                   <h2 style="font-size: 1.35rem; margin: 0;">Placement Readiness Index (PRI)</h2>
                   <span style="font-size: 0.8125rem; color: var(--text-tertiary);" id="priCandidateHeader">
-                    Aarav Sharma · Target: Data Engineer
+                    Candidate Profile · Target: Data Engineer
                   </span>
                 </div>
                 <button type="button" class="btn btn-secondary btn-sm" id="recalcPriBtn">
@@ -1751,75 +1723,249 @@
                VIEW 15: STUDENT CAREER PROFILE (#/profile)
                ================================================================== -->
           <section id="view-profile" class="view-panel" hidden>
-            <div class="card" style="max-width: 780px; margin: 0 auto;">
-              <div class="card-header">
-                <div>
-                  <h2 style="font-size: 1.35rem; margin: 0;">Student Career Profile</h2>
-                  <span style="font-size: 0.8125rem; color: var(--text-tertiary);">
-                    Central career targets, target companies, and credentials
-                  </span>
+            <div style="max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-3);">
+              <!-- Profile Header & Completeness Meter -->
+              <div class="card glass-panel" style="padding: 20px 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+                  <div>
+                    <h2 style="font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 4px; color: var(--text-primary);">Student Career Profile</h2>
+                    <span style="font-size: 0.84rem; color: var(--text-secondary);">
+                      Canonical profile used for explainable matching, skill verification, and roadmap benchmarks
+                    </span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <button type="button" class="btn btn-secondary btn-sm" id="profImportResumeBtn">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                      <span>Import from Resume</span>
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm" id="profSaveAllBtn">
+                      Save Profile
+                    </button>
+                  </div>
                 </div>
-                <div class="segmented-nav">
-                  <button type="button" class="tab-btn active" id="profileInnerTabBtn">Profile</button>
-                  <button type="button" class="tab-btn" id="accountInnerTabBtn">Account</button>
+
+                <!-- Completeness Meter -->
+                <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-subtle);">
+                  <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; font-family: var(--font-mono); margin-bottom: 6px;">
+                    <span>Profile Completeness</span>
+                    <strong id="profCompletenessPct" style="color: var(--brand-accent);">85%</strong>
+                  </div>
+                  <div style="height: 6px; background: var(--bg-sunken); border-radius: 999px; overflow: hidden;">
+                    <div id="profCompletenessBar" style="height: 100%; width: 85%; background: var(--brand-accent); transition: width 300ms ease;"></div>
+                  </div>
                 </div>
               </div>
-              <div class="card-body">
-                <div id="profileSubTabPanel">
-                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);">
-                    <div class="form-group">
-                      <label class="form-label" for="profFullName">Full Name</label>
-                      <input type="text" id="profFullName" class="form-input" value="" placeholder="Enter your full name" />
-                    </div>
-                    <div class="form-group">
-                      <label class="form-label" for="profEmail">Email Address</label>
-                      <input type="email" id="profEmail" class="form-input" value="" placeholder="Enter your email" />
-                    </div>
-                    <div class="form-group">
-                      <label class="form-label" for="profDegree">Degree / Stream</label>
-                      <input type="text" id="profDegree" class="form-input" value="B.Tech Computer Science" />
-                    </div>
-                    <div class="form-group">
-                      <label class="form-label" for="profInstitution">College / University</label>
-                      <input type="text" id="profInstitution" class="form-input" value="National Institute of Technology" />
-                    </div>
-                    <div class="form-group">
-                      <label class="form-label" for="profGradYear">Graduation Year</label>
-                      <input type="text" id="profGradYear" class="form-input" value="2026" />
-                    </div>
-                    <div class="form-group">
-                      <label class="form-label" for="profTargetRole">Primary Target Role</label>
-                      <input type="text" id="profTargetRole" class="form-input" value="Data Engineer" />
-                    </div>
-                  </div>
 
+              <!-- Section 1: Basics -->
+              <div class="card glass-panel" style="padding: 20px 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                  <h3 style="font-size: 1.05rem; margin: 0; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                    <span class="step-num-badge" style="font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; background: var(--glass-bg-subtle);">1</span>
+                    Basics
+                  </h3>
+                  <span class="status-badge status-matched" style="font-size: 0.72rem;">Verified Identity</span>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px;">
                   <div class="form-group">
-                    <label class="form-label" for="profCompanies">Dream Target Companies (Comma-separated)</label>
-                    <input type="text" id="profCompanies" class="form-input" value="Razorpay, Swiggy, Flipkart, NexusCloud India, Cred" />
+                    <label class="form-label" for="profFullName">Full Name</label>
+                    <input type="text" id="profFullName" class="form-input" placeholder="e.g. Alex Chen" />
                   </div>
-
                   <div class="form-group">
-                    <label class="form-label" for="profGithub">GitHub Profile URL or Username</label>
-                    <input type="text" id="profGithub" class="form-input" value="" placeholder="Enter your GitHub username" />
+                    <label class="form-label" for="profEmail">Email Address</label>
+                    <input type="email" id="profEmail" class="form-input" placeholder="alex@college.edu" />
                   </div>
-
-                  <div style="margin-top: var(--space-3);">
-                    <button type="button" class="btn btn-primary" id="saveProfileBtn">
-                      Save Profile Changes
-                    </button>
+                  <div class="form-group">
+                    <label class="form-label" for="profPhone">Phone Number</label>
+                    <input type="tel" id="profPhone" class="form-input" placeholder="+91 98765 43210" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="profLocation">Location / City</label>
+                    <input type="text" id="profLocation" class="form-input" placeholder="Bengaluru, India" />
                   </div>
                 </div>
+              </div>
 
-                <div id="accountSubTabPanel" style="display: none;">
-                  <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: var(--space-2);">
-                    Signed in as: <strong id="authCurrentStatusText">Guest Session (Local Mode)</strong>
-                  </p>
-                  <div style="display: flex; gap: var(--space-1);">
-                    <button type="button" class="btn btn-primary btn-sm" id="openLoginModalFromProfileBtn">
-                      Sign In or Create Account
-                    </button>
+              <!-- Section 2: Target Role -->
+              <div class="card glass-panel" style="padding: 20px 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                  <h3 style="font-size: 1.05rem; margin: 0; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                    <span class="step-num-badge" style="font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; background: var(--glass-bg-subtle);">2</span>
+                    Target Role &amp; Aspirations
+                  </h3>
+                  <span class="status-badge status-info" style="font-size: 0.72rem;">Market Benchmark</span>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px;">
+                  <div class="form-group">
+                    <label class="form-label" for="profTargetRole">Primary Target Role</label>
+                    <input type="text" id="profTargetRole" class="form-input" placeholder="Data Engineer / Backend Engineer" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="profCompanies">Dream Target Companies</label>
+                    <input type="text" id="profCompanies" class="form-input" placeholder="Razorpay, Swiggy, Flipkart, Cred" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="profTargetCtc">Target CTC Band (INR / Year)</label>
+                    <input type="text" id="profTargetCtc" class="form-input" placeholder="12 - 18 LPA" />
                   </div>
                 </div>
+              </div>
+
+              <!-- Section 3: Skills -->
+              <div class="card glass-panel" style="padding: 20px 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                  <h3 style="font-size: 1.05rem; margin: 0; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                    <span class="step-num-badge" style="font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; background: var(--glass-bg-subtle);">3</span>
+                    Skills Inventory
+                  </h3>
+                  <span class="status-badge status-matched" id="profSkillCountBadge" style="font-size: 0.72rem;">Verified Skills</span>
+                </div>
+                <div style="display: flex; gap: 8px; margin-bottom: 14px;">
+                  <input type="text" id="profAddSkillInput" class="form-input" placeholder="Type a skill (e.g. PySpark, Redis, Docker)..." style="flex: 1;" />
+                  <button type="button" class="btn btn-secondary btn-sm" id="profAddSkillBtn">Add Skill</button>
+                </div>
+                <div style="margin-bottom: 12px;">
+                  <span style="font-size: 0.76rem; font-family: var(--font-mono); color: var(--text-tertiary); text-transform: uppercase;">Technical Skills</span>
+                  <div id="profTechnicalSkillsContainer" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; min-height: 32px;"></div>
+                </div>
+                <div>
+                  <span style="font-size: 0.76rem; font-family: var(--font-mono); color: var(--text-tertiary); text-transform: uppercase;">Soft &amp; Methodological Skills</span>
+                  <div id="profSoftSkillsContainer" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; min-height: 28px;"></div>
+                </div>
+              </div>
+
+              <!-- Section 4: Experience -->
+              <div class="card glass-panel" style="padding: 20px 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                  <h3 style="font-size: 1.05rem; margin: 0; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                    <span class="step-num-badge" style="font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; background: var(--glass-bg-subtle);">4</span>
+                    Work &amp; Internship Experience
+                  </h3>
+                  <button type="button" class="btn btn-ghost btn-sm" id="profAddExpBtn">+ Add Entry</button>
+                </div>
+                <div id="profExperienceList" style="display: flex; flex-direction: column; gap: 12px;"></div>
+              </div>
+
+              <!-- Section 5: Education -->
+              <div class="card glass-panel" style="padding: 20px 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                  <h3 style="font-size: 1.05rem; margin: 0; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                    <span class="step-num-badge" style="font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; background: var(--glass-bg-subtle);">5</span>
+                    Education
+                  </h3>
+                  <button type="button" class="btn btn-ghost btn-sm" id="profAddEduBtn">+ Add Education</button>
+                </div>
+                <div id="profEducationList" style="display: flex; flex-direction: column; gap: 12px;"></div>
+              </div>
+
+              <!-- Section 6: Projects -->
+              <div class="card glass-panel" style="padding: 20px 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                  <h3 style="font-size: 1.05rem; margin: 0; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                    <span class="step-num-badge" style="font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; background: var(--glass-bg-subtle);">6</span>
+                    Academic &amp; Independent Projects
+                  </h3>
+                  <button type="button" class="btn btn-ghost btn-sm" id="profAddProjBtn">+ Add Project</button>
+                </div>
+                <div id="profProjectsList" style="display: flex; flex-direction: column; gap: 12px;"></div>
+              </div>
+
+              <!-- Section 7: Certifications -->
+              <div class="card glass-panel" style="padding: 20px 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                  <h3 style="font-size: 1.05rem; margin: 0; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                    <span class="step-num-badge" style="font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; background: var(--glass-bg-subtle);">7</span>
+                    Certifications &amp; Credentials
+                  </h3>
+                  <button type="button" class="btn btn-ghost btn-sm" id="profAddCertBtn">+ Add Certification</button>
+                </div>
+                <div id="profCertsList" style="display: flex; flex-direction: column; gap: 10px;"></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ==================================================================
+               VIEW: SETTINGS & DATA PRIVACY (#/settings)
+               ================================================================== -->
+          <section id="view-settings" class="view-panel" hidden>
+            <div style="max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-3);">
+              <div class="card glass-panel" style="padding: 24px;">
+                <h2 style="font-family: var(--font-display); font-size: 1.35rem; margin: 0 0 6px;">Settings &amp; Workspace Management</h2>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0 0 20px;">
+                  Manage appearance, local data export, and session privacy.
+                </p>
+
+                <div style="display: flex; flex-direction: column; gap: 18px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 14px; border-bottom: 1px solid var(--border-subtle);">
+                    <div>
+                      <strong style="font-size: 0.92rem; color: var(--text-primary);">Interface Theme</strong>
+                      <p style="margin: 2px 0 0; font-size: 0.8rem; color: var(--text-secondary);">Switch between light paper and dark liquid-glass themes.</p>
+                    </div>
+                    <button type="button" class="btn btn-secondary btn-sm" id="settingsThemeToggleBtn">Toggle Theme</button>
+                  </div>
+
+                  <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 14px; border-bottom: 1px solid var(--border-subtle);">
+                    <div>
+                      <strong style="font-size: 0.92rem; color: var(--text-primary);">Data Export</strong>
+                      <p style="margin: 2px 0 0; font-size: 0.8rem; color: var(--text-secondary);">Download a copy of your stored resumes, analyses, and roadmap.</p>
+                    </div>
+                    <button type="button" class="btn btn-secondary btn-sm" id="settingsExportJsonBtn">Export JSON</button>
+                  </div>
+
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                      <strong style="font-size: 0.92rem; color: var(--score-low);">Purge Workspace Data</strong>
+                      <p style="margin: 2px 0 0; font-size: 0.8rem; color: var(--text-secondary);">Delete all local analyses, parsed resumes, and assessments from this browser.</p>
+                    </div>
+                    <button type="button" class="btn btn-ghost btn-sm" id="settingsPurgeDataBtn" style="color: var(--score-low);">Purge Data</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ==================================================================
+               VIEW: PRIVACY POLICY (#/privacy)
+               ================================================================== -->
+          <section id="view-privacy" class="view-panel" hidden>
+            <div class="card glass-panel measure-prose" style="max-width: 780px; margin: 0 auto; padding: clamp(24px, 4vw, 44px);">
+              <h1 style="font-family: var(--font-display); font-size: 1.8rem; margin: 0 0 12px; color: var(--text-primary);">Privacy Policy</h1>
+              <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-tertiary);">Effective Date: November 2026</span>
+              <div style="margin-top: 20px; font-size: 0.9rem; line-height: 1.7; color: var(--text-secondary); display: flex; flex-direction: column; gap: 14px;">
+                <p>CareerMatch AI is engineered on the principle of <strong>data minimization and transparent scoring</strong>. We believe student career data belongs strictly to the individual.</p>
+                <h3 style="font-size: 1.1rem; color: var(--text-primary); margin: 8px 0 2px;">1. Transient Session Privacy</h3>
+                <p>When you select the <em>"Do not save my resume on the server"</em> option, parsing occurs exclusively in transient memory. No text, contact details, or PDF bytes are recorded into our persistent database.</p>
+                <h3 style="font-size: 1.1rem; color: var(--text-primary); margin: 8px 0 2px;">2. Zero Model Training on Student Resumes</h3>
+                <p>We never sell your resume to third-party recruiters or use candidate submissions to train external generative models.</p>
+                <h3 style="font-size: 1.1rem; color: var(--text-primary); margin: 8px 0 2px;">3. Scoped Local Storage</h3>
+                <p>Guest sessions store all data under scoped browser keys (IndexedDB <code>cm:v1:*</code>). You have full control to export or wipe this data at any time via Settings.</p>
+              </div>
+            </div>
+          </section>
+
+          <!-- ==================================================================
+               VIEW: TERMS OF SERVICE (#/terms)
+               ================================================================== -->
+          <section id="view-terms" class="view-panel" hidden>
+            <div class="card glass-panel measure-prose" style="max-width: 780px; margin: 0 auto; padding: clamp(24px, 4vw, 44px);">
+              <h1 style="font-family: var(--font-display); font-size: 1.8rem; margin: 0 0 12px; color: var(--text-primary);">Terms of Service</h1>
+              <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-tertiary);">Effective Date: November 2026</span>
+              <div style="margin-top: 20px; font-size: 0.9rem; line-height: 1.7; color: var(--text-secondary); display: flex; flex-direction: column; gap: 14px;">
+                <p>CareerMatch AI provides algorithmic benchmarks and career planning intelligence for educational and preparation purposes.</p>
+                <p>All placement readiness scores and salary benchmarks are calculated from public job feeds and curated Indian tech role matrices. Scores represent advisory guidelines and do not constitute an explicit job guarantee.</p>
+              </div>
+            </div>
+          </section>
+
+          <!-- ==================================================================
+               VIEW: COOKIE & STORAGE POLICY (#/cookies)
+               ================================================================== -->
+          <section id="view-cookies" class="view-panel" hidden>
+            <div class="card glass-panel measure-prose" style="max-width: 780px; margin: 0 auto; padding: clamp(24px, 4vw, 44px);">
+              <h1 style="font-family: var(--font-display); font-size: 1.8rem; margin: 0 0 12px; color: var(--text-primary);">Cookie &amp; Storage Policy</h1>
+              <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-tertiary);">Zero Third-Party Tracking</span>
+              <div style="margin-top: 20px; font-size: 0.9rem; line-height: 1.7; color: var(--text-secondary); display: flex; flex-direction: column; gap: 14px;">
+                <p>CareerMatch AI does not use third-party analytics cookies, cross-site trackers, or advertising beacons.</p>
+                <p>We strictly utilize browser <code>localStorage</code> and <code>IndexedDB</code> for essential application state: your theme preference, active authentication JWT, and locally cached career roadmaps.</p>
               </div>
             </div>
           </section>
@@ -1901,7 +2047,7 @@
           <form id="authModalForm" onsubmit="return false;">
             <div class="form-group" id="authNameRow" style="display: none;">
               <label class="form-label" for="authFullNameInput">Full Name</label>
-              <input type="text" id="authFullNameInput" class="form-input" placeholder="e.g. Aarav Sharma" />
+              <input type="text" id="authFullNameInput" class="form-input" placeholder="e.g. Candidate Profile" />
             </div>
 
             <div class="form-group">

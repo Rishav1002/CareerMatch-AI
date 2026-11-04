@@ -1,29 +1,31 @@
 /**
- * CareerMatch AI: Store & State Management
- * Persistent localStorage state with pub/sub event bus
+ * CareerMatch AI: Store & State Management (Single Source of Truth)
+ * Integrates with unified storage.js and publishes state changes.
  */
 
-const STORAGE_KEYS = {
-  TOKEN: "careermatch_jwt_token",
-  USER: "careermatch_user",
-  THEME: "careermatch_theme",
-  LANG: "careermatch_lang",
-  TRACKER: "careermatch_kanban_jobs",
-  PLANNER: "careermatch_study_planner",
-  HISTORY: "careermatch_resume_history",
-  STREAK: "careermatch_streak_data",
-  NOTIFICATIONS: "careermatch_notifications",
-};
+import { storage } from "./storage.js";
 
 class Store {
   constructor() {
     this.subscribers = new Map();
+
+    const savedTheme = storage.getPref("theme", null) || localStorage.getItem("cm_theme") || "light";
+    const savedLang = storage.getPref("lang", "en");
+    const savedToken = localStorage.getItem("cm:v1:token") || localStorage.getItem("careermatch_jwt_token") || "";
+    const savedUser = storage.getPref("user", null);
+
+    if (savedUser?.id) {
+      storage.setScope(savedUser.id);
+    } else {
+      storage.setScope(null);
+    }
+
     this.state = {
-      token: localStorage.getItem(STORAGE_KEYS.TOKEN) || "",
-      currentUser: this._getStoredJson(STORAGE_KEYS.USER, null),
+      token: savedToken,
+      currentUser: savedUser,
       studentProfile: null,
-      theme: localStorage.getItem(STORAGE_KEYS.THEME) || "light",
-      lang: localStorage.getItem(STORAGE_KEYS.LANG) || "en",
+      theme: savedTheme,
+      lang: savedLang,
       currentView: "landing",
       sidebarCollapsed: false,
       parsedResume: null,
@@ -38,24 +40,14 @@ class Store {
       priData: null,
       jobsData: null,
       careerCompareData: null,
-      trackerJobs: this._getStoredJson(STORAGE_KEYS.TRACKER, []),
-      plannerTasks: this._getStoredJson(STORAGE_KEYS.PLANNER, []),
-      resumeHistory: this._getStoredJson(STORAGE_KEYS.HISTORY, []),
-      streak: this._getStoredJson(STORAGE_KEYS.STREAK, { current: 1, lastDate: new Date().toISOString().split("T")[0] }),
-      notifications: this._getStoredJson(STORAGE_KEYS.NOTIFICATIONS, [
+      trackerJobs: storage.getPref("trackerJobs", []),
+      plannerTasks: storage.getPref("plannerTasks", []),
+      resumeHistory: storage.getPref("resumeHistory", []),
+      streak: storage.getPref("streak", { current: 1, lastDate: new Date().toISOString().split("T")[0] }),
+      notifications: storage.getPref("notifications", [
         { id: 1, title: "Welcome to CareerMatch AI", desc: "Start by analyzing your resume against live industry benchmarks.", time: "Just now", unread: true },
-        { id: 2, title: "Career Match Ready", desc: "Select your target role and upload your resume to discover placement readiness.", time: "Just now", unread: true },
       ]),
     };
-  }
-
-  _getStoredJson(key, defaultValue) {
-    try {
-      const raw = localStorage.getItem(key);
-      return raw ? JSON.parse(raw) : defaultValue;
-    } catch {
-      return defaultValue;
-    }
   }
 
   get(key) {
@@ -78,17 +70,37 @@ class Store {
 
   _persist(key, value) {
     try {
-      if (key === "token") localStorage.setItem(STORAGE_KEYS.TOKEN, value);
-      if (key === "currentUser") localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(value));
-      if (key === "theme") localStorage.setItem(STORAGE_KEYS.THEME, value);
-      if (key === "lang") localStorage.setItem(STORAGE_KEYS.LANG, value);
-      if (key === "trackerJobs") localStorage.setItem(STORAGE_KEYS.TRACKER, JSON.stringify(value));
-      if (key === "plannerTasks") localStorage.setItem(STORAGE_KEYS.PLANNER, JSON.stringify(value));
-      if (key === "resumeHistory") localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(value));
-      if (key === "streak") localStorage.setItem(STORAGE_KEYS.STREAK, JSON.stringify(value));
-      if (key === "notifications") localStorage.setItem(STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(value));
+      if (key === "token") {
+        if (value) {
+          localStorage.setItem("cm:v1:token", value);
+          localStorage.setItem("careermatch_jwt_token", value);
+        } else {
+          localStorage.removeItem("cm:v1:token");
+          localStorage.removeItem("careermatch_jwt_token");
+        }
+      }
+      if (key === "currentUser") {
+        storage.setPref("user", value);
+        storage.setScope(value?.id || null);
+      }
+      if (key === "theme") {
+        storage.setPref("theme", value);
+        localStorage.setItem("cm_theme", value);
+        localStorage.setItem("theme", value);
+        document.documentElement.setAttribute("data-theme", value);
+        document.documentElement.style.colorScheme = value;
+      }
+      if (key === "lang") {
+        storage.setPref("lang", value);
+        localStorage.setItem("cm_lang", value);
+      }
+      if (key === "trackerJobs") storage.setPref("trackerJobs", value);
+      if (key === "plannerTasks") storage.setPref("plannerTasks", value);
+      if (key === "resumeHistory") storage.setPref("resumeHistory", value);
+      if (key === "streak") storage.setPref("streak", value);
+      if (key === "notifications") storage.setPref("notifications", value);
     } catch (e) {
-      console.warn("Storage persistence error:", e);
+      console.warn("[Store] Persistence error:", e);
     }
   }
 
@@ -100,19 +112,17 @@ class Store {
     return () => this.subscribers.get(key).delete(callback);
   }
 
-  emit(key, data) {
+  emit(key, value) {
     if (this.subscribers.has(key)) {
       this.subscribers.get(key).forEach((cb) => {
-        try { cb(data, this.state); } catch (e) { console.error(`Subscriber error for ${key}:`, e); }
-      });
-    }
-    if (this.subscribers.has("*")) {
-      this.subscribers.get("*").forEach((cb) => {
-        try { cb(key, data, this.state); } catch (e) { console.error("Global subscriber error:", e); }
+        try {
+          cb(value);
+        } catch (err) {
+          console.error(`[Store] Error in subscriber for ${key}:`, err);
+        }
       });
     }
   }
 }
 
 export const store = new Store();
-window.__careermatch_store = store;

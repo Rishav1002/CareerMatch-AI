@@ -440,10 +440,49 @@ def parse_resume_text_to_profile(raw_text: str, filename: str = "Uploaded_Resume
                 if len(ln) >= 8:
                     certifications.append(ln[:120])
 
+    # 10. Extract Achievements & Honors
+    achievements: List[str] = []
+    ach_src = sections.get("ACHIEVEMENTS") or sections.get("AWARDS") or []
+    if ach_src:
+        for ln in ach_src:
+            if not _is_section_header(ln) and len(ln.strip()) >= 5:
+                achievements.append(re.sub(r"^[\s•·\-*]+", "", ln).strip()[:140])
+    else:
+        for ln in content_lines:
+            if any(k in ln.lower() for k in ["hackathon", "first place", "runner-up", "ranked top", "scholarship", "dean's list"]):
+                if not _is_section_header(ln) and len(ln.strip()) >= 10:
+                    achievements.append(re.sub(r"^[\s•·\-*]+", "", ln).strip()[:140])
+                if len(achievements) >= 3:
+                    break
+
     summary_text = (
         f"Detected {len(detected_skills)} technical skills, {len(projects)} projects, "
         f"and {len(work_experience)} experience entries."
     )
+
+    basics_obj = {
+        "name": candidate_name,
+        "email": email_match.group(0) if email_match else "",
+        "phone": phone_match.group(0) if phone_match else "",
+        "location": location_str,
+        "confidence": 0.95 if (email_match or phone_match) else 0.70,
+    }
+
+    skills_obj = {
+        "technical": detected_skills,
+        "soft": detected_soft,
+        "confidence": 0.95 if len(detected_skills) >= 3 else 0.60,
+    }
+
+    confidence_flags = {
+        "basics": basics_obj["confidence"],
+        "skills": skills_obj["confidence"],
+        "education": 0.90 if education else 0.50,
+        "experience": 0.88 if work_experience else 0.50,
+        "projects": 0.88 if projects else 0.50,
+        "certifications": 0.90 if certifications else 0.60,
+        "achievements": 0.85 if achievements else 0.50,
+    }
 
     return {
         "id": f"res-{uuid.uuid4().hex[:10]}",
@@ -451,18 +490,20 @@ def parse_resume_text_to_profile(raw_text: str, filename: str = "Uploaded_Resume
         "uploadedAt": datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC"),
         "rawText": clean_text,
         "extractionSource": "template",
-        "contact": {
-            "name": candidate_name,
-            "email": email_match.group(0) if email_match else "",
-            "phone": phone_match.group(0) if phone_match else "",
-            "location": location_str,
-        },
+        # Structured Schema (Section 13 G)
+        "basics": basics_obj,
         "summary": summary_text,
+        "skills": skills_obj,
         "education": education,
+        "experience": work_experience,
+        "projects": projects,
+        "certifications": certifications,
+        "achievements": achievements,
+        "confidenceFlags": confidence_flags,
+        # Backward-compatible fields
+        "contact": basics_obj,
         "technicalSkills": detected_skills,
         "softSkills": detected_soft,
         "workExperience": work_experience,
-        "projects": projects,
-        "certifications": certifications,
         "skillEvidence": skill_evidence,
     }

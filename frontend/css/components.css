@@ -4,7 +4,7 @@
  */
 
 /* ==========================================================================
-   BUTTONS (Tactile Editorial Styling)
+   BUTTONS (Minimal Frosted Liquid Glass - Section 13)
    ========================================================================== */
 .btn {
   display: inline-flex;
@@ -15,16 +15,17 @@
   font-size: 0.9rem;
   font-weight: 500;
   line-height: 1;
-  padding: 9px 16px;
-  border-radius: var(--radius-sm);
+  padding: 10px 18px;
+  border-radius: var(--r-sm, 10px);
   border: 1px solid transparent;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1), background-color 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
   white-space: nowrap;
   text-decoration: none;
-  min-height: 38px;
-  box-shadow: 0 1px 2px rgba(30, 27, 24, 0.06);
+  min-height: 40px;
   position: relative;
+  overflow: hidden;
+  user-select: none;
 }
 
 .btn:hover {
@@ -32,7 +33,7 @@
 }
 
 .btn:active {
-  transform: translateY(1px);
+  transform: translateY(2px) scale(0.98);
 }
 
 .btn:disabled, .btn[aria-disabled="true"] {
@@ -42,45 +43,49 @@
   box-shadow: none;
 }
 
+/* Primary: Accent Glass with 3D depth and specular highlight */
 .btn-primary {
-  background: linear-gradient(180deg, var(--brand-accent) 0%, var(--brand-hover) 100%);
-  color: var(--text-inverse);
-  border-color: var(--brand-active);
-  box-shadow: var(--shadow-btn-inset), 0 1px 3px rgba(30, 27, 24, 0.12);
+  background-color: var(--brand-accent);
+  background-image: radial-gradient(circle at var(--mx, 50%) var(--my, 20%), rgba(255, 255, 255, 0.28) 0%, transparent 60%);
+  color: #ffffff;
+  border: 1px solid var(--brand-hover);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 4px 14px rgba(184, 77, 43, 0.3), 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .btn-primary:hover {
-  background: linear-gradient(180deg, var(--brand-hover) 0%, var(--brand-active) 100%);
-  border-color: var(--brand-active);
-  color: var(--text-inverse);
-  box-shadow: var(--shadow-btn-inset), 0 3px 6px -1px rgba(30, 27, 24, 0.18);
+  background-color: var(--brand-hover);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 6px 18px rgba(184, 77, 43, 0.38), 0 2px 4px rgba(0, 0, 0, 0.1);
   transform: translateY(-1px);
 }
 
 .btn-primary:active {
-  transform: translateY(1px);
-  box-shadow: var(--shadow-btn-active);
+  transform: translateY(2px);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25);
 }
 
+/* Secondary: Neutral Glass */
 .btn-secondary {
-  background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-raised) 100%);
+  background: var(--glass-bg, rgba(255, 255, 255, 0.65));
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
   color: var(--text-primary);
-  border-color: var(--border-medium);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65), 0 1px 2px rgba(30, 27, 24, 0.05);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-highlight), 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .btn-secondary:hover {
-  background: var(--bg-raised);
-  border-color: var(--border-strong);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 3px 5px -1px rgba(30, 27, 24, 0.1);
+  background: var(--glass-bg-elevated, rgba(255, 255, 255, 0.85));
+  border-color: var(--border-medium);
+  box-shadow: var(--glass-highlight), 0 4px 12px rgba(0, 0, 0, 0.08);
   transform: translateY(-1px);
 }
 
 .btn-secondary:active {
-  transform: translateY(1px);
-  box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.12);
+  transform: translateY(2px);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
+/* Ghost */
 .btn-ghost {
   background-color: transparent;
   color: var(--text-secondary);
@@ -88,60 +93,71 @@
 }
 
 .btn-ghost:hover {
-  background-color: var(--bg-raised);
+  background-color: var(--glass-bg-subtle, rgba(255, 255, 255, 0.45));
   color: var(--text-primary);
 }
 
+/* Danger */
 .btn-danger {
   background-color: var(--score-low-bg);
   color: var(--score-low);
-  border-color: var(--score-low-border);
+  border: 1px solid var(--score-low-border);
 }
 
 .btn-danger:hover {
   background-color: var(--score-low);
-  color: var(--text-inverse);
+  color: #ffffff;
 }
 
 .btn-sm {
-  padding: 6px 12px;
+  padding: 6px 14px;
   font-size: 0.8125rem;
-  min-height: 32px;
+  min-height: 34px;
+  border-radius: var(--r-sm, 10px);
 }
 
 .btn-lg {
-  padding: 12px 24px;
+  padding: 14px 28px;
   font-size: 1rem;
   font-weight: 600;
-  min-height: 46px;
+  min-height: 48px;
+  border-radius: var(--r-md, 14px);
 }
 
+/* Icon-only button: Rounded square (min 44px touch target) */
 .btn-icon {
-  padding: 8px;
-  width: 38px;
-  height: 38px;
-  border-radius: var(--radius-sm);
-}
-
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border-radius: var(--r-sm, 10px);
 /* ==========================================================================
-   CARDS & PANELS
+   CARDS & PANELS (Frosted Liquid Glass - Section 13)
    ========================================================================== */
-.card {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-hairline);
+.card, .glass-panel, .glass-card {
+  background: var(--glass-bg, rgba(255, 255, 255, 0.65));
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-md, 14px);
+  box-shadow: var(--glass-highlight), var(--glass-shadow);
   position: relative;
   overflow: hidden;
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 200ms ease;
+}
+
+.card:hover, .glass-card:hover {
+  box-shadow: var(--glass-highlight), var(--glass-shadow-lg);
 }
 
 .card-header {
   padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--glass-border-subtle, rgba(0, 0, 0, 0.08));
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: var(--bg-card);
+  background: var(--glass-bg-subtle, rgba(255, 255, 255, 0.35));
 }
 
 .card-header h3 {
@@ -155,8 +171,8 @@
 
 .card-footer {
   padding: var(--space-2) var(--space-3);
-  border-top: 1px solid var(--border-subtle);
-  background-color: var(--bg-raised);
+  border-top: 1px solid var(--glass-border-subtle, rgba(0, 0, 0, 0.08));
+  background: var(--glass-bg-subtle, rgba(255, 255, 255, 0.25));
 }
 
 /* ==========================================================================

@@ -33,6 +33,21 @@ def contrast_ratio(hex1, hex2):
     l_min = min(lum1, lum2)
     return (l_max + 0.05) / (l_min + 0.05)
 
+def parse_color(color_str, canvas_hex="#FFFFFF"):
+    color_str = color_str.strip()
+    if color_str.startswith('#'):
+        return color_str
+    rgba_m = re.match(r'rgba?\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d\.]+))?\s*\)', color_str)
+    if rgba_m:
+        r, g, b = int(rgba_m.group(1)), int(rgba_m.group(2)), int(rgba_m.group(3))
+        a = float(rgba_m.group(4)) if rgba_m.group(4) is not None else 1.0
+        bg_r, bg_g, bg_b = hex_to_rgb(canvas_hex)
+        comp_r = round(r * a + bg_r * (1.0 - a))
+        comp_g = round(g * a + bg_g * (1.0 - a))
+        comp_b = round(b * a + bg_b * (1.0 - a))
+        return f"#{comp_r:02x}{comp_g:02x}{comp_b:02x}"
+    return None
+
 def parse_tokens():
     with open(TOKENS_PATH, 'r', encoding='utf-8') as f:
         css = f.read()
@@ -41,19 +56,31 @@ def parse_tokens():
     root_match = re.search(r':root\s*\{(.*?)\n\}', css, re.DOTALL)
     dark_match = re.search(r'\[data-theme="dark"\]\s*\{(.*?)\n\}', css, re.DOTALL)
 
-    def extract_vars(block):
+    def extract_vars(block, default_canvas):
         res = {}
+        canvas = default_canvas
+        # First pass for canvas
+        for line in block.splitlines():
+            line = line.strip()
+            if line.startswith('--bg-canvas:') and '#' in line:
+                val = line.split(':', 1)[1].split(';')[0].split('/*')[0].strip()
+                if val.startswith('#'):
+                    canvas = val
+                    res['--bg-canvas'] = val
+                    break
+
         for line in block.splitlines():
             line = line.strip()
             if line.startswith('--') and ':' in line:
                 key, val = line.split(':', 1)
                 val = val.split(';')[0].split('/*')[0].strip()
-                if val.startswith('#'):
-                    res[key.strip()] = val
+                c = parse_color(val, canvas)
+                if c:
+                    res[key.strip()] = c
         return res
 
-    light_tokens = extract_vars(root_match.group(1)) if root_match else {}
-    dark_tokens = extract_vars(dark_match.group(1)) if dark_match else {}
+    light_tokens = extract_vars(root_match.group(1), "#FBF9F5") if root_match else {}
+    dark_tokens = extract_vars(dark_match.group(1), "#121417") if dark_match else {}
     return light_tokens, dark_tokens
 
 def main():

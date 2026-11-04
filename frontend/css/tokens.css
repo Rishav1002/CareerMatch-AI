@@ -7,15 +7,38 @@
 
 :root {
   /* ==========================================================================
-     COLOR SYSTEM - LIGHT THEME ("Warm Paper & Ledger")
+     COLOR SYSTEM - LIGHT THEME ("Frosted Liquid Glass")
      ========================================================================== */
-  --bg-canvas: #FBF9F5;         /* Warm cream ledger paper */
-  --bg-card: #FFFFFF;           /* Pure paper white */
-  --bg-raised: #F5F2EB;         /* Subtle parchment tint for headers / toolbars */
+  --bg-canvas: #F8F9FA;         /* Clean neutral glass background */
+  --bg-card: rgba(255, 255, 255, 0.65); /* Frosted glass panel */
+  --bg-raised: rgba(255, 255, 255, 0.82);
   --surface-raised: var(--bg-raised);
-  --bg-sunken: #EFEBE1;         /* Sunken paper for inputs, well containers */
-  --bg-active: #E8E2D5;         /* Active state fill */
-  --overlay: rgba(30, 27, 24, 0.6);
+  --bg-sunken: rgba(235, 238, 242, 0.6);
+  --bg-active: rgba(225, 230, 238, 0.75);
+  --overlay: rgba(18, 20, 26, 0.45);
+
+  /* Frosted Glass Tokens */
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-bg-subtle: rgba(255, 255, 255, 0.45);
+  --glass-bg-elevated: rgba(255, 255, 255, 0.82);
+  --glass-border: rgba(255, 255, 255, 0.65);
+  --glass-border-subtle: rgba(0, 0, 0, 0.08);
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.08), 0 2px 8px 0 rgba(0, 0, 0, 0.04);
+  --glass-shadow-lg: 0 16px 48px 0 rgba(31, 38, 135, 0.12), 0 4px 16px 0 rgba(0, 0, 0, 0.06);
+  --blur: blur(18px) saturate(160%);
+  --scrim: rgba(255, 255, 255, 0.88);
+
+  /* Radius Scale */
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --r-xl: 28px;
+  --radius-xs: 6px;
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-lg: var(--r-lg);
+  --radius-xl: var(--r-xl);
 
   /* Background Grid Pattern */
   --bg-pattern: radial-gradient(circle, rgba(30, 27, 24, 0.055) 1px, transparent 1px);
@@ -153,13 +176,25 @@
    COLOR SYSTEM - DARK THEME ("Deep Mineral Ink")
    ========================================================================== */
 [data-theme="dark"] {
-  --bg-canvas: #121417;         /* Deep mineral ink */
-  --bg-card: #181B20;           /* Dark slate paper */
-  --bg-raised: #20242B;         /* Raised slate */
+  --bg-canvas: #0E1015;         /* Deep mineral canvas */
+  --bg-card: rgba(22, 24, 30, 0.6);  /* Frosted dark glass */
+  --bg-raised: rgba(30, 34, 42, 0.75);
   --surface-raised: var(--bg-raised);
-  --bg-sunken: #15181D;         /* Sunken input field */
-  --bg-active: #282E37;         /* Active state fill */
-  --overlay: rgba(0, 0, 0, 0.75);
+  --bg-sunken: rgba(14, 16, 21, 0.65);
+  --bg-active: rgba(40, 46, 56, 0.7);
+  --overlay: rgba(0, 0, 0, 0.7);
+
+  /* Dark Frosted Glass Tokens */
+  --glass-bg: rgba(22, 24, 30, 0.6);
+  --glass-bg-subtle: rgba(22, 24, 30, 0.4);
+  --glass-bg-elevated: rgba(30, 34, 42, 0.78);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-border-subtle: rgba(255, 255, 255, 0.06);
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45), 0 2px 8px 0 rgba(0, 0, 0, 0.25);
+  --glass-shadow-lg: 0 16px 48px 0 rgba(0, 0, 0, 0.65), 0 4px 16px 0 rgba(0, 0, 0, 0.35);
+  --blur: blur(20px) saturate(170%);
+  --scrim: rgba(14, 16, 21, 0.88);
 
   /* Dark Background Grid Pattern */
   --bg-pattern: radial-gradient(circle, rgba(243, 239, 234, 0.045) 1px, transparent 1px);
@@ -219,13 +254,25 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg-canvas: #121417;
-    --bg-card: #181B20;
-    --bg-raised: #20242B;
+    --bg-canvas: #0E1015;
+    --bg-card: rgba(22, 24, 30, 0.6);
+    --bg-raised: rgba(30, 34, 42, 0.75);
     --surface-raised: var(--bg-raised);
-    --bg-sunken: #15181D;
-    --bg-active: #282E37;
-    --overlay: rgba(0, 0, 0, 0.75);
+    --bg-sunken: rgba(14, 16, 21, 0.65);
+    --bg-active: rgba(40, 46, 56, 0.7);
+    --overlay: rgba(0, 0, 0, 0.7);
+
+    /* Dark Frosted Glass Tokens */
+    --glass-bg: rgba(22, 24, 30, 0.6);
+    --glass-bg-subtle: rgba(22, 24, 30, 0.4);
+    --glass-bg-elevated: rgba(30, 34, 42, 0.78);
+    --glass-border: rgba(255, 255, 255, 0.12);
+    --glass-border-subtle: rgba(255, 255, 255, 0.06);
+    --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45), 0 2px 8px 0 rgba(0, 0, 0, 0.25);
+    --glass-shadow-lg: 0 16px 48px 0 rgba(0, 0, 0, 0.65), 0 4px 16px 0 rgba(0, 0, 0, 0.35);
+    --blur: blur(20px) saturate(170%);
+    --scrim: rgba(14, 16, 21, 0.88);
 
     --bg-pattern: radial-gradient(circle, rgba(243, 239, 234, 0.045) 1px, transparent 1px);
     --bg-pattern-size: 24px 24px;

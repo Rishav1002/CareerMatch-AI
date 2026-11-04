@@ -2575,16 +2575,18 @@ async function loadSkillAssessment(showNotif = false) {
       mcqBox.innerHTML = (data.questions || [])
         .map(
           (q, qIdx) => `
-          <div class="evidence-req-item" style="cursor:default;">
-            <span class="tiny-label">${escapeHtml(q.subtopic)}</span>
-            <strong style="display:block;margin:0.2rem 0 0.45rem;">${qIdx + 1}. ${escapeHtml(q.question)}</strong>
-            <div style="display:flex;flex-direction:column;gap:0.32rem;font-size:0.84rem;">
+          <div class="card glass-card" style="margin-bottom: 12px; padding: 14px 18px; border-radius: var(--r-md, 14px);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span class="status-badge" style="background: var(--glass-bg-subtle); font-size: 0.72rem; letter-spacing: 0.04em;">Question ${qIdx + 1} of ${(data.questions || []).length} · ${escapeHtml(q.subtopic || topic)}</span>
+            </div>
+            <strong style="display: block; font-size: 0.95rem; margin-bottom: 10px; color: var(--text-primary);">${qIdx + 1}. ${escapeHtml(q.question)}</strong>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
               ${(q.options || [])
                 .map(
                   (opt, oIdx) => `
-                  <label style="display:flex;align-items:center;gap:0.45rem;cursor:pointer;">
-                    <input type="radio" name="asmt_mcq_${qIdx}" value="${oIdx}" ${oIdx === q.correctIndex ? "checked" : ""} />
-                    <span>${escapeHtml(opt)}</span>
+                  <label class="asmt-option-label" style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: var(--r-sm, 10px); background: var(--glass-bg-subtle); border: 1px solid var(--glass-border); cursor: pointer; transition: background 150ms ease, border-color 150ms ease;">
+                    <input type="radio" name="asmt_mcq_${qIdx}" value="${oIdx}" style="accent-color: var(--brand-accent); width: 16px; height: 16px; margin: 0;" />
+                    <span style="font-size: 0.88rem; color: var(--text-primary);">${escapeHtml(opt)}</span>
                   </label>
                 `
                 )
@@ -2645,31 +2647,47 @@ async function submitActiveSkillAssessment() {
     if (!res.ok) throw new Error(data.detail || "Assessment grading failed");
 
     const resCard = document.getElementById("asmtResultCard");
-    if (resCard) resCard.classList.remove("hidden");
+    if (resCard) {
+      resCard.style.display = "block";
+      resCard.classList.remove("hidden");
+    }
     document.getElementById("asmtFinalScoreBadge").textContent = `Overall: ${Math.round(data.overallScore)}% (MCQ: ${Math.round(data.mcqScore)}% · Code: ${Math.round(data.codingScore)}%)`;
 
     const revList = document.getElementById("asmtReviewList");
     if (revList) {
       const codeRev = data.codingReview || {};
+      const weakList = data.weakSubtopics || [];
       revList.innerHTML = [
-        `<div class="evidence-req-item" style="cursor:default;border-color:var(--accent-blue);">
-          <strong>${escapeHtml(data.evaluationMode)}</strong>
-          <p style="margin:0.25rem 0 0;font-size:0.82rem;">${escapeHtml(codeRev.feedback || "")} (Test Cases Verified: ${codeRev.passedCases}/${codeRev.totalCases})</p>
+        `<div class="card glass-card" style="padding: 12px 16px; margin-bottom: 12px; border-left: 3px solid var(--brand-accent);">
+          <strong style="font-size: 0.92rem;">${escapeHtml(data.evaluationMode)}</strong>
+          <p style="margin: 4px 0 0; font-size: 0.84rem; color: var(--text-secondary);">${escapeHtml(codeRev.feedback || "")} (Test Cases Verified: ${codeRev.passedCases}/${codeRev.totalCases})</p>
         </div>`,
         ...(data.questionReviews || []).map(
-          (qr) => `
-          <div class="evidence-req-item" style="cursor:default;">
-            <div style="display:flex;justify-content:space-between;">
-              <strong>${escapeHtml(qr.question)}</strong>
-              <span class="tag ${qr.isCorrect ? "tag-match" : "tag-gap"}">${qr.isCorrect ? "Correct ✓" : "Incorrect"}</span>
+          (qr, i) => `
+          <div class="card glass-card" style="padding: 12px 16px; margin-bottom: 10px; border-left: 3px solid ${qr.isCorrect ? "var(--score-high)" : "var(--score-low)}"};">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+              <strong style="font-size: 0.88rem;">${i + 1}. ${escapeHtml(qr.question)}</strong>
+              <span class="status-badge ${qr.isCorrect ? "status-matched" : "status-missing"}" style="flex-shrink: 0;">${qr.isCorrect ? "Correct ✓" : "Incorrect ✕"}</span>
             </div>
-            <p style="margin:0.25rem 0 0;font-size:0.8rem;color:var(--text-muted);">
-              Your Answer: ${escapeHtml(qr.selectedOption)} · Correct: <strong>${escapeHtml(qr.correctOption)}</strong><br>
-              ${escapeHtml(qr.explanation)}
-            </p>
+            <div style="margin-top: 6px; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5;">
+              <div>Your answer: <strong>${escapeHtml(qr.selectedOption)}</strong></div>
+              ${!qr.isCorrect ? `<div>Correct answer: <strong style="color: var(--score-high);">${escapeHtml(qr.correctOption)}</strong></div>` : ""}
+              <p style="margin: 4px 0 0; color: var(--text-tertiary); font-style: italic;">${escapeHtml(qr.explanation)}</p>
+            </div>
           </div>
         `
         ),
+        weakList.length
+          ? `<div style="margin-top: 14px; padding: 12px 16px; background: var(--glass-bg-subtle); border-radius: var(--r-md); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+              <div>
+                <strong style="font-size: 0.88rem;">Recommended Action:</strong>
+                <p style="margin: 2px 0 0; font-size: 0.82rem; color: var(--text-secondary);">Identified ${weakList.length} gap area${weakList.length > 1 ? "s" : ""}: ${weakList.map(w => escapeHtml(w)).join(", ")}</p>
+              </div>
+              <a href="#/roadmap" class="btn btn-primary btn-sm" id="asmtAddWeakAreasToRoadmapBtn">
+                Add to Learning Roadmap →
+              </a>
+            </div>`
+          : "",
       ].join("");
     }
 

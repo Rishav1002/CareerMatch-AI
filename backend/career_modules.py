@@ -262,17 +262,43 @@ def register_user(body: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def login_user(body: Dict[str, Any]) -> Dict[str, Any]:
-    email = sanitize_short_field(body.get("email", ""), 140).lower()
+# Login Rate Limiting (Section 13 C)
+_LOGIN_ATTEMPTS: Dict[str, List[float]] = {}
+
+def check_login_rate_limit(key: str) -> None:
+    now = time.time()
+    attempts = [t for t in _LOGIN_ATTEMPTS.get(key, []) if now - t < 900]
+    if len(attempts) >= 5:
+        raise PermissionError("Too many login attempts. Please wait 15 minutes before retrying.")
+    _LOGIN_ATTEMPTS[key] = attempts
+
+def record_failed_login(key: str) -> None:
+    now = time.time()
+    attempts = [t for t in _LOGIN_ATTEMPTS.get(key, []) if now - t < 900]
+    attempts.append(now)
+    _LOGIN_ATTEMPTS[key] = attempts
+
+def clear_failed_logins(key: str) -> None:
+    _LOGIN_ATTEMPTS.pop(key, None)
+
+
+def login_user(body: Dict[str, Any], client_ip: str = "unknown") -> Dict[str, Any]:
+    email = sanitize_short_field(body.get("email", ""), 140).lower().strip()
     password = str(body.get("password", ""))
+    
+    rate_key = f"{client_ip}:{email}"
+    check_login_rate_limit(rate_key)
+
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
     row = cursor.fetchone()
     if not row or not verify_password(password, row["password_hash"]):
         conn.close()
+        record_failed_login(rate_key)
         raise ValueError("Invalid email or password.")
 
+    clear_failed_logins(rate_key)
     now_iso = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
     cursor.execute("UPDATE users SET last_login_at = ? WHERE id = ?", (now_iso, row["id"]))
     conn.commit()
@@ -289,6 +315,23 @@ def login_user(body: Dict[str, Any]) -> Dict[str, Any]:
         },
         "profile": get_student_profile(row["id"]),
     }
+
+
+def import_student_profile(user_id: str, body: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Import guest profile data into authenticated user account (Section 13 C).
+    """
+    if not user_id:
+        raise ValueError("User must be authenticated to import profile.")
+    incoming_profile = body.get("profile") or {}
+    overwrite = bool(body.get("overwrite", True))
+
+    existing = get_student_profile(user_id)
+    if existing and not overwrite:
+        return {"profile": existing, "merged": False, "status": "existing_retained"}
+
+    updated = update_student_profile(incoming_profile, user_id)
+    return {"profile": updated, "merged": True, "status": "imported"}
 
 
 def login_demo_user() -> Dict[str, Any]:
@@ -2528,11 +2571,22 @@ def generate_skill_assessment(body: Dict[str, Any]) -> Dict[str, Any]:
     conn.commit()
     conn.close()
 
+    # SECURITY & ACCURACY: Never expose correct answers or explanations before submission.
+    # Full questions with answers remain securely persisted in assessment_sessions.
+    client_safe_questions = []
+    for q in bank_entry["questions"]:
+        client_safe_questions.append({
+            "id": q.get("id"),
+            "subtopic": q.get("subtopic"),
+            "question": q.get("question"),
+            "options": q.get("options", []),
+        })
+
     return {
         "sessionId": session_id,
         "topic": topic,
         "difficulty": difficulty,
-        "questions": bank_entry["questions"],
+        "questions": client_safe_questions,
         "codingChallenge": bank_entry["codingChallenge"],
         "evaluationDisclosure": "Coding submissions are verified using Sandboxed Static AST Parsing & Gemini Test-Case Analysis (arbitrary code is never executed on the host server).",
     }

@@ -16,6 +16,11 @@ import { historyDiff } from "./components/historyDiff.js";
 import { scorecardShare } from "./components/shareScorecard.js";
 import { scrollReveal } from "./components/scrollReveal.js";
 import { askAiAdvisor } from "./components/askAi.js";
+import { FloatingAskAiManager } from "./components/floatingAskAi.js";
+import { LandingCarousel } from "./components/landingCarousel.js";
+import { profileManager } from "./components/profileManager.js";
+import { authManager } from "./components/authManager.js";
+import { attachSpecularHighlight } from "./motion.js";
 
 function initApp() {
   // 1. Initialize Theme from store or system
@@ -34,6 +39,23 @@ function initApp() {
   scorecardShare.init();
   scrollReveal.init();
   askAiAdvisor.init();
+  profileManager.init();
+  authManager.init();
+
+  // Floating Ask AI (Section 13 D)
+  const floatingAi = new FloatingAskAiManager();
+  floatingAi.init();
+
+  // Landing Carousel (Section 13 B)
+  const carouselEl = document.getElementById("landingCarouselBg");
+  if (carouselEl) {
+    const carousel = new LandingCarousel(carouselEl);
+    carousel.init();
+    window.__careermatch_carousel = carousel;
+  }
+
+  // Specular Highlight on primary buttons
+  document.querySelectorAll(".btn-primary").forEach(attachSpecularHighlight);
 
   // 3. Initialize Language
   applyTranslations();
@@ -55,6 +77,8 @@ function initApp() {
     scorecardShare,
     scrollReveal,
     askAiAdvisor,
+    profileManager,
+    authManager,
   };
 }
 
@@ -115,25 +139,83 @@ function attachShellListeners() {
     });
   }
 
-  // Theme Toggle Button
-  const themeBtn = document.getElementById("themeToggleBtn");
-  if (themeBtn) {
-    themeBtn.addEventListener("click", () => {
-      const current = document.documentElement.getAttribute("data-theme") || "light";
-      const next = current === "dark" ? "light" : "dark";
-      document.documentElement.setAttribute("data-theme", next);
-      document.documentElement.style.colorScheme = next;
-      store.set("theme", next);
-      try {
-        localStorage.setItem("cm_theme", next);
-        localStorage.setItem("theme", next);
-      } catch (e) {}
-      const metaTheme = document.querySelector('meta[name="theme-color"]');
-      if (metaTheme) {
-        metaTheme.setAttribute("content", next === "dark" ? "#121417" : "#FBF9F5");
-      }
-    });
+  // Unified Theme Toggle Helper
+  function toggleAppTheme() {
+    const current = document.documentElement.getAttribute("data-theme") || "light";
+    const next = current === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    document.documentElement.style.colorScheme = next;
+    store.set("theme", next);
+    try {
+      localStorage.setItem("cm_theme", next);
+      localStorage.setItem("theme", next);
+    } catch (e) {}
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (metaTheme) {
+      metaTheme.setAttribute("content", next === "dark" ? "#121417" : "#FBF9F5");
+    }
   }
+
+  // Theme Toggle Buttons
+  document.getElementById("themeToggleBtn")?.addEventListener("click", toggleAppTheme);
+  document.getElementById("landingThemeToggleBtn")?.addEventListener("click", toggleAppTheme);
+  document.getElementById("settingsThemeToggleBtn")?.addEventListener("click", toggleAppTheme);
+
+  // Settings Actions: Export JSON
+  document.getElementById("settingsExportJsonBtn")?.addEventListener("click", () => {
+    const exportData = {
+      profile: store.get("profile"),
+      user: store.get("user"),
+      exportedAt: new Date().toISOString(),
+    };
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `careermatch-export-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    if (window.showToast) window.showToast("Exported workspace data as JSON");
+  });
+
+  // Settings Actions: Purge Data
+  document.getElementById("settingsPurgeDataBtn")?.addEventListener("click", () => {
+    if (confirm("Are you sure you want to purge all local workspace data? This cannot be undone.")) {
+      try {
+        localStorage.clear();
+      } catch (e) {}
+      if (window.showToast) window.showToast("Local workspace data purged.");
+      setTimeout(() => window.location.reload(), 1000);
+    }
+  });
+
+  // Cold Start Detection for Render & Neon Server
+  const banner = document.getElementById("serverColdStartBanner");
+  const origFetch = window.fetch;
+  window.fetch = async function (...args) {
+    const urlStr = String(args[0] || "");
+    const isApi = urlStr.includes("/api/");
+    let timer = null;
+
+    if (isApi && banner) {
+      timer = setTimeout(() => {
+        banner.style.display = "flex";
+      }, 2500);
+    }
+
+    try {
+      const resp = await origFetch.apply(this, args);
+      if (timer) clearTimeout(timer);
+      if (banner) banner.style.display = "none";
+      return resp;
+    } catch (err) {
+      if (timer) clearTimeout(timer);
+      if (isApi && banner) {
+        banner.style.display = "flex";
+      }
+      throw err;
+    }
+  };
 
   // Language Switcher Toggle (EN/HI)
   const langBtn = document.getElementById("langToggleBtn");

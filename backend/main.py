@@ -573,14 +573,27 @@ try:
     @app.post("/api/auth/login")
     async def api_auth_login(request: Request) -> Dict[str, Any]:
         try:
+            client_ip = request.client.host if request.client else "unknown"
             body = await request.json()
-            return login_user(body)
+            return login_user(body, client_ip=client_ip)
+        except PermissionError as exc:
+            raise HTTPException(status_code=429, detail=str(exc))
         except ValueError as exc:
             raise HTTPException(status_code=401, detail=str(exc))
 
-    @app.post("/api/auth/demo")
-    async def api_auth_demo() -> Dict[str, Any]:
-        return login_demo_user()
+    @app.post("/api/profile/import")
+    async def api_profile_import(request: Request) -> Dict[str, Any]:
+        try:
+            auth_hdr = request.headers.get("Authorization")
+            if not auth_hdr:
+                raise HTTPException(status_code=401, detail="Authentication required.")
+            uid = _extract_user_id_from_auth_header(auth_hdr)
+            body = await request.json()
+            return import_student_profile(uid, body)
+        except PermissionError as exc:
+            raise HTTPException(status_code=401, detail=str(exc))
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
 
     @app.get("/api/profile")
     async def api_get_profile(request: Request) -> Dict[str, Any]:
@@ -713,6 +726,15 @@ try:
     # Mount static frontend assets
     if os.path.isdir(FRONTEND_DIR):
         app.mount("/frontend", StaticFiles(directory=FRONTEND_DIR), name="frontend")
+        css_dir = os.path.join(FRONTEND_DIR, "css")
+        js_dir = os.path.join(FRONTEND_DIR, "js")
+        assets_dir = os.path.join(FRONTEND_DIR, "assets")
+        if os.path.isdir(css_dir):
+            app.mount("/css", StaticFiles(directory=css_dir), name="css")
+        if os.path.isdir(js_dir):
+            app.mount("/js", StaticFiles(directory=js_dir), name="js")
+        if os.path.isdir(assets_dir):
+            app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
 
     @app.get("/")
     @app.get("/index.html")
@@ -875,10 +897,11 @@ class CareerMatchHTTPHandler(BaseHTTPRequestHandler):
                 self._send_json(register_user(body))
                 return
             if path == "/api/auth/login":
-                self._send_json(login_user(body))
+                self._send_json(login_user(body, client_ip=self.client_address[0] if hasattr(self, "client_address") else "unknown"))
                 return
-            if path == "/api/auth/demo":
-                self._send_json(login_demo_user())
+            if path == "/api/profile/import":
+                uid = _extract_user_id_from_auth_header(auth_hdr)
+                self._send_json(import_student_profile(uid, body))
                 return
             if path == "/api/jobs/market":
                 self._send_json(fetch_job_market_intelligence(body))
