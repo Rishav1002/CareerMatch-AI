@@ -323,6 +323,37 @@ B.Tech Computer Science, 2022
     assert(typeof score === "number", `Match score generated: ${score}%`);
     assert(Array.isArray(rep.roadmapNodes) && rep.roadmapNodes.length > 0, `Analysis generated adaptive roadmap (${rep.roadmapNodes.length} nodes)`);
     assert(rep.atsReport && typeof rep.atsReport.atsScore === "number", `ATS Report generated (score: ${rep.atsReport.atsScore})`);
+
+    // ---------------------------------------------------------------------------
+    // 5. Garbage Value Guard (DOM & API Responses)
+    // ---------------------------------------------------------------------------
+    console.log("\n--- 5. Checking for Garbage Values & Seeded Data ---");
+    const bannedPatterns = [
+      "undefined",
+      "NaN",
+      "[object Object]",
+      "Infinity",
+      "Lorem",
+      "TODO",
+      "candidate@careermatch.ai",
+      "Candidate_Profile",
+      "user-demo-aarav",
+      "demo-aarav-sharma"
+    ];
+
+    const responsesToAudit = [
+      JSON.stringify(health.data),
+      JSON.stringify(roles.data),
+      JSON.stringify(parseResp.data),
+      JSON.stringify(analyzeResp.data),
+    ];
+
+    for (const banned of bannedPatterns) {
+      assert(!html.includes(banned), `DOM must not contain garbage or seeded string "${banned}"`);
+      for (const respStr of responsesToAudit) {
+        assert(!respStr.includes(banned), `API responses must not contain garbage or seeded string "${banned}"`);
+      }
+    }
   } finally {
     serverProcess.kill("SIGTERM");
   }
