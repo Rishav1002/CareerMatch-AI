@@ -130,7 +130,63 @@ ROLE_TEMPLATES: List[Dict[str, Any]] = [
     },
 ]
 
-SAMPLE_RESUMES: List[Dict[str, Any]] = []
+DEFAULT_BENCHMARK_RESUME: Dict[str, Any] = {
+    "id": "benchmark-candidate",
+    "filename": "Candidate_Profile.pdf",
+    "uploadedAt": "2026-11-01 00:00 UTC",
+    "rawText": (
+        "Engineering Candidate | candidate@careermatch.ai | Location: India\n"
+        "B.Tech in Computer Science & Engineering (2022-2026)\n"
+        "Technical Skills: Python, SQL, JavaScript, React, FastAPI, REST APIs, Git, Pandas & NumPy, Docker, Linux.\n"
+        "Projects: Built full-stack web and analytics applications using Python, SQL, REST APIs, and Docker.\n"
+    ),
+    "contact": {
+        "name": "Candidate",
+        "email": "candidate@careermatch.ai",
+        "phone": "+91 98000 00000",
+        "location": "India",
+    },
+    "summary": "Engineering candidate with foundations in Python, SQL, FastAPI, REST APIs, and Git.",
+    "education": [
+        {
+            "degree": "B.Tech in Computer Science & Engineering",
+            "institution": "Engineering Institution",
+            "year": "2022-2026",
+            "score": "8.5/10",
+        }
+    ],
+    "technicalSkills": [
+        "Python",
+        "SQL",
+        "JavaScript",
+        "React",
+        "FastAPI",
+        "REST APIs",
+        "Git",
+        "Pandas & NumPy",
+        "Docker",
+        "Linux",
+    ],
+    "softSkills": ["Problem Solving", "Communication", "Agile & Scrum"],
+    "workExperience": [],
+    "projects": [
+        {
+            "title": "Analytics Web Platform",
+            "techStack": ["Python", "SQL", "FastAPI", "Docker"],
+            "description": "Designed backend microservices and data pipelines.",
+        }
+    ],
+    "certifications": [],
+    "skillEvidence": {
+        "Python": "Built full-stack web and analytics applications using Python, SQL, REST APIs, and Docker.",
+        "SQL": "Built full-stack web and analytics applications using Python, SQL, REST APIs, and Docker.",
+        "Git": "Technical Skills: Python, SQL, JavaScript, React, FastAPI, REST APIs, Git, Pandas & NumPy, Docker, Linux.",
+        "Docker": "Built full-stack web and analytics applications using Python, SQL, REST APIs, and Docker.",
+        "REST APIs": "Built full-stack web and analytics applications using Python, SQL, REST APIs, and Docker.",
+    },
+}
+
+SAMPLE_RESUMES: List[Dict[str, Any]] = [DEFAULT_BENCHMARK_RESUME]
 
 _RESOURCES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources.json")
 try:
