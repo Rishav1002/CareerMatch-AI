@@ -8,7 +8,7 @@
 import { store } from "../store.js";
 import { attachSpecularHighlight } from "../motion.js";
 
-class FloatingAskAiManager {
+export class FloatingAskAiManager {
   constructor() {
     this.container = null;
     this.drawer = null;
