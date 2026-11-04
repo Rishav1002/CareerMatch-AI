@@ -458,8 +458,9 @@
                 <div>
                   Live job feeds aggregated from Arbeitnow, Remotive, Adzuna, and verified Indian tech benchmark datasets.
                 </div>
-                <div>
-                  &copy; <span id="landingCopyrightYear">2026</span> CareerMatch AI. Built for engineering excellence.
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <span>Build: <code id="appBuildSha" class="build-sha">1baf0b6</code></span>
+                  <span>&copy; <span id="landingCopyrightYear">2026</span> CareerMatch AI.</span>
                 </div>
               </div>
             </footer>
@@ -2121,7 +2122,45 @@
     <script>
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
-          navigator.serviceWorker.register("/frontend/sw.js").catch(() => {});
+          // One-time cleanup of legacy shell caches
+          if (!localStorage.getItem("cm_sw_cleaned_v2")) {
+            if ("caches" in window) {
+              caches.keys().then((names) => {
+                names.forEach((name) => {
+                  if (name.includes("shell-v") || (name.includes("careermatch-shell-") && !name.includes("2026-11-04-v2.75"))) {
+                    caches.delete(name);
+                  }
+                });
+              });
+            }
+            localStorage.setItem("cm_sw_cleaned_v2", "true");
+          }
+
+          navigator.serviceWorker.register("/frontend/sw.js").then((reg) => {
+            reg.addEventListener("updatefound", () => {
+              const newWorker = reg.installing;
+              if (newWorker) {
+                newWorker.addEventListener("statechange", () => {
+                  if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+                    showUpdateToast(newWorker);
+                  }
+                });
+              }
+            });
+          }).catch(() => {});
+        });
+      }
+
+      function showUpdateToast(worker) {
+        if (document.getElementById("cmUpdateToast")) return;
+        const toast = document.createElement("div");
+        toast.id = "cmUpdateToast";
+        toast.className = "update-toast glass-panel";
+        toast.innerHTML = '<span>New version available.</span><button type="button" class="btn btn-primary" id="cmRefreshUpdateBtn" style="padding: 4px 12px; font-size: 0.8rem;">Refresh</button>';
+        document.body.appendChild(toast);
+        document.getElementById("cmRefreshUpdateBtn")?.addEventListener("click", () => {
+          worker.postMessage({ type: "SKIP_WAITING" });
+          window.location.reload();
         });
       }
     </script>

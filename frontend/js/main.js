@@ -109,6 +109,16 @@ function initApp() {
   // Mark boot complete for the watchdog safety net
   window.__cmBooted = true;
   console.info("CareerMatch AI: application successfully booted (__cmBooted = true).");
+
+  // Populate build SHA from health endpoint
+  try {
+    fetch("/api/health").then(r => r.json()).then(data => {
+      if (data && data.build_sha) {
+        const el = document.getElementById("appBuildSha");
+        if (el) el.textContent = data.build_sha;
+      }
+    }).catch(() => {});
+  } catch (e) {}
 }
 
 function attachShellListeners() {

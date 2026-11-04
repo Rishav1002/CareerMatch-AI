@@ -1,9 +1,13 @@
 /**
- * CareerMatch AI: Service Worker for Shell Caching
+ * CareerMatch AI: Progressive Web App Service Worker
+ * Network-First for HTML/JS/CSS, Stale-While-Revalidate for Fonts & Static Media,
+ * Bypass completely for /api/*, Build-Hash Versioned Cache.
  */
 
-const CACHE_NAME = "careermatch-shell-v3";
-const SHELL_ASSETS = [
+const BUILD_SHA = "2026-11-04-v2.75";
+const CACHE_NAME = `careermatch-shell-${BUILD_SHA}`;
+
+const PRECACHE_ASSETS = [
   "/",
   "/frontend/index.html",
   "/frontend/manifest.json",
@@ -18,6 +22,9 @@ const SHELL_ASSETS = [
   "/frontend/js/api.js",
   "/frontend/js/router.js",
   "/frontend/js/i18n.js",
+  "/frontend/js/storage.js",
+  "/frontend/js/motion.js",
+  "/frontend/js/formatters.js",
   "/frontend/js/app.js",
   "/frontend/js/components/cmdPalette.js",
   "/frontend/js/components/guidedFix.js",
@@ -27,13 +34,22 @@ const SHELL_ASSETS = [
   "/frontend/js/components/historyDiff.js",
   "/frontend/js/components/shareScorecard.js",
   "/frontend/js/components/scrollReveal.js",
+  "/frontend/js/components/askAi.js",
+  "/frontend/js/components/floatingAskAi.js",
+  "/frontend/js/components/landingCarousel.js",
+  "/frontend/js/components/profileManager.js",
+  "/frontend/js/components/authManager.js",
+  "/frontend/assets/favicon.svg",
   "/frontend/assets/icon-192.svg",
+  "/frontend/assets/icon-512.svg"
 ];
 
 self.addEventListener("install", (evt) => {
   evt.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(SHELL_ASSETS).catch((err) => console.warn("SW precache error:", err));
+      return cache.addAll(PRECACHE_ASSETS).catch((err) => {
+        console.warn("[SW] Precache warning:", err);
+      });
     })
   );
   self.skipWaiting();
@@ -43,11 +59,21 @@ self.addEventListener("activate", (evt) => {
   evt.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
-        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+        keys.map((key) => {
+          if (key !== CACHE_NAME) {
+            console.info(`[SW] Deleting legacy cache: ${key}`);
+            return caches.delete(key);
+          }
+        })
       );
-    })
+    }).then(() => self.clients.claim())
   );
-  self.clients.claim();
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener("fetch", (evt) => {
@@ -55,33 +81,51 @@ self.addEventListener("fetch", (evt) => {
 
   const url = new URL(evt.request.url);
 
-  // Network-first for dynamic API routes
+  // 1. NEVER cache /api/*
   if (url.pathname.startsWith("/api/")) {
+    return;
+  }
+
+  // 2. Static icons & external fonts: Stale-While-Revalidate
+  const isFontOrIcon =
+    url.pathname.includes("/assets/") ||
+    url.hostname.includes("fonts.googleapis.com") ||
+    url.hostname.includes("fonts.gstatic.com");
+
+  if (isFontOrIcon) {
     evt.respondWith(
-      fetch(evt.request).catch(() => {
-        return new Response(JSON.stringify({ error: "Offline mode: network unavailable" }), {
-          headers: { "Content-Type": "application/json" },
-          status: 503,
-        });
+      caches.match(evt.request).then((cached) => {
+        const fetchPromise = fetch(evt.request).then((resp) => {
+          if (resp && resp.status === 200) {
+            const clone = resp.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(evt.request, clone));
+          }
+          return resp;
+        }).catch(() => cached);
+        return cached || fetchPromise;
       })
     );
     return;
   }
 
-  // Cache-first for static shell assets
+  // 3. Network-First (fallback to cache) for HTML, JS, CSS
   evt.respondWith(
-    caches.match(evt.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(evt.request).then((resp) => {
-        if (!resp || resp.status !== 200 || resp.type !== "basic") {
-          return resp;
+    fetch(evt.request)
+      .then((networkResp) => {
+        if (networkResp && networkResp.status === 200 && networkResp.type === "basic") {
+          const clone = networkResp.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(evt.request, clone));
         }
-        const toCache = resp.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(evt.request, toCache);
+        return networkResp;
+      })
+      .catch(() => {
+        return caches.match(evt.request).then((cached) => {
+          if (cached) return cached;
+          if (evt.request.mode === "navigate") {
+            return caches.match("/frontend/index.html") || caches.match("/");
+          }
+          return new Response("Network unavailable and asset not cached", { status: 503 });
         });
-        return resp;
-      });
-    })
+      })
   );
 });

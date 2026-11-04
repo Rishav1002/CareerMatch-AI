@@ -24,6 +24,7 @@ import base64
 import json
 import mimetypes
 import os
+import subprocess
 import traceback
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -109,6 +110,19 @@ seed_initial_sqlite_data()
 # CORE CONTROLLER LOGIC (Shared by FastAPI routes & Fallback Runner)
 # ============================================================================
 
+def get_build_sha() -> str:
+    for var in ("RENDER_GIT_COMMIT", "GIT_COMMIT", "COMMIT_SHA", "GITHUB_SHA"):
+        val = os.getenv(var)
+        if val:
+            return val[:8]
+    try:
+        res = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], stderr=subprocess.DEVNULL)
+        return res.decode("utf-8").strip()
+    except Exception:
+        pass
+    return "1baf0b6"
+
+
 def handle_health_check() -> tuple[Dict[str, Any], int]:
     db_ok = False
     engine = "sqlite"
@@ -128,6 +142,7 @@ def handle_health_check() -> tuple[Dict[str, Any], int]:
         "database": "connected" if db_ok else "disconnected",
         "engine": engine,
         "version": "1.0.0",
+        "build_sha": get_build_sha(),
         "timestamp": datetime.utcnow().isoformat() + "Z",
     }, status_code
 
