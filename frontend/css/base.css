@@ -281,3 +281,41 @@ hr {
     color: var(--text-secondary, #555555);
   }
 }
+
+/* Information Density & Overflow Guards (Section 13 & 14) */
+.d-flex > *,
+.flex-row > *,
+.grid > *,
+.grid-2 > *,
+.grid-3 > *,
+.grid-4 > *,
+.steps-3-grid > * {
+  min-width: 0;
+}
+
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
