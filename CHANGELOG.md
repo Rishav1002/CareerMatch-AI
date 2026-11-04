@@ -31,7 +31,7 @@
   - `main.js`: Core orchestrator wiring shell events and components.
 
 ### 8 Priority Feature Upgrades
-1. **Command Palette (`Ctrl+K` / `Cmd+K`)**: Fast modal overlay with fuzzy search across all 15 workspaces, quick actions (upload resume, load demo, toggle theme, export report), and keyboard navigation.
+1. **Command Palette (`Ctrl+K` / `Cmd+K`)**: Fast modal overlay with fuzzy search across all 15 workspaces, quick actions (upload resume, paste text, toggle theme, export report), and keyboard navigation.
 2. **Resume Version History & Score Diff Ledger**: Side-by-side comparison tracking resume revisions with point deltas (+14.2% pts) and newly matched skills.
 3. **Application Kanban Tracker**: 4-column drag/drop pipeline (Saved, Applied, Interview, Offer) with per-job match percentages, fed directly from Job Market Intelligence.
 4. **Shareable Public Scorecard & Print-Ready PDF**: Privacy-safe scorecard URL with candidate names/text scrubbed, plus bespoke `@media print` field-guide ledger printout.
