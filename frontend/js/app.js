@@ -1630,6 +1630,32 @@ function hideErrorBanner() {
 // ============================================================================
 
 function initCareerMatch2Listeners() {
+  // Sync interview placeholder disabled state
+  const roundSel = document.getElementById("interviewRoundSelect");
+  const diffSel = document.getElementById("interviewDiffSelect");
+  const startIntBtn = document.getElementById("startInterviewBtn");
+  function syncInterviewBtn() {
+    if (startIntBtn) {
+      startIntBtn.disabled = !roundSel?.value || !diffSel?.value;
+    }
+  }
+  roundSel?.addEventListener("change", syncInterviewBtn);
+  diffSel?.addEventListener("change", syncInterviewBtn);
+  syncInterviewBtn();
+
+  // Sync assessment placeholder disabled state
+  const asmtTopSel = document.getElementById("asmtTopicSelect");
+  const asmtDiffSel = document.getElementById("asmtDifficultySelect");
+  const genAsmtBtn = document.getElementById("generateAssessmentBtn");
+  function syncAssessmentBtn() {
+    if (genAsmtBtn) {
+      genAsmtBtn.disabled = !asmtTopSel?.value || !asmtDiffSel?.value;
+    }
+  }
+  asmtTopSel?.addEventListener("change", syncAssessmentBtn);
+  asmtDiffSel?.addEventListener("change", syncAssessmentBtn);
+  syncAssessmentBtn();
+
   // Overview & PRI buttons
   document.getElementById("refreshOverviewPriBtn")?.addEventListener("click", () => {
     loadPlacementReadinessIndex(true);

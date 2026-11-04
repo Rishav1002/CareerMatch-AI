@@ -1259,16 +1259,18 @@
                   </span>
                 </div>
                 <div style="display: flex; align-items: center; gap: var(--space-1);">
-                  <select id="interviewRoundSelect" class="form-select" style="font-size: 0.75rem; width: auto;">
-                    <option value="Technical" selected>Round: Technical</option>
+                  <select id="interviewRoundSelect" class="form-select" style="font-size: 0.75rem; width: auto;" required>
+                    <option value="" disabled selected>Round (e.g. Technical)...</option>
+                    <option value="Technical">Round: Technical</option>
                     <option value="System Design">Round: System Design</option>
                     <option value="Behavioral">Round: Behavioral / HR</option>
                   </select>
-                  <select id="interviewDiffSelect" class="form-select" style="font-size: 0.75rem; width: auto;">
-                    <option value="Intermediate" selected>Difficulty: Intermediate</option>
+                  <select id="interviewDiffSelect" class="form-select" style="font-size: 0.75rem; width: auto;" required>
+                    <option value="" disabled selected>Difficulty (e.g. Intermediate)...</option>
+                    <option value="Intermediate">Difficulty: Intermediate</option>
                     <option value="Advanced">Difficulty: Advanced</option>
                   </select>
-                  <button type="button" class="btn btn-primary btn-sm" id="startInterviewBtn">
+                  <button type="button" class="btn btn-primary btn-sm" id="startInterviewBtn" disabled>
                     Start Session
                   </button>
                 </div>
@@ -1355,16 +1357,18 @@
                   </span>
                 </div>
                 <div style="display: flex; align-items: center; gap: var(--space-1);">
-                  <select id="asmtTopicSelect" class="form-select" style="font-size: 0.75rem; width: auto;">
-                    <option value="Python" selected>Topic: Python</option>
+                  <select id="asmtTopicSelect" class="form-select" style="font-size: 0.75rem; width: auto;" required>
+                    <option value="" disabled selected>Topic (e.g. Python)...</option>
+                    <option value="Python">Topic: Python</option>
                     <option value="SQL">Topic: SQL</option>
                     <option value="Data Structures">Topic: Data Structures</option>
                   </select>
-                  <select id="asmtDifficultySelect" class="form-select" style="font-size: 0.75rem; width: auto;">
-                    <option value="Intermediate" selected>Difficulty: Intermediate</option>
+                  <select id="asmtDifficultySelect" class="form-select" style="font-size: 0.75rem; width: auto;" required>
+                    <option value="" disabled selected>Difficulty (e.g. Intermediate)...</option>
+                    <option value="Intermediate">Difficulty: Intermediate</option>
                     <option value="Advanced">Difficulty: Advanced</option>
                   </select>
-                  <button type="button" class="btn btn-primary btn-sm" id="generateAssessmentBtn">
+                  <button type="button" class="btn btn-primary btn-sm" id="generateAssessmentBtn" disabled>
                     Start Test
                   </button>
                 </div>
