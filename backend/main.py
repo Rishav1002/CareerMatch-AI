@@ -452,6 +452,7 @@ try:
         return response
 
     @app.get("/api/health")
+    @app.head("/api/health")
     async def api_health() -> Any:
         res, code = handle_health_check()
         return JSONResponse(res, status_code=code)
@@ -737,12 +738,23 @@ try:
             app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
 
     @app.get("/")
+    @app.head("/")
     @app.get("/index.html")
+    @app.head("/index.html")
     async def serve_index() -> Any:
         frontend_html = os.path.join(FRONTEND_DIR, "index.html")
         if os.path.isfile(frontend_html):
             return FileResponse(frontend_html)
         return FileResponse(os.path.join(ROOT_DIR, "index.html"))
+
+    @app.get("/favicon.ico")
+    @app.head("/favicon.ico")
+    async def serve_favicon() -> Any:
+        fav_path = os.path.join(FRONTEND_DIR, "assets", "favicon.svg")
+        if os.path.isfile(fav_path):
+            return FileResponse(fav_path, media_type="image/svg+xml")
+        from fastapi.responses import Response
+        return Response(status_code=204)
 
 except ImportError:
     app = None
@@ -779,6 +791,9 @@ class CareerMatchHTTPHandler(BaseHTTPRequestHandler):
 
     def do_OPTIONS(self) -> None:
         self._send_json({"ok": True}, 200)
+
+    def do_HEAD(self) -> None:
+        self.do_GET()
 
     def do_GET(self) -> None:
         parsed = urlparse(self.path)
