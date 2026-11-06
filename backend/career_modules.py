@@ -1109,7 +1109,7 @@ Score each dimension from 0 to 100 honestly. If the answer is very brief or vagu
             ]
         )
 
-        base_len_score = min(55.0, word_cnt * 1.1)
+        base_len_score = min(55.0, max(22.0, word_cnt * 1.25))
         tech_s = round(min(96.0, base_len_score + tech_hits * 12.0 + topic_hits * 10.0), 1)
         comm_s = round(min(95.0, base_len_score + (22.0 if has_structure else 8.0) + (12.0 if word_cnt >= 35 else 0.0)), 1)
         rel_s = round(min(96.0, base_len_score + topic_hits * 14.0 + (15.0 if tech_hits > 0 else 0.0)), 1)

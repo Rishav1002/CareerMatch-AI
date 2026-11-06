@@ -3,7 +3,7 @@ Screenshots to create for README.md (save in this folder: docs/screenshots/)
 
 1. hero.png
    - What to capture: The top hero section and the "Resume & Role Analyzer" input panel.
-   - State to show: Either the clean initial empty state ("Upload a resume to see your match") or right after loading `samples/sample_resume_aarav_sharma.txt` and clicking "Load sample Data Engineer JD".
+   - State to show: Either the clean initial empty state ("Upload a resume to see your match") or right after loading test fixtures `tests/fixtures/test_resume.txt` and `tests/fixtures/test_jd.txt`.
    - Recommended viewport: 1440x900 desktop.
 
 2. report.png

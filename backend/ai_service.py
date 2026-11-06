@@ -202,8 +202,9 @@ def _call_gemini_json(
 
     active_model = os.environ.get("GEMINI_MODEL", GEMINI_MODEL).strip() or GEMINI_MODEL
     candidate_models = [active_model]
-    if "gemini-3-flash-preview" not in candidate_models:
-        candidate_models.append("gemini-3-flash-preview")
+    for fallback_m in ("gemini-2.5-flash", "gemini-1.5-flash", "gemini-1.5-flash-latest"):
+        if fallback_m not in candidate_models:
+            candidate_models.append(fallback_m)
 
     # 1. Primary: Official Google Gemini Python SDK (`google-genai`)
     if genai is not None and types is not None:
