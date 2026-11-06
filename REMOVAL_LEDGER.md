@@ -30,6 +30,14 @@ This ledger records all deprecated files, hardcoded mock profiles, legacy naviga
 
 ---
 
+## 5. Legacy Monolithic Script & Global Window Coupling
+- **`frontend/js/app.js` (3,172 lines)**: Removed entirely.
+  - Reason: Dual-architecture collision with modular ES pipeline (`main.js`). Contained 16 window globals, outdated workspace switching, and cold-boot module linking races.
+  - Replaced by: 11 focused ES feature modules in `frontend/js/modules/` (`dashboard.js`, `analyzer.js`, `report.js`, `ats.js`, `roadmap.js`, `interview.js`, `assessment.js`, `github.js`, `market.js`, `career.js`, `pri.js`) exporting standard `init()`, `load()`, and `render()` contracts called directly by `router.js`.
+- **`window.switchWorkspaceView`**: Retired. All navigation is driven through canonical hash routes and `router.navigate()`.
+
+---
+
 ## 4. Duplicate Ask AI Consolidation
 - **`frontend/js/components/floatingAskAi.js`**: Removed entirely.
   - Reason: Redundant second implementation that injected competing floating buttons, duplicate backdrops, separate drawers, and duplicate quota counters. Consolidated into a single unified `askAi.js` component controlled via topbar button `#askAiTopBtn` and `Ctrl/Cmd+J`.

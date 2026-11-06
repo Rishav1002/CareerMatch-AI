@@ -89,3 +89,6 @@ export const fmt = {
       .replace(/'/g, "&#039;");
   },
 };
+
+export const escapeHtml = (str) => fmt.escape(str);
+export const formatPercent = (val, fallback = "--") => fmt.score(val, fallback);

@@ -1,9 +1,20 @@
 /**
  * CareerMatch AI: Single Authoritative Route Registry & Hash Router
- * Reconciles URL hashes, DOM view panels, data loaders, and empty states.
+ * Direct ES module dispatch, scroll reset, focus management, and honest empty states.
  */
 
 import { store } from "./store.js";
+import { dashboardModule } from "./modules/dashboard.js";
+import { analyzerModule } from "./modules/analyzer.js";
+import { reportModule } from "./modules/report.js";
+import { atsModule } from "./modules/ats.js";
+import { roadmapModule } from "./modules/roadmap.js";
+import { interviewModule } from "./modules/interview.js";
+import { assessmentModule } from "./modules/assessment.js";
+import { githubModule } from "./modules/github.js";
+import { marketModule } from "./modules/market.js";
+import { careerModule } from "./modules/career.js";
+import { priModule } from "./modules/pri.js";
 
 export const ROUTE_REGISTRY = {
   landing: {
@@ -22,12 +33,7 @@ export const ROUTE_REGISTRY = {
     title: "Placement Readiness Dashboard",
     requiresResume: false,
     group: "overview",
-    loader: () => {
-      if (window.renderDashboardMetrics && window.getAppState) {
-        const st = window.getAppState();
-        if (st.dashboardMetrics) window.renderDashboardMetrics(st.dashboardMetrics);
-      }
-    },
+    loader: () => dashboardModule.load(),
   },
   analyzer: {
     id: "analyzer",
@@ -36,7 +42,7 @@ export const ROUTE_REGISTRY = {
     title: "Resume & Job Match Analyzer",
     requiresResume: false,
     group: "diagnose",
-    loader: null,
+    loader: () => analyzerModule.load(),
   },
   ats: {
     id: "ats",
@@ -45,9 +51,7 @@ export const ROUTE_REGISTRY = {
     title: "ATS Resume Simulator & Optimizer",
     requiresResume: true,
     group: "diagnose",
-    loader: () => {
-      if (window.loadAtsSimulator) window.loadAtsSimulator(false);
-    },
+    loader: () => atsModule.load(),
   },
   readiness: {
     id: "readiness",
@@ -56,9 +60,7 @@ export const ROUTE_REGISTRY = {
     title: "Placement Readiness Index (PRI)",
     requiresResume: true,
     group: "diagnose",
-    loader: () => {
-      if (window.loadPlacementReadinessIndex) window.loadPlacementReadinessIndex(false);
-    },
+    loader: () => priModule.load(),
   },
   roadmap: {
     id: "roadmap",
@@ -67,15 +69,13 @@ export const ROUTE_REGISTRY = {
     title: "Adaptive Learning Roadmap",
     requiresResume: true,
     group: "prepare",
-    loader: () => {
-      if (window.loadAdaptiveRoadmap) window.loadAdaptiveRoadmap(false);
-    },
+    loader: () => roadmapModule.load(),
   },
   planner: {
     id: "planner",
     hash: "#/planner",
     panelId: "view-planner",
-    title: "Weekly Study Planner & Milestone Tracker",
+    title: "Weekly Study Planner",
     requiresResume: false,
     group: "prepare",
     loader: () => {
@@ -91,9 +91,7 @@ export const ROUTE_REGISTRY = {
     title: "AI Mock Interview Simulator",
     requiresResume: true,
     group: "prepare",
-    loader: () => {
-      if (window.loadInterviewHistory) window.loadInterviewHistory();
-    },
+    loader: () => interviewModule.load(),
   },
   skills: {
     id: "skills",
@@ -102,24 +100,16 @@ export const ROUTE_REGISTRY = {
     title: "AI Skill Assessment Lab",
     requiresResume: false,
     group: "prepare",
-    loader: () => {
-      if (window.loadSkillAssessment) window.loadSkillAssessment();
-      if (window.hasActiveResume && window.hasActiveResume() && window.loadAssessmentHistory) {
-        window.loadAssessmentHistory();
-      }
-    },
+    loader: () => assessmentModule.load(),
   },
   github: {
     id: "github",
     hash: "#/github",
     panelId: "view-github",
-    title: "GitHub Skill Verification & Proof",
+    title: "GitHub Skill Verification",
     requiresResume: false,
     group: "prove",
-    loader: () => {
-      const ghVal = document.getElementById("githubUsernameInput")?.value?.trim();
-      if (ghVal && window.loadGithubPortfolio) window.loadGithubPortfolio(false);
-    },
+    loader: () => githubModule.load(),
   },
   report: {
     id: "report",
@@ -128,7 +118,7 @@ export const ROUTE_REGISTRY = {
     title: "Career Report & Evidence Ledger",
     requiresResume: true,
     group: "prove",
-    loader: null,
+    loader: () => reportModule.load(),
   },
   market: {
     id: "market",
@@ -137,26 +127,22 @@ export const ROUTE_REGISTRY = {
     title: "Live Job Market Intelligence",
     requiresResume: false,
     group: "decide",
-    loader: () => {
-      if (window.loadJobMarketIntelligence) window.loadJobMarketIntelligence(false);
-    },
+    loader: () => marketModule.load(),
   },
   compare: {
     id: "compare",
     hash: "#/compare",
     panelId: "view-career",
-    title: "Career Path & Salary Benchmark",
+    title: "Role Benchmark & Salary Intelligence",
     requiresResume: false,
     group: "decide",
-    loader: () => {
-      if (window.loadCareerComparison) window.loadCareerComparison();
-    },
+    loader: () => careerModule.load(),
   },
   tracker: {
     id: "tracker",
     hash: "#/tracker",
     panelId: "view-tracker",
-    title: "Application Kanban Tracker",
+    title: "Application Pipeline Tracker",
     requiresResume: false,
     group: "decide",
     loader: () => {
@@ -173,7 +159,9 @@ export const ROUTE_REGISTRY = {
     requiresResume: false,
     group: "account",
     loader: () => {
-      if (window.populateProfileForm) window.populateProfileForm();
+      if (window.__careermatch?.profileManager?.populate) {
+        window.__careermatch.profileManager.populate();
+      }
     },
   },
   login: {
@@ -298,7 +286,6 @@ function renderResumeRequiredCTA(panel, route) {
   }
   emptyState.style.display = "block";
 
-  // Hide existing direct children of the panel except the empty state
   Array.from(panel.children).forEach((child) => {
     if (child !== emptyState && !child.classList.contains("panel-header-static")) {
       if (child.dataset.originalDisplay === undefined) {
@@ -329,7 +316,6 @@ export class Router {
     this.aliases = ROUTE_ALIASES;
     window.addEventListener("hashchange", () => this.handleRoute());
     window.addEventListener("cm:resume-changed", () => {
-      // Re-evaluate current route when resume state changes
       if (this.currentRoute) {
         this.handleRoute();
       }
@@ -337,6 +323,19 @@ export class Router {
   }
 
   init() {
+    // Initialize all feature modules
+    dashboardModule.init();
+    analyzerModule.init();
+    reportModule.init();
+    atsModule.init();
+    roadmapModule.init();
+    interviewModule.init();
+    assessmentModule.init();
+    githubModule.init();
+    marketModule.init();
+    careerModule.init();
+    priModule.init();
+
     if (!window.location.hash || window.location.hash === "#" || window.location.hash === "#/") {
       window.location.hash = "#/landing";
     }
@@ -394,13 +393,13 @@ export class Router {
       panel.classList.add("active");
       panel.hidden = false;
 
-      // Check whether resume is required
-      const hasResume = typeof window.hasActiveResume === "function" ? window.hasActiveResume() : false;
+      // Check whether resume is required using store as single source of truth
+      const hasResume = Boolean(store.get("activeResume"));
       if (route.requiresResume && !hasResume) {
         renderResumeRequiredCTA(panel, route);
       } else {
         clearResumeRequiredCTA(panel);
-        // Execute route data loader if registered
+        // Execute route data loader directly from ES module
         if (typeof route.loader === "function") {
           try {
             route.loader();
@@ -408,6 +407,13 @@ export class Router {
             console.warn(`[Router] Loader error on ${activeRouteKey}:`, loaderErr);
           }
         }
+      }
+
+      // Accessibility: move focus to heading or panel
+      const heading = panel.querySelector("h1, h2, h3, [tabindex='-1']");
+      if (heading) {
+        heading.setAttribute("tabindex", "-1");
+        heading.focus({ preventScroll: true });
       }
     } else {
       console.warn(`[Router] View panel #${route.panelId} not found in DOM`);
@@ -441,18 +447,18 @@ export class Router {
     }
 
     // Update document title
-    document.title = `CareerMatch AI | ${route.title || "Career Intelligence"}`;
+    document.title = `${route.title || "Career Readiness"} — CareerMatch AI`;
 
     // Refresh scroll animations
-    if (window.__careermatch && window.__careermatch.scrollReveal) {
+    if (window.__careermatch?.scrollReveal) {
       window.__careermatch.scrollReveal.refresh();
     }
 
     // Notify other components
     window.dispatchEvent(new CustomEvent("cm:route-changed", { detail: { route: activeRouteKey, title: route.title } }));
 
-    // Scroll to top
-    window.scrollTo({ top: 0, behavior: "instant" });
+    // Reset scroll to top
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   }
 }
 

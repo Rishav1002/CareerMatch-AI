@@ -403,9 +403,9 @@ export class ProfileManager {
   }
 
   importFromActiveResume() {
-    const activeResume = window.getAppState ? window.getAppState().activeResume : null;
+    const activeResume = store.get("activeResume") || (window.getAppState ? window.getAppState().activeResume : null);
     if (!activeResume) {
-      if (window.showToast) window.showToast("No active resume parsed yet. Upload a resume in Analyzer first.");
+      alert("No active resume parsed yet. Upload a resume in Analyzer first.");
       return;
     }
 
