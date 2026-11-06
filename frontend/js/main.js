@@ -16,7 +16,6 @@ import { historyDiff } from "./components/historyDiff.js";
 import { scorecardShare } from "./components/shareScorecard.js";
 import { scrollReveal } from "./components/scrollReveal.js";
 import { askAiAdvisor } from "./components/askAi.js";
-import { FloatingAskAiManager } from "./components/floatingAskAi.js";
 import { LandingCarousel } from "./components/landingCarousel.js";
 import { profileManager } from "./components/profileManager.js";
 import { authManager } from "./components/authManager.js";
@@ -50,10 +49,6 @@ function initApp() {
     ["askAiAdvisor", () => askAiAdvisor.init()],
     ["profileManager", () => profileManager.init()],
     ["authManager", () => authManager.init()],
-    ["floatingAskAi", () => {
-      const floatingAi = new FloatingAskAiManager();
-      floatingAi.init();
-    }],
     ["landingCarousel", () => {
       const carouselEl = document.getElementById("landingCarouselBg");
       if (carouselEl) {

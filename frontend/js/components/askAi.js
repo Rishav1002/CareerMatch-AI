@@ -1,6 +1,7 @@
 /**
- * CareerMatch AI: Ask AI Advisor Component
- * Context-aware intelligent assistant with server-side rate limiting and usage meter
+ * CareerMatch AI: Unified Ask AI Advisor Component
+ * Single authoritative advisor drawer triggered via topbar (#askAiTopBtn) and Ctrl/Cmd+J.
+ * Direct synchronization with /api/ai/usage and store.js state.
  */
 
 import { api } from "../api.js";
@@ -17,6 +18,7 @@ class AskAiAdvisor {
     this.usageMeter = null;
     this.remaining = 5;
     this.limit = 5;
+    this.resetAt = "midnight UTC";
   }
 
   init() {
@@ -32,24 +34,25 @@ class AskAiAdvisor {
     this.backdrop.id = "askAiDrawerBackdrop";
     this.backdrop.className = "ask-ai-backdrop";
     this.backdrop.style.display = "none";
+    this.backdrop.setAttribute("aria-hidden", "true");
 
     this.backdrop.innerHTML = `
-      <div class="ask-ai-drawer" id="askAiDrawer" role="dialog" aria-modal="true" aria-label="CareerMatch AI Advisor">
+      <aside class="ask-ai-drawer" id="askAiDrawer" role="dialog" aria-modal="true" aria-labelledby="askAiDrawerHeading">
         <div class="ask-ai-header">
           <div style="display: flex; align-items: center; gap: 10px;">
-            <div class="ask-ai-avatar">
+            <div class="ask-ai-avatar" aria-hidden="true">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polygon points="12 2 22 12 12 22 2 12"></polygon>
                 <circle cx="12" cy="12" r="2.5" fill="currentColor"></circle>
               </svg>
             </div>
             <div>
-              <h3 style="font-size: 1.05rem; margin: 0; font-family: var(--font-display);">CareerMatch Advisor</h3>
+              <h2 id="askAiDrawerHeading" style="font-size: 1.05rem; margin: 0; font-family: var(--font-display); font-weight: 600;">CareerMatch Advisor</h2>
               <span style="font-size: 0.75rem; color: var(--text-tertiary);" id="askAiSubhead">Grounded career & skill guidance</span>
             </div>
           </div>
           <div style="display: flex; align-items: center; gap: 8px;">
-            <span class="badge" id="askAiDrawerUsageMeter" style="font-family: var(--font-mono); font-size: 0.72rem; padding: 3px 8px; border-radius: var(--radius-full); background: var(--bg-sunken); border: 1px solid var(--border-subtle);">
+            <span class="badge" id="askAiDrawerUsageMeter" style="font-family: var(--font-mono); font-size: 0.72rem; padding: 4px 10px; border-radius: var(--radius-sm); background: var(--bg-sunken); border: 1px solid var(--border-subtle);">
               5/5 queries
             </span>
             <button type="button" class="btn btn-ghost btn-sm btn-icon" id="closeAskAiBtn" aria-label="Close Advisor">✕</button>
@@ -58,22 +61,22 @@ class AskAiAdvisor {
 
         <!-- Quick Prompts Row -->
         <div class="ask-ai-quick-prompts" id="askAiQuickPrompts">
-          <button type="button" class="quick-prompt-pill" data-prompt="How do I optimize my resume for high ATS scores in Indian tech companies?">
-            🎯 ATS Optimization
+          <button type="button" class="quick-prompt-chip" data-prompt="How do I optimize my resume for high ATS scores in Indian tech companies?">
+            ATS Optimization
           </button>
-          <button type="button" class="quick-prompt-pill" data-prompt="What project should I build next to prove my skills to recruiters?">
-            🚀 Next Project Idea
+          <button type="button" class="quick-prompt-chip" data-prompt="What project should I build next to prove my skills to recruiters?">
+            Next Project
           </button>
-          <button type="button" class="quick-prompt-pill" data-prompt="What are typical interview questions for my target role?">
-            💬 Interview Prep
+          <button type="button" class="quick-prompt-chip" data-prompt="What are typical interview questions for my target role?">
+            Interview Prep
           </button>
         </div>
 
         <!-- Conversation History Container -->
-        <div class="ask-ai-messages" id="askAiMessages">
+        <div class="ask-ai-messages" id="askAiMessages" role="log" aria-live="polite">
           <div class="ask-ai-msg bot">
             <p style="margin: 0;">
-              Hello! I'm your CareerMatch AI Advisor. I have context on your current target role and active resume. How can I help sharpen your placement readiness today?
+              Hello! I'm your CareerMatch AI Advisor. I have context on your target role and active resume. How can I assist your placement preparation today?
             </p>
           </div>
         </div>
@@ -85,7 +88,7 @@ class AskAiAdvisor {
               type="text"
               id="askAiInput"
               class="form-input"
-              placeholder="Ask anything about roles, resumes, or prep..."
+              placeholder="Ask anything about roles, resumes, or prep (Ctrl+J)..."
               autocomplete="off"
               style="flex: 1; font-size: 0.875rem;"
             />
@@ -93,11 +96,11 @@ class AskAiAdvisor {
               Ask
             </button>
           </form>
-          <div style="font-size: 0.7rem; color: var(--text-tertiary); margin-top: 6px; text-align: center;">
-            Server-side rate limited to protect resources.
+          <div style="font-size: 0.7rem; color: var(--text-tertiary); margin-top: 6px; text-align: center;" id="askAiResetNotice">
+            Server-side rate limited (5/day for guests, 20/day for signed-in users).
           </div>
         </div>
-      </div>
+      </aside>
     `;
 
     document.body.appendChild(this.backdrop);
@@ -110,7 +113,7 @@ class AskAiAdvisor {
   }
 
   _attachListeners() {
-    // Open triggers
+    // Open triggers: topbar button and any .ask-ai-trigger
     document.addEventListener("click", (e) => {
       const trigger = e.target.closest("#askAiTopBtn, .ask-ai-trigger");
       if (trigger) {
@@ -125,8 +128,8 @@ class AskAiAdvisor {
       if (e.target === this.backdrop) this.close();
     });
 
-    // Quick prompt pills
-    this.backdrop.querySelectorAll(".quick-prompt-pill").forEach((btn) => {
+    // Quick prompt chips
+    this.backdrop.querySelectorAll(".quick-prompt-chip").forEach((btn) => {
       btn.addEventListener("click", () => {
         const prompt = btn.getAttribute("data-prompt");
         if (this.input) {
@@ -143,9 +146,13 @@ class AskAiAdvisor {
       if (val) this.submitQuery(val);
     });
 
-    // Close on Escape
+    // Keyboard shortcuts: Cmd/Ctrl + J to toggle, Escape to close
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && this.isOpen) {
+      if ((e.ctrlKey || e.metaKey) && (e.key === "j" || e.key === "J")) {
+        e.preventDefault();
+        if (this.isOpen) this.close();
+        else this.open();
+      } else if (e.key === "Escape" && this.isOpen) {
         this.close();
       }
     });
@@ -154,48 +161,61 @@ class AskAiAdvisor {
   open() {
     this.isOpen = true;
     this.backdrop.style.display = "flex";
+    this.backdrop.setAttribute("aria-hidden", "false");
     setTimeout(() => {
       this.input?.focus();
-    }, 100);
+    }, 80);
     this.refreshUsage();
   }
 
   close() {
     this.isOpen = false;
     this.backdrop.style.display = "none";
+    this.backdrop.setAttribute("aria-hidden", "true");
   }
 
   async refreshUsage() {
     try {
-      const res = await fetch("/api/ai/usage");
+      const headers = {};
+      const token = store.get("token");
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
+      const res = await fetch("/api/ai/usage", { headers });
       if (res.ok) {
         const data = await res.json();
-        this.remaining = data.remaining;
-        this.limit = data.limit;
+        this.remaining = data.remaining ?? 5;
+        this.limit = data.limit ?? 5;
+        this.resetAt = data.resetAt || "midnight UTC";
         this._updateMeters();
       }
     } catch (_) {}
   }
 
   _updateMeters() {
-    const text = `${this.remaining}/${this.limit} AI`;
+    const text = `${this.remaining}/${this.limit} left`;
     if (this.usageMeter) {
-      this.usageMeter.textContent = `${this.remaining} of ${this.limit} left today`;
+      this.usageMeter.textContent = `${this.remaining} of ${this.limit} left`;
     }
     const topMeter = document.getElementById("askAiUsageMeter");
     if (topMeter) {
       topMeter.textContent = text;
     }
+    const notice = document.getElementById("askAiResetNotice");
+    if (notice && this.remaining === 0) {
+      notice.textContent = `Daily limit reached. Resets at ${this.resetAt}.`;
+    }
   }
 
   async submitQuery(question) {
-    if (!question) return;
-    this.input.value = "";
-    this._appendMessage("user", question);
+    if (!question || !question.trim()) return;
+    const cleanQ = question.trim();
+    if (this.input) this.input.value = "";
+    this._appendMessage("user", cleanQ);
 
     // Typing indicator
     const typingId = "typing-" + Date.now();
     const typingEl = document.createElement("div");
+    typingId;
     typingEl.id = typingId;
     typingEl.className = "ask-ai-msg bot typing";
     typingEl.innerHTML = `<span class="spinner" style="display:inline-block;width:12px;height:12px;border:2px solid var(--border-subtle);border-top-color:var(--brand-accent);border-radius:50%;animation:spin 0.8s linear infinite;"></span> Consulting Career Advisor...`;
@@ -205,19 +225,20 @@ class AskAiAdvisor {
     if (this.sendBtn) this.sendBtn.disabled = true;
 
     try {
-      const state = typeof window.getAppState === "function" ? window.getAppState() : {};
-      const targetRole = document.getElementById("targetRoleSelect")?.value || "Full Stack Developer";
+      const stateResume = store.get("activeResume") || null;
+      const targetRole = store.get("targetRole") || document.getElementById("targetRoleSelect")?.value || "Full Stack Developer";
       const currentView = store.get("currentView") || "dashboard";
+      const token = store.get("token");
 
       const res = await fetch("/api/ai/ask", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(store.get("token") ? { Authorization: `Bearer ${store.get("token")}` } : {}),
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
-          question,
-          resume: state.activeResume || null,
+          question: cleanQ,
+          resume: stateResume,
           targetRole,
           currentView,
         }),
@@ -229,6 +250,7 @@ class AskAiAdvisor {
       if (!res.ok) {
         if (res.status === 429) {
           this.remaining = 0;
+          this.resetAt = data.resetAt || "midnight UTC";
           this._updateMeters();
           this._appendMessage("bot error", `⏳ **Rate Limit Reached**: ${data.detail || "You have reached your daily quota."}`);
         } else {
@@ -237,13 +259,14 @@ class AskAiAdvisor {
         return;
       }
 
-      this.remaining = data.remaining;
-      this.limit = data.limit;
+      this.remaining = data.remaining ?? Math.max(0, this.remaining - 1);
+      this.limit = data.limit ?? this.limit;
+      this.resetAt = data.resetAt || this.resetAt;
       this._updateMeters();
-      this._appendMessage("bot", data.answer);
+      this._appendMessage("bot", data.answer || "No response received.");
     } catch (err) {
       document.getElementById(typingId)?.remove();
-      this._appendMessage("bot error", `⚠️ Network error: ${err.message}`);
+      this._appendMessage("bot error", `⚠️ Advisor offline or connection failed: ${err.message}. Deterministic roadmaps and local assessments remain fully functional.`);
     } finally {
       if (this.sendBtn) this.sendBtn.disabled = false;
     }
@@ -252,7 +275,6 @@ class AskAiAdvisor {
   _appendMessage(sender, text) {
     const msg = document.createElement("div");
     msg.className = `ask-ai-msg ${sender}`;
-    // Simple markdown formatting: bold and bullets
     const formatted = text
       .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
       .replace(/\n\n/g, "<br/><br/>")

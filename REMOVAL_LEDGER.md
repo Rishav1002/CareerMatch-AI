@@ -30,7 +30,9 @@ This ledger records all deprecated files, hardcoded mock profiles, legacy naviga
 
 ---
 
-## 3. Deprecated & Unified Navigation Systems
+## 4. Duplicate Ask AI Consolidation
+- **`frontend/js/components/floatingAskAi.js`**: Removed entirely.
+  - Reason: Redundant second implementation that injected competing floating buttons, duplicate backdrops, separate drawers, and duplicate quota counters. Consolidated into a single unified `askAi.js` component controlled via topbar button `#askAiTopBtn` and `Ctrl/Cmd+J`.
 Six competing, redundant navigation schemes were replaced by a single, canonical navigation architecture:
 
 1. **Legacy Horizontal Topbar Links (`#topbarNav`)**: Removed in favor of the Left Rail.

@@ -35,7 +35,6 @@ const PRECACHE_ASSETS = [
   "/frontend/js/components/shareScorecard.js",
   "/frontend/js/components/scrollReveal.js",
   "/frontend/js/components/askAi.js",
-  "/frontend/js/components/floatingAskAi.js",
   "/frontend/js/components/landingCarousel.js",
   "/frontend/js/components/profileManager.js",
   "/frontend/js/components/authManager.js",
