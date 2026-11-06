@@ -119,3 +119,43 @@ def test_database_retry_loop_is_present():
     db_code = read_file(DATABASE_PY_PATH)
     assert "for attempt in range(3):" in db_code, "database.py must contain connection retry loop for Neon cold starts"
     assert "connect_timeout" in db_code, "database.py connection must specify connect_timeout"
+
+
+def test_es_modules_exist_for_all_features():
+    modules_dir = os.path.join(os.path.dirname(__file__), "..", "frontend", "js", "modules")
+    expected_mods = [
+        "dashboard.js",
+        "analyzer.js",
+        "report.js",
+        "ats.js",
+        "roadmap.js",
+        "interview.js",
+        "assessment.js",
+        "github.js",
+        "market.js",
+        "career.js",
+        "pri.js",
+    ]
+    for mod in expected_mods:
+        path = os.path.join(modules_dir, mod)
+        assert os.path.exists(path), f"Missing ES module {mod} in frontend/js/modules/"
+        code = read_file(path)
+        assert "init(" in code, f"Module {mod} must implement init()"
+        assert "load(" in code, f"Module {mod} must implement load()"
+        assert "render(" in code, f"Module {mod} must implement render()"
+
+
+def test_router_imports_modules_directly_without_window_globals():
+    router_code = read_file(ROUTER_JS_PATH)
+    assert "from \"./modules/dashboard.js\"" in router_code or "from './modules/dashboard.js'" in router_code
+    assert "from \"./modules/analyzer.js\"" in router_code or "from './modules/analyzer.js'" in router_code
+    assert "window.loadAtsSimulator" not in router_code
+    assert "window.loadAdaptiveRoadmap" not in router_code
+    assert "window.loadPlacementReadinessIndex" not in router_code
+
+
+def test_legacy_app_js_not_loaded_in_index_html():
+    html = read_file(INDEX_HTML_PATH)
+    assert 'src="/frontend/js/app.js"' not in html
+    assert 'src="frontend/js/app.js"' not in html
+
