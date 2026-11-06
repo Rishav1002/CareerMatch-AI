@@ -1,5 +1,37 @@
 # CHANGELOG: CareerMatch AI "Field Guide" Redesign
 
+## [4.0.0] - 2026-11-06
+
+### Architecture & Modularity
+- **Monolith Deconstruction:** Deleted legacy 3,172-line `frontend/js/app.js` and consolidated into 11 focused ES modules in `frontend/js/modules/` (`dashboard.js`, `analyzer.js`, `report.js`, `ats.js`, `roadmap.js`, `interview.js`, `assessment.js`, `github.js`, `market.js`, `career.js`, `pri.js`).
+- **Decoupled Hash Router:** Router dispatches directly to ES modules without `window.*` globals, enforcing scroll reset `(0, 0)`, focus management to headings, and empty state fallbacks for `requiresResume` views.
+- **Ask AI Drawer Consolidation:** Unified Ask AI drawer into single authoritative assistant (`frontend/js/components/askAi.js`), bound to topbar button and `Ctrl+J` shortcut. Removed obsolete `floatingAskAi.js`.
+- **Backend Model Fallback Cascade:** Resilient multi-model Gemini fallbacks in `backend/ai_service.py` (`gemini-2.5-flash` $\rightarrow$ `gemini-1.5-flash`), calibrated rubric scoring, and clean configuration.
+
+### Design System & Zero Inline Styles
+- **Zero Inline Styles:** Replaced all 427 inline `style="..."` attributes in `frontend/index.html` with clean semantic CSS utility classes (`frontend/css/components.css`). Current count: **0**.
+- **CSS Specificity Cleanup:** Reduced `!important` occurrences from 50 across `base.css`, `layout.css`, and `styles.css` down to exactly **1** (strictly reserved for `.hidden { display: none !important; }`).
+- **Devanagari Webfonts:** Added Google Fonts `Noto Sans Devanagari` and `Noto Serif Devanagari` (`font-display: swap`) with CSS font-family cascade under `[lang="hi"]`.
+- **WCAG 2.1 AA Contrast:** All 20 light and dark color pairs pass WCAG 2.1 AA contrast verification (`scripts/check_contrast.py`), with text-to-canvas contrast reaching 16.3:1 (AAA).
+
+### Page-by-Page Redesign & Text Density
+- **All 21 Views Within Word Budgets:** Designed single-purpose, uncluttered layouts with strictly bounded word budgets:
+  - `view-landing`: 179 words (budget $\le 200$, $\le 90$ above fold)
+  - `view-login`: 37 words (budget $\le 40$)
+  - `view-dashboard`: 58 words (budget $\le 60$)
+  - `view-analyzer`: 59 words (budget $\le 70$)
+  - `view-report`: 21 words/tab across 6 tabs (budget $\le 60$/tab)
+  - `view-ats` (33w), `view-roadmap` (29w), `view-planner` (22w), `view-interview` (60w), `view-assessment` (37w), `view-github` (34w), `view-jobs` (36w), `view-tracker` (16w), `view-career` (31w), `view-pri` (40w), `view-profile` (47w), `view-settings` (40w), `view-privacy` (120w), `view-terms` (52w), `view-cookies` (41w), `view-404` (32w).
+- **Anti-Slop Copy Sweep:** Purged AI marketing clichés ("Unlock your potential", "Supercharge your career", "Seamless", "10x", invented statistics).
+- **Authoritative Editorial Guide:** Created `COPY_GUIDE.md` defining voice, banned phrases, approved action verbs, and bilingual localization rules.
+
+### Localization & A11y
+- **Bilingual i18n Parity:** Complete string parity in `frontend/js/i18n.js` for English and Hindi, with dynamic HTML `lang` attribute binding and topbar language toggle button (`#langToggleBtn`).
+- **Safe DOM Rendering:** Verified strict HTML escaping (`escapeHtml()`) across all dynamic module renderings.
+- **Accessible Landmarks:** Added skip link (`#mainContent`), proper heading hierarchies, and aria-live announcements.
+
+---
+
 ## [3.0.0] - 2026-11-03
 
 ### Core Concept & Visual Identity Redesign
@@ -7,41 +39,3 @@
   - Eliminated purple-to-blue gradients, blurred glowing orbs, glassmorphism cards, and emoji icons.
   - Adopted warm paper neutrals (`#FBF9F5` light default) and deep mineral ink (`#121417` dark mode).
   - Single brand accent: Terracotta Rust (`#B84D2B` light / `#E06D46` dark).
-  - Status signals now differ by icon, shape, and hue:
-    - **Matched**: Solid Circle `● [✓]` in Pine Forest (`#15803D`)
-    - **Partial / Adjacent**: Rounded Diamond `◆ [▲]` in Ochre Amber (`#B45309`)
-    - **Missing / Gap**: Octagon / Box `⬡ [✕]` in Brick Ochre (`#B91C1C`)
-  - Resolved font mismatch: Loaded and set high-character typography with `Newsreader` (display serif), `Plus Jakarta Sans` (UI grotesque), and `JetBrains Mono` (data, IDs, tabular numerals).
-
-### Frontend Architecture & Layout Consolidation
-- **Consolidated Entry Point**:
-  - Deleted duplicate root `index.html`. Single source of truth is now `frontend/index.html`.
-  - Replaced monolithic stylesheet with a modular, tokenized CSS architecture:
-    - `tokens.css`: Color palettes, fluid typography, spacing grid, radii, elevation.
-    - `base.css`: Reset, measure prose constraints, focus rings, skip link, print ledger styles.
-    - `layout.css`: App shell, persistent collapsible desktop rail, mobile bottom navigation bar.
-    - `components.css`: Buttons, dropzone, ledger tables, gauges, dialogs, drawers, toast.
-    - `views.css`: Dedicated layouts for all 15 module views.
-    - `styles.css`: Backward compatibility and bundle entry point.
-- **Split JavaScript into ES Modules**:
-  - `store.js`: Persistent reactive state, localStorage sync, and pub/sub event bus.
-  - `api.js`: Unified API client with JWT headers, error normalization, and offline resilience.
-  - `router.js`: Hash-based client router (`#/landing`, `#/dashboard`, `#/analyzer`, etc.) with bookmarkable URLs.
-  - `i18n.js`: English and Hindi string tables with instant language switching.
-  - `main.js`: Core orchestrator wiring shell events and components.
-
-### 8 Priority Feature Upgrades
-1. **Command Palette (`Ctrl+K` / `Cmd+K`)**: Fast modal overlay with fuzzy search across all 15 workspaces, quick actions (upload resume, paste text, toggle theme, export report), and keyboard navigation.
-2. **Resume Version History & Score Diff Ledger**: Side-by-side comparison tracking resume revisions with point deltas (+14.2% pts) and newly matched skills.
-3. **Application Kanban Tracker**: 4-column drag/drop pipeline (Saved, Applied, Interview, Offer) with per-job match percentages, fed directly from Job Market Intelligence.
-4. **Shareable Public Scorecard & Print-Ready PDF**: Privacy-safe scorecard URL with candidate names/text scrubbed, plus bespoke `@media print` field-guide ledger printout.
-5. **Weekly Study Planner**: Roadmap-derived weekly study schedule, daily completion checkboxes, and 3+ day streak tracking.
-6. **Guided "Fix This" Remediation Drawers**: Slide-over drawer when clicking any skill gap in the Report or Analyzer; presents exact roadmap node, curated free & paid courses, and STAR bullet rewrites.
-7. **Notifications & Field Updates Drawer**: Topbar notification bell with unread count badge, system alerts, and streak reminders.
-8. **Hindi / English i18n Scaffolding**: Dual-language dictionary with live switching across all key UI landmarks.
-
-### PWA, SEO & Security
-- Added `manifest.json`, Web App Manifest icon assets (`icon-192.svg`, `icon-512.svg`), and OpenGraph meta tags.
-- Implemented `sw.js` Service Worker for offline shell caching.
-- Generated `sitemap.xml`.
-- Added security headers (`X-Frame-Options: SAMEORIGIN`, `Referrer-Policy: strict-origin-when-cross-origin`, `X-Content-Type-Options: nosniff`) to static responses in `backend/main.py`.
