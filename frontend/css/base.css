@@ -21,10 +21,10 @@ svg {
 .rail-nav-link svg,
 .btn-icon svg,
 .mobile-nav-item svg {
-  width: 18px !important;
-  height: 18px !important;
-  max-width: 18px !important;
-  max-height: 18px !important;
+  width: 18px;
+  height: 18px;
+  max-width: 18px;
+  max-height: 18px;
   flex-shrink: 0;
 }
 
@@ -219,24 +219,24 @@ hr {
     --blur: none;
   }
   .card, .glass-panel, .glass-card, .app-rail, .app-topbar, .user-avatar-dropdown, .ask-ai-drawer {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 }
 
 /* Motion suppression */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
+    scroll-behavior: auto;
   }
 
   .scroll-reveal {
-    opacity: 1 !important;
-    transform: none !important;
-    transition: none !important;
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 }
 
@@ -245,9 +245,9 @@ hr {
    ========================================================================== */
 @media print {
   body {
-    background: var(--bg-card, #FFFFFF) !important;
-    background-image: none !important;
-    color: var(--text-primary, #111111) !important;
+    background: var(--bg-card, #FFFFFF);
+    background-image: none;
+    color: var(--text-primary, #111111);
     font-size: 11pt;
   }
 
@@ -259,18 +259,18 @@ hr {
   .toast-container,
   .btn,
   .no-print {
-    display: none !important;
+    display: none;
   }
 
   .app-main {
-    margin: 0 !important;
-    padding: 0 !important;
-    width: 100% !important;
+    margin: 0;
+    padding: 0;
+    width: 100%;
   }
 
   .card, .ledger-table, .report-section {
-    border: 1px solid var(--border-medium, #CCCCCC) !important;
-    box-shadow: none !important;
+    border: 1px solid var(--border-medium, #CCCCCC);
+    box-shadow: none;
     break-inside: avoid;
     margin-bottom: 16pt;
   }
@@ -282,40 +282,78 @@ hr {
   }
 }
 
+
 /* Information Density & Overflow Guards (Section 13 & 14) */
+
 .d-flex > *,
+
 .flex-row > *,
+
 .grid > *,
+
 .grid-2 > *,
+
 .grid-3 > *,
+
 .grid-4 > *,
+
 .steps-3-grid > * {
+
   min-width: 0;
+
 }
+
+
 
 .line-clamp-1 {
+
   display: -webkit-box;
+
   -webkit-line-clamp: 1;
+
   -webkit-box-orient: vertical;
+
   overflow: hidden;
+
 }
+
+
 
 .line-clamp-2 {
+
   display: -webkit-box;
+
   -webkit-line-clamp: 2;
+
   -webkit-box-orient: vertical;
+
   overflow: hidden;
+
 }
+
+
 
 .line-clamp-3 {
+
   display: -webkit-box;
+
   -webkit-line-clamp: 3;
+
   -webkit-box-orient: vertical;
+
   overflow: hidden;
+
 }
 
+
+
 .table-responsive {
+
   width: 100%;
+
   overflow-x: auto;
+
   -webkit-overflow-scrolling: touch;
+
 }
+

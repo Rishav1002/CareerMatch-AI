@@ -16,20 +16,20 @@
    ========================================================================== */
 
 .glass-panel, .glass-card, .neon-card {
-  background: var(--bg-card) !important;
-  border: 1px solid var(--border-subtle) !important;
-  box-shadow: var(--shadow-hairline) !important;
-  backdrop-filter: none !important;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-hairline);
+  backdrop-filter: none;
 }
 
 .gradient-text, .text-gradient {
-  background: none !important;
-  -webkit-text-fill-color: initial !important;
-  color: var(--text-primary) !important;
+  background: none;
+  -webkit-text-fill-color: initial;
+  color: var(--text-primary);
 }
 
 .glow-orb, .glow-bg, .mesh-gradient {
-  display: none !important;
+  display: none;
 }
 
 .badge-pill, .pill {

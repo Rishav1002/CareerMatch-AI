@@ -23,7 +23,7 @@
 .app-shell.is-auth .mobile-bottom-nav,
 .app-shell.is-landing .rail-backdrop,
 .app-shell.is-auth .rail-backdrop {
-  display: none !important;
+  display: none;
 }
 
 .app-shell.is-landing .app-main-wrapper,
@@ -67,7 +67,7 @@
 
 @media (max-width: 900px) {
   .landing-nav-links {
-    display: none !important;
+    display: none;
   }
 }
 
@@ -491,10 +491,10 @@
 }
 
 .rail-nav-link svg {
-  width: 18px !important;
-  height: 18px !important;
-  max-width: 18px !important;
-  max-height: 18px !important;
+  width: 18px;
+  height: 18px;
+  max-width: 18px;
+  max-height: 18px;
   stroke-width: 2;
   flex-shrink: 0;
 }
@@ -841,19 +841,19 @@
    ========================================================================== */
 @media (max-width: 640px) {
   .ledger-table-wrapper {
-    border: none !important;
-    overflow-x: visible !important;
+    border: none;
+    overflow-x: visible;
   }
   .ledger-table thead {
-    display: none !important;
+    display: none;
   }
   .ledger-table,
   .ledger-table tbody,
   .ledger-table tr,
   .ledger-table td {
-    display: block !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
   }
   .ledger-table tr {
     background: var(--bg-card);
@@ -863,15 +863,15 @@
     padding: var(--space-2);
   }
   .ledger-table td {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    padding: 6px 0 !important;
-    border-bottom: 1px solid var(--border-subtle) !important;
-    font-size: 0.85rem !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border-subtle);
+    font-size: 0.85rem;
   }
   .ledger-table td:last-child {
-    border-bottom: none !important;
+    border-bottom: none;
   }
 }
 
