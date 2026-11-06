@@ -1,0 +1,113 @@
+import re
+
+with open('frontend/index.html', 'r', encoding='utf-8') as f:
+    html = f.read()
+
+# 1. view-dashboard
+html = re.sub(r'Tier 1: Industry Ready', 'Ready', html)
+html = re.sub(r'Target: Data Engineer \(NexusCloud Commerce India\)', 'Target Role', html)
+html = re.sub(r'Tech Match: <strong id="ovTechScore">83\.2%</strong>', 'Match: <strong id="ovTechScore">83%</strong>', html)
+html = re.sub(r'ATS Score: <strong id="ovAtsScore">88%</strong>', 'ATS: <strong id="ovAtsScore">88%</strong>', html)
+html = re.sub(r'Market Fit: <strong id="ovMarketScore">78%</strong>', 'Fit: <strong id="ovMarketScore">78%</strong>', html)
+html = re.sub(r'<div class="stat-label">Total Analyses</div>', '<div class="stat-label">Analyses</div>', html)
+html = re.sub(r'<div class="stat-label">Resumes Tracked</div>', '<div class="stat-label">Resumes</div>', html)
+html = re.sub(r'<div class="stat-label">Average Score</div>', '<div class="stat-label">Avg Score</div>', html)
+html = re.sub(r'<div class="stat-label">Placement Status</div>', '<div class="stat-label">Status</div>', html)
+html = re.sub(r'Practice Distributed Pipelines Interview', 'Practice Interview', html)
+
+# 2. view-analyzer
+html = re.sub(r'<h3>1\. Candidate Resume</h3>', '<h3>Resume</h3>', html)
+html = re.sub(r'<h3>2\. Target Role &amp; Company JD</h3>', '<h3>Target Role &amp; JD</h3>', html)
+html = re.sub(r'Drop your resume here or <span class="text-underline text-accent">browse file</span>', 'Drop resume or <span class="text-underline text-accent">browse</span>', html)
+html = re.sub(r'PDF, DOCX, or TXT \(Max 5MB\)', 'PDF, DOCX, TXT', html)
+html = re.sub(r'— OR PASTE RESUME TEXT —', 'or paste text', html)
+html = re.sub(r'Parse Pasted Resume Text', 'Parse Text', html)
+html = re.sub(r'Target Job Profile', 'Target Role', html)
+html = re.sub(r'Target Company Name', 'Target Company', html)
+html = re.sub(r'Job Description \(JD\)', 'Job Description', html)
+html = re.sub(r'Scoring Weights Tuning \(Advanced\)', 'Weights', html)
+html = re.sub(r'<span>Mandatory Skills Weight</span>', '<span>Mandatory</span>', html)
+html = re.sub(r'<span>Preferred Skills Weight</span>', '<span>Preferred</span>', html)
+html = re.sub(r'<span>Project Proof Weight</span>', '<span>Projects</span>', html)
+html = re.sub(r'Reset Defaults \(50/30/20\)', 'Reset', html)
+html = re.sub(r'<span>Do not save my resume on the server \(transient session\)</span>', '<span>Transient session (no server save)</span>', html)
+
+# 3. view-interview
+html = re.sub(r'AI Mock Interview Simulator', 'Mock Interview', html)
+html = re.sub(r'Real-time answers with instant rubric evaluation', 'Practice with instant rubric evaluation', html)
+html = re.sub(r'Round: Technical', 'Technical', html)
+html = re.sub(r'Round: System Design', 'System Design', html)
+html = re.sub(r'Round: Behavioral / HR', 'Behavioral', html)
+html = re.sub(r'Difficulty: Intermediate', 'Intermediate', html)
+html = re.sub(r'Difficulty: Advanced', 'Advanced', html)
+html = re.sub(r'Your Answer \(STAR Method\)', 'Your Answer', html)
+html = re.sub(r'🎤 Voice Input \(WebSpeech\)', '🎤 Voice', html)
+html = re.sub(r'Submit Answer &amp; Evaluate', 'Submit Answer', html)
+html = re.sub(r'No prior interview answers recorded\.', 'No sessions recorded.', html)
+
+# 4. view-assessment
+html = re.sub(r'AI Skill Assessment Lab', 'Skill Lab', html)
+html = re.sub(r'Verify skills with 4 MCQs and a code lab', '4 MCQs and code challenge', html)
+html = re.sub(r'Topic: Python', 'Python', html)
+html = re.sub(r'Topic: SQL', 'SQL', html)
+html = re.sub(r'Topic: Data Structures', 'Data Structures', html)
+html = re.sub(r'Hands-On Coding Challenge', 'Code Challenge', html)
+html = re.sub(r'Submit Assessment', 'Submit', html)
+
+# 5. view-jobs
+html = re.sub(r'Live Job Market Intelligence', 'Live Jobs', html)
+html = re.sub(r'Live hiring matrices across Indian tech hubs', 'Openings across tech hubs', html)
+html = re.sub(r'Refresh Market Data', 'Refresh', html)
+html = re.sub(r'Role: Data Engineer', 'Data Engineer', html)
+html = re.sub(r'Role: Full Stack', 'Full Stack', html)
+html = re.sub(r'Role: DevOps', 'DevOps', html)
+html = re.sub(r'Location: All India', 'All India', html)
+html = re.sub(r'Mode: Any', 'Any Mode', html)
+html = re.sub(r'Active Job Openings \(<span id="jobsTotalCount">12</span> found\)', 'Openings (<span id="jobsTotalCount">12</span>)', html)
+html = re.sub(r'Updated: Today', 'Today', html)
+
+# 6. view-career
+html = re.sub(r'Career Path &amp; Salary Benchmark', 'Career Paths', html)
+html = re.sub(r'Role bridges and Indian tech salary benchmarks', 'Bridges and salary benchmarks', html)
+html = re.sub(r'Primary: Data Engineer', 'Data Engineer', html)
+html = re.sub(r'Primary: Full Stack', 'Full Stack', html)
+html = re.sub(r'Target: AI / ML Engineer', 'AI / ML Engineer', html)
+html = re.sub(r'Target: DevOps', 'DevOps', html)
+html = re.sub(r'0-2 Yrs \(Junior\)', '0-2 Yrs', html)
+html = re.sub(r'2-5 Yrs \(Mid\)', '2-5 Yrs', html)
+html = re.sub(r'5\+ Yrs \(Lead\)', '5+ Yrs', html)
+
+# 7. view-pri
+html = re.sub(r'Placement Readiness Index \(PRI\)', 'Placement Readiness', html)
+html = re.sub(r'Candidate Profile · Target: Data Engineer', 'Candidate Profile', html)
+html = re.sub(r'4 of 6 Pillars Verified', '4 of 6 Verified', html)
+html = re.sub(r'6-Pillar Category Breakdown', 'Pillar Breakdown', html)
+html = re.sub(r'Key Placement Strengths', 'Strengths', html)
+html = re.sub(r'Critical Action Items', 'Action Items', html)
+html = re.sub(r'Apply Custom Weights', 'Apply Weights', html)
+html = re.sub(r'Reset Default \(30/20/15/15/10/10\)', 'Reset', html)
+html = re.sub(r'PRI evaluates verified evidence across 6 pillars\.', 'PRI computes readiness from verified proof.', html)
+
+# 8. view-profile
+html = re.sub(r'Student Career Profile', 'Career Profile', html)
+html = re.sub(r'Profile used for match scoring and roadmap milestones', 'Canonical candidate profile', html)
+html = re.sub(r'<span>Import from Resume</span>', '<span>Import</span>', html)
+html = re.sub(r'Save Profile', 'Save', html)
+html = re.sub(r'Target Role &amp; Aspirations', 'Target Role', html)
+html = re.sub(r'Verified Identity', 'Verified', html)
+html = re.sub(r'Market Benchmark', 'Benchmark', html)
+html = re.sub(r'Skills Inventory', 'Skills', html)
+html = re.sub(r'Verified Skills', 'Verified', html)
+html = re.sub(r'Technical Skills', 'Technical', html)
+html = re.sub(r'Soft &amp; Methodological Skills', 'Soft Skills', html)
+html = re.sub(r'Work &amp; Internship Experience', 'Experience', html)
+html = re.sub(r'Academic &amp; Independent Projects', 'Projects', html)
+html = re.sub(r'Certifications &amp; Credentials', 'Certifications', html)
+html = re.sub(r'\+ Add Entry', '+ Add', html)
+html = re.sub(r'\+ Add Education', '+ Add', html)
+html = re.sub(r'\+ Add Project', '+ Add', html)
+html = re.sub(r'\+ Add Certification', '+ Add', html)
+
+with open('frontend/index.html', 'w', encoding='utf-8', newline='\n') as f:
+    f.write(html)
+print("Fine-tuning complete.")
