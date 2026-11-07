@@ -84,9 +84,34 @@ When the user toggles Hindi localization (`store.get("lang") === "hi"`):
 
 ---
 
-## 5. Verification Checklist
+## 5. Brand Identity & Vector Symbol Specification
+
+The CareerMatch AI mark is an inline vector SVG symbol `<symbol id="cm-logo">` defined in `frontend/assets/logo-mark.svg` and `frontend/index.html`:
+- **Geometry:** 4-armed golden/amber geometric vortex revolving clockwise, each arm featuring curved dynamic sweeps and terminal circular nodes.
+- **Palette:** Multi-stop linear gradient (`#FBBF24` amber gold $\rightarrow$ `#F97316` deep orange $\rightarrow$ `#EA580C` warm rust).
+- **Sizing Standards:**
+  - Expanded Desktop Rail: 28px mark + "CareerMatch AI" wordmark (`gap: 10px`, vertical center alignment).
+  - Collapsed Icon Rail: 24px mark, centered horizontally.
+  - Mobile Topbar: 20px mark.
+  - Auth Modals & Landing Hero: 36px mark + display wordmark.
+
+---
+
+## 6. Overlay Surfaces & Elevation Tokens
+
+To eliminate background text bleed-through, floating and overlay surfaces use dedicated high-opacity frosted glass tokens:
+- **`--bg-overlay`:** `rgba(255, 255, 255, 0.94)` (light) / `rgba(14, 16, 21, 0.94)` (dark).
+- **`--overlay-blur`:** `blur(20px) saturate(160%)`.
+- **`-webkit-backdrop-filter`:** Fully supported for iOS Safari.
+- **Opaque Fallback:** `@supports not (backdrop-filter: blur(1px))` and `@media (prefers-reduced-transparency: reduce)` automatically fallback to 100% solid surfaces.
+- **Surfaces utilizing token:** Left rail drawer, mobile bottom navigation bar, avatar dropdown menu, Ask AI drawer, command palette, toast notifications, and cookie storage banner.
+
+---
+
+## 7. Verification Checklist
 
 1. `python scripts/check_contrast.py` passes all 20 color pairs with zero WCAG AA violations.
 2. `python scripts/count_styles.py` verifies **0** inline `style="..."` attributes in `frontend/index.html`.
 3. Total `!important` count across all CSS files is $\le 3$ (currently exactly **1**).
 4. `python scripts/audit_views_text.py` verifies all 21 views adhere to their word budgets.
+5. All links pass verification via `python scripts/check_links.py` (`61/61` passed).

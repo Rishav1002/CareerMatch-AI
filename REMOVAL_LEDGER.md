@@ -98,6 +98,25 @@ Six competing, redundant navigation schemes were replaced by a single, canonical
 ---
 
 ## 6. Cold-Start & Database Reliability Hardening
+
+---
+
+## 7. Launch Hardening & Bug Fix Removals (Build 4.1)
+
+- **Technical Cold-Start Banners (`#serverColdStartBanner`, `#apiWakeUpBanner`)**:
+  - Removed technical callouts explicitly naming Render, Neon, free tier compute, database wake-up, and server instances. Replaced with unobtrusive inline skeleton loaders and quiet backoff retries.
+- **Footer Build SHA Display (`#appBuildSha`) & Stack Disclosure**:
+  - Removed build hash text (`Build: 1baf0b6`) and provider text from the footer. Footer now contains strictly brand, copyright, and three legal navigation links (`Privacy Policy`, `Terms of Service`, `Cookie Policy`).
+- **Hardcoded Fake Study Planner Tasks & Streaks (`DEFAULT_PLANNER_TASKS`)**:
+  - Purged 7 hardcoded tasks (three pre-marked completed) and fake 3-day streak with decorative fire emoji (`🔥`). Replaced with an honest empty state, dynamic Plan Builder, real timestamped streaks, and `.ICS` calendar export.
+- **Client-Side Answer Leakage (`correctIndex`, `explanation`) in Assessment & Roadmap Quizzes**:
+  - Stripped correct answer keys, options indexes, and full explanatory rubrics from `/api/assessment/generate` and `/api/roadmap/adaptive` quiz payloads. All grading is now strictly verified server-side.
+- **Sample Resume Fallback (`SAMPLE_RESUMES[0]`) in Career Modules**:
+  - Eliminated silent fallback to Aarav Sharma's resume in `start_interview_session`, `evaluate_ats_resume`, `get_adaptive_roadmap`, `compare_career_paths`, and `compute_placement_readiness_index`. Unanalyzed users are no longer evaluated against sample data.
+- **Top Bar Ask AI Button (`#askAiTopBtn`)**:
+  - Retired in favor of unified 3D bottom-right Floating Action Button (FAB). Slot replaced by topbar light/dark theme toggle button.
+- **Native Browser Alert() Popups in Market & Settings**:
+  - Replaced native modal blocking `alert()` dialogs with non-blocking toast notifications.
 - Implemented exponential backoff connection retry loop for Neon serverless auto-suspend and Render free-tier sleep cycles.
 - Added `/api/health` endpoint with active `SELECT 1;` health probes, returning HTTP 200 when connected and HTTP 503 when the database is waking up.
 - Added visual "Waking up server..." status banner and inline error retry buttons on all view fetches.

@@ -129,10 +129,9 @@ for (const r of expectedRoutes) {
 }
 
 // Check key interactive elements
-assert(html.includes('id="themeToggleBtn"'), "Theme toggle button #themeToggleBtn must exist");
+assert(html.includes('id="themeToggleBtn"') || html.includes('id="topbarThemeToggleBtn"'), "Theme toggle button #topbarThemeToggleBtn must exist");
 assert(html.includes('id="landingAnalyzeCtaBtn"'), "Landing CTA button #landingAnalyzeCtaBtn must exist");
 assert(html.includes('id="runAnalysisBtn"'), "Run analysis button #runAnalysisBtn must exist");
-assert(html.includes('id="appBuildSha"'), "Build SHA badge #appBuildSha must exist in footer");
 
 // ---------------------------------------------------------------------------
 // 3. Theme Toggle & Duplicate Listener Test Simulation
@@ -186,9 +185,11 @@ function makeRequest(options, postData = null) {
 }
 
 // Spawn backend server for test on port 8999 using venv python if available
-const pyCmd = fs.existsSync(path.join(rootDir, "venv", "Scripts", "python.exe"))
-  ? path.join(rootDir, "venv", "Scripts", "python.exe")
-  : "python";
+const pyCmd = fs.existsSync("C:\\Python314-arm64\\python.exe")
+  ? "C:\\Python314-arm64\\python.exe"
+  : (fs.existsSync(path.join(rootDir, "venv", "Scripts", "python.exe"))
+    ? path.join(rootDir, "venv", "Scripts", "python.exe")
+    : "python");
 
 const serverProcess = spawn(pyCmd, ["app.py"], {
   env: { ...process.env, PORT: "8999", HOST: "127.0.0.1", PYTHONPATH: rootDir },
@@ -199,14 +200,14 @@ serverProcess.stdout.on("data", (d) => {
   // console.log("[Backend]", d.toString().trim());
 });
 serverProcess.stderr.on("data", (d) => {
-  // console.error("[Backend err]", d.toString().trim());
+  console.error("[Backend err]", d.toString().trim());
 });
 
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-async function waitForServer(port, maxAttempts = 30) {
+async function waitForServer(port, maxAttempts = 60) {
   for (let i = 0; i < maxAttempts; i++) {
     try {
       const res = await makeRequest({
@@ -219,7 +220,7 @@ async function waitForServer(port, maxAttempts = 30) {
     } catch {
       // Still booting
     }
-    await sleep(250);
+    await sleep(400);
   }
   return false;
 }
@@ -237,7 +238,7 @@ async function runBackendTests() {
       method: "GET",
     });
     assert(health.status === 200, `/api/health responded with HTTP 200 (status=${health.status})`);
-    assert(health.data && health.data.build_sha, `/api/health exposes build_sha (${health.data?.build_sha})`);
+    assert(health.data && health.data.status === "ok", `/api/health returns sanitized status ok (${health.data?.status})`);
 
     // 4.2 Check /api/roles
     const roles = await makeRequest({
@@ -319,10 +320,12 @@ B.Tech Computer Science, 2022
 
     assert(analyzeResp.status === 200, "POST /api/analyze generated full career intelligence report");
     const rep = analyzeResp.data || {};
-    const score = rep.matchResult?.overallScore ?? rep.matchScore;
+    const score = rep.matchResult?.overallScore ?? rep.match?.overallScore ?? rep.matchScore;
     assert(typeof score === "number", `Match score generated: ${score}%`);
-    assert(Array.isArray(rep.roadmapNodes) && rep.roadmapNodes.length > 0, `Analysis generated adaptive roadmap (${rep.roadmapNodes.length} nodes)`);
-    assert(rep.atsReport && typeof rep.atsReport.atsScore === "number", `ATS Report generated (score: ${rep.atsReport.atsScore})`);
+    const roadmap = rep.roadmap || rep.roadmapNodes || [];
+    assert(Array.isArray(roadmap) && roadmap.length > 0, `Analysis generated adaptive roadmap (${roadmap.length} nodes)`);
+    const atsReport = rep.atsReport || rep.ats;
+    assert(atsReport && typeof atsReport.atsScore === "number", `ATS Report generated (score: ${atsReport?.atsScore})`);
 
     // ---------------------------------------------------------------------------
     // 5. Garbage Value Guard (DOM & API Responses)

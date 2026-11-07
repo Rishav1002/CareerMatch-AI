@@ -850,10 +850,14 @@ async def api_interview_history(
 
 
 @app.post("/api/ats/evaluate")
-async def api_ats_evaluate(request: Request) -> Dict[str, Any]:
+async def api_ats_evaluate(
+    request: Request,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    owner_id, _ = owner_info
     try:
         body = await request.json()
-        return evaluate_ats_resume(body)
+        return evaluate_ats_resume(body, owner_id=owner_id)
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 

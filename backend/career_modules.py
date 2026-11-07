@@ -780,7 +780,7 @@ def fetch_job_market_intelligence(body: Dict[str, Any]) -> Dict[str, Any]:
     conn.commit()
     conn.close()
 
-    enriched_jobs.sort(key=lambda x: x["matchScore"], reverse=True)
+    enriched_jobs.sort(key=lambda x: (x["matchScore"] is not None, x["matchScore"] or 0.0), reverse=True)
 
     total_listings = max(1, len(combined_raw))
     trending_skills = [
@@ -968,7 +968,7 @@ def _build_tailored_interview_questions(
 
 def start_interview_session(body: Dict[str, Any], owner_id: str = "legacy_unowned") -> Dict[str, Any]:
     resume_id = sanitize_short_field(body.get("resumeId", ""), 80)
-    resume = body.get("resume") or get_resume_by_id(resume_id, owner_id=owner_id) or SAMPLE_RESUMES[0]
+    resume = body.get("resume") or (get_resume_by_id(resume_id, owner_id=owner_id) if resume_id else None) or {"id": "unattached", "technicalSkills": []}
     target_role = sanitize_short_field(body.get("targetRole", "Full Stack Developer"), 100)
     goal_company = sanitize_short_field(body.get("goalCompany", "Industry Tech Bar"), 100)
     interview_round = sanitize_short_field(body.get("interviewRound", "Technical"), 40)
@@ -987,7 +987,7 @@ def start_interview_session(body: Dict[str, Any], owner_id: str = "legacy_unowne
             difficulty, status, total_questions, answered_count, started_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'in_progress', ?, 0, ?)
         """,
-        (session_id, owner_id, owner_id, resume["id"], target_role, goal_company, interview_round, difficulty, len(questions), now_iso),
+        (session_id, owner_id, owner_id, resume.get("id", "unattached"), target_role, goal_company, interview_round, difficulty, len(questions), now_iso),
     )
 
     for q in questions:
@@ -1354,14 +1354,16 @@ WEAK_PHRASES = [
 ]
 
 
-def evaluate_ats_resume(body: Dict[str, Any]) -> Dict[str, Any]:
+def evaluate_ats_resume(body: Dict[str, Any], owner_id: str = "legacy_unowned") -> Dict[str, Any]:
     """
     Module 3: ATS Resume Simulator.
     Evaluates resume vs target role / JD with explainable ATS score, section audit,
     formatting/readability checks, truthful before/after bullet rewrites, and downloadable template.
     """
     resume_id = sanitize_short_field(body.get("resumeId", ""), 80)
-    resume = body.get("resume") or get_resume_by_id(resume_id) or SAMPLE_RESUMES[0]
+    resume = body.get("resume") or (get_resume_by_id(resume_id, owner_id=owner_id) if resume_id else None)
+    if not resume or not resume.get("rawText"):
+        raise ValueError("No resume found. Please upload or parse a resume first.")
     target_role = sanitize_short_field(body.get("targetRole", "Full Stack Developer"), 100)
     goal_company = sanitize_short_field(body.get("goalCompany", ""), 100)
     custom_jd = sanitize_plain_text(body.get("customJdText", ""), 20000)
@@ -1623,9 +1625,9 @@ def analyze_github_portfolio(body: Dict[str, Any], owner_id: str = "legacy_unown
         }
 
     resume_id = sanitize_short_field(body.get("resumeId", ""), 80)
-    resume = body.get("resume") or get_resume_by_id(resume_id) or SAMPLE_RESUMES[0]
+    resume = body.get("resume") or (get_resume_by_id(resume_id, owner_id=owner_id) if resume_id else None)
     target_role = sanitize_short_field(body.get("targetRole", "Full Stack Developer"), 100)
-    resume_skills = list(resume.get("technicalSkills", []))
+    resume_skills = list(resume.get("technicalSkills", [])) if resume else []
 
     headers = {
         "Accept": "application/vnd.github+json",
@@ -1806,7 +1808,7 @@ def analyze_github_portfolio(body: Dict[str, Any], owner_id: str = "legacy_unown
         (
             owner_id,
             owner_id,
-            resume["id"],
+            (resume.get("id", "unattached") if resume else "unattached"),
             username,
             data_source,
             int((user_data or {}).get("public_repos") or len(repositories)),
@@ -1929,7 +1931,7 @@ def get_adaptive_roadmap(body: Dict[str, Any], owner_id: str = "legacy_unowned")
     stage quizzes, skill-wise progress charts, and adaptive remediation tasks.
     """
     resume_id = sanitize_short_field(body.get("resumeId", ""), 80)
-    resume = body.get("resume") or get_resume_by_id(resume_id, owner_id=owner_id) or SAMPLE_RESUMES[0]
+    resume = body.get("resume") or (get_resume_by_id(resume_id, owner_id=owner_id) if resume_id else None) or {"id": "default", "technicalSkills": []}
     target_role = sanitize_short_field(body.get("targetRole", "Full Stack Developer"), 100)
     weekly_hours = int(body.get("weeklyHoursGoal", 10))
     force_regenerate = bool(body.get("regenerate", False))
@@ -2041,7 +2043,7 @@ def get_adaptive_roadmap(body: Dict[str, Any], owner_id: str = "legacy_unowned")
             roadmap_id,
             owner_id,
             owner_id,
-            resume["id"],
+            (resume.get("id", "default") if resume else "default"),
             target_role,
             round((1 / max(1, len(tasks_to_insert))) * 100, 1),
             weekly_hours,
@@ -3083,7 +3085,7 @@ def compare_career_paths(body: Dict[str, Any], owner_id: str = "legacy_unowned")
     Role-to-Role Skill Bridge, and provides cited salary benchmarks.
     """
     resume_id = sanitize_short_field(body.get("resumeId", ""), 80)
-    resume = body.get("resume") or get_resume_by_id(resume_id) or SAMPLE_RESUMES[0]
+    resume = body.get("resume") or (get_resume_by_id(resume_id, owner_id=owner_id) if resume_id else None) or {"technicalSkills": []}
     primary_role = sanitize_short_field(body.get("primaryRole", "Full Stack Developer"), 100)
     secondary_role = sanitize_short_field(body.get("secondaryRole", "Data Engineer"), 100)
 
@@ -3154,7 +3156,7 @@ def compute_placement_readiness_index(body: Dict[str, Any], owner_id: str = "leg
     - Job-market alignment: 10%
     """
     resume_id = sanitize_short_field(body.get("resumeId", ""), 80)
-    resume = body.get("resume") or get_resume_by_id(resume_id, owner_id=owner_id) or SAMPLE_RESUMES[0]
+    resume = body.get("resume") or (get_resume_by_id(resume_id, owner_id=owner_id) if resume_id else None) or {"id": "default", "technicalSkills": []}
     target_role = sanitize_short_field(body.get("targetRole", "Full Stack Developer"), 100)
     custom_weights = body.get("weights") or DEFAULT_PRI_WEIGHTS
 
@@ -3172,8 +3174,22 @@ def compute_placement_readiness_index(body: Dict[str, Any], owner_id: str = "leg
     technical_score = float(match_res["overallScore"])
 
     # 2. Resume Quality (ATS Simulator Score)
-    ats_eval = evaluate_ats_resume({"resume": resume, "targetRole": target_role})
-    resume_quality_score = float(ats_eval["atsScore"])
+    ats_eval: Optional[Dict[str, Any]] = None
+    if resume and (resume.get("rawText") or resume.get("technicalSkills")):
+        try:
+            ats_eval = evaluate_ats_resume({"resume": resume, "targetRole": target_role}, owner_id=owner_id)
+            resume_quality_score = float(ats_eval.get("atsScore", 0.0))
+        except Exception:
+            resume_quality_score = 0.0
+    else:
+        resume_quality_score = 0.0
+
+    if ats_eval:
+        res_status = f"Verified ({len(ats_eval.get('matchedKeywords', []))} keywords, {len(ats_eval.get('formattingChecks', []))} format checks)"
+        res_verified = True
+    else:
+        res_status = "No Resume Parsed (Upload resume to score ATS quality)"
+        res_verified = False
 
     conn = get_connection()
     cursor = conn.cursor()
@@ -3181,7 +3197,7 @@ def compute_placement_readiness_index(body: Dict[str, Any], owner_id: str = "leg
     # 3. Interview Performance (from completed sessions in DB, or transparent baseline)
     cursor.execute(
         "SELECT overall_score, answered_count FROM interview_sessions WHERE owner_id = ? AND resume_id = ? AND answered_count > 0 ORDER BY started_at DESC LIMIT 5",
-        (owner_id, resume["id"]),
+        (owner_id, resume.get("id", "default")),
     )
     int_rows = cursor.fetchall()
     if int_rows:
@@ -3196,7 +3212,7 @@ def compute_placement_readiness_index(body: Dict[str, Any], owner_id: str = "leg
     # 4. Practical Portfolio Evidence (from GitHub analyzer + resume projects)
     cursor.execute(
         "SELECT portfolio_strength_score, github_username FROM github_profiles WHERE owner_id = ? AND resume_id = ? ORDER BY id DESC LIMIT 1",
-        (owner_id, resume["id"]),
+        (owner_id, resume.get("id", "default")),
     )
     gh_row = cursor.fetchone()
     if gh_row:
@@ -3211,7 +3227,7 @@ def compute_placement_readiness_index(body: Dict[str, Any], owner_id: str = "leg
     # 5. Assessment Performance (from Skill Assessment Lab results)
     cursor.execute(
         "SELECT overall_score, topic FROM assessment_results WHERE owner_id = ? AND resume_id = ? ORDER BY id DESC LIMIT 5",
-        (owner_id, resume["id"]),
+        (owner_id, resume.get("id", "default")),
     )
     asmt_rows = cursor.fetchall()
     if asmt_rows:
@@ -3265,8 +3281,8 @@ def compute_placement_readiness_index(body: Dict[str, Any], owner_id: str = "leg
             "weightPct": round((w_res / total_w) * 100, 1),
             "rawScore": resume_quality_score,
             "weightedPoints": round((resume_quality_score * w_res) / total_w, 1),
-            "status": f"Verified ({len(ats_eval['matchedKeywords'])} keywords, {len(ats_eval['formattingChecks'])} format checks)",
-            "isVerified": True,
+            "status": res_status,
+            "isVerified": res_verified,
         },
         {
             "key": "interviewPerformance",
@@ -3369,7 +3385,7 @@ def compute_placement_readiness_index(body: Dict[str, Any], owner_id: str = "leg
         (
             owner_id,
             owner_id,
-            resume["id"],
+            resume.get("id", "default"),
             target_role,
             pri_score,
             readiness_tier,
@@ -3391,13 +3407,13 @@ def compute_placement_readiness_index(body: Dict[str, Any], owner_id: str = "leg
 
     cursor.execute(
         "SELECT pri_score, target_role, created_at FROM placement_readiness_reports WHERE owner_id = ? AND resume_id = ? ORDER BY id DESC LIMIT 8",
-        (owner_id, resume["id"]),
+        (owner_id, resume.get("id", "default")),
     )
     hist_rows = cursor.fetchall()
     conn.close()
 
     return {
-        "resumeId": resume["id"],
+        "resumeId": resume.get("id", "default"),
         "candidateName": resume.get("contact", {}).get("name", "Candidate"),
         "targetRole": target_role,
         "priScore": pri_score,
