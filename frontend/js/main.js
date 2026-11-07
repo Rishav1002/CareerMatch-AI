@@ -189,9 +189,36 @@ function attachShellListeners() {
   }
 
   // Theme Toggle Buttons (guarded with bindOnce to prevent double-toggling)
+  bindOnce(document.getElementById("topbarThemeToggleBtn"), "click", toggleAppTheme);
   bindOnce(document.getElementById("themeToggleBtn"), "click", toggleAppTheme);
   bindOnce(document.getElementById("landingThemeToggleBtn"), "click", toggleAppTheme);
   bindOnce(document.getElementById("settingsThemeToggleBtn"), "click", toggleAppTheme);
+
+  // Language Segmented Control (EN/HI)
+  const langBtnEn = document.getElementById("langBtnEn");
+  const langBtnHi = document.getElementById("langBtnHi");
+
+  function syncLangButtons(lang) {
+    if (lang === "hi") {
+      langBtnHi?.classList.add("active");
+      langBtnEn?.classList.remove("active");
+    } else {
+      langBtnEn?.classList.add("active");
+      langBtnHi?.classList.remove("active");
+    }
+  }
+
+  langBtnEn?.addEventListener("click", () => {
+    setLanguage("en");
+    syncLangButtons("en");
+  });
+
+  langBtnHi?.addEventListener("click", () => {
+    setLanguage("hi");
+    syncLangButtons("hi");
+  });
+
+  syncLangButtons(store.get("lang") || "en");
 
   // Settings Actions: Export JSON
   document.getElementById("settingsExportJsonBtn")?.addEventListener("click", () => {

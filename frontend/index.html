@@ -37,6 +37,41 @@
 <link href="/frontend/css/styles.css" rel="stylesheet"/>
 </head>
 <body>
+<!-- SVG Icon Sprite Definitions -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none;" aria-hidden="true">
+  <symbol id="cm-logo" viewBox="0 0 200 200">
+    <defs>
+      <linearGradient id="cmGoldGradSymbol" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#FDE047" />
+        <stop offset="35%" stop-color="#FBBF24" />
+        <stop offset="70%" stop-color="#F97316" />
+        <stop offset="100%" stop-color="#EA580C" />
+      </linearGradient>
+    </defs>
+    <g transform="translate(100, 100)">
+      <g transform="rotate(0)">
+        <path d="M -24 -76 C -8 -88, 20 -86, 46 -68 C 64 -54, 70 -36, 64 -20 C 58 -6, 44 4, 32 -4 C 22 -12, 22 -26, 28 -38 C 34 -50, 24 -64, 4 -68 C -12 -72, -22 -68, -24 -76 Z" fill="url(#cmGoldGradSymbol)" opacity="0.95" />
+        <path d="M -50 -35 C -28 -50, -4 -42, 6 -24 C 14 -8, 8 10, -4 20 C -16 28, -32 24, -38 10 C -44 -4, -36 -18, -22 -22 C -10 -26, -18 -38, -50 -35 Z" fill="url(#cmGoldGradSymbol)" opacity="0.95" />
+        <circle cx="6" cy="-76" r="6.5" fill="#FDE047" />
+      </g>
+      <g transform="rotate(90)">
+        <path d="M -24 -76 C -8 -88, 20 -86, 46 -68 C 64 -54, 70 -36, 64 -20 C 58 -6, 44 4, 32 -4 C 22 -12, 22 -26, 28 -38 C 34 -50, 24 -64, 4 -68 C -12 -72, -22 -68, -24 -76 Z" fill="url(#cmGoldGradSymbol)" opacity="0.95" />
+        <path d="M -50 -35 C -28 -50, -4 -42, 6 -24 C 14 -8, 8 10, -4 20 C -16 28, -32 24, -38 10 C -44 -4, -36 -18, -22 -22 C -10 -26, -18 -38, -50 -35 Z" fill="url(#cmGoldGradSymbol)" opacity="0.95" />
+        <circle cx="6" cy="-76" r="6.5" fill="#FDE047" />
+      </g>
+      <g transform="rotate(180)">
+        <path d="M -24 -76 C -8 -88, 20 -86, 46 -68 C 64 -54, 70 -36, 64 -20 C 58 -6, 44 4, 32 -4 C 22 -12, 22 -26, 28 -38 C 34 -50, 24 -64, 4 -68 C -12 -72, -22 -68, -24 -76 Z" fill="url(#cmGoldGradSymbol)" opacity="0.95" />
+        <path d="M -50 -35 C -28 -50, -4 -42, 6 -24 C 14 -8, 8 10, -4 20 C -16 28, -32 24, -38 10 C -44 -4, -36 -18, -22 -22 C -10 -26, -18 -38, -50 -35 Z" fill="url(#cmGoldGradSymbol)" opacity="0.95" />
+        <circle cx="6" cy="-76" r="6.5" fill="#FDE047" />
+      </g>
+      <g transform="rotate(270)">
+        <path d="M -24 -76 C -8 -88, 20 -86, 46 -68 C 64 -54, 70 -36, 64 -20 C 58 -6, 44 4, 32 -4 C 22 -12, 22 -26, 28 -38 C 34 -50, 24 -64, 4 -68 C -12 -72, -22 -68, -24 -76 Z" fill="url(#cmGoldGradSymbol)" opacity="0.95" />
+        <path d="M -50 -35 C -28 -50, -4 -42, 6 -24 C 14 -8, 8 10, -4 20 C -16 28, -32 24, -38 10 C -44 -4, -36 -18, -22 -22 C -10 -26, -18 -38, -50 -35 Z" fill="url(#cmGoldGradSymbol)" opacity="0.95" />
+        <circle cx="6" cy="-76" r="6.5" fill="#FDE047" />
+      </g>
+    </g>
+  </symbol>
+</svg>
 <!-- Boot Failure Safety Net Banner -->
 <div class="boot-failure-banner hidden" id="cmBootFailureBanner" role="alert">
 <span>Something failed to load.</span>
@@ -51,7 +86,7 @@
 <!-- Rail Header: Brand + Collapse Toggle -->
 <div class="rail-header">
 <a class="rail-brand" href="#/landing" title="CareerMatch AI">
-<span class="brand-mark">CM</span>
+<svg class="brand-logo" width="28" height="28" viewBox="0 0 200 200" aria-hidden="true"><use href="#cm-logo"/></svg>
 <div class="brand-titles">
 <span class="brand-name">CareerMatch</span>
 <span class="brand-edition">AI</span>
@@ -178,13 +213,22 @@
 <span class="cmd-text">Jump...</span>
 <kbd class="cmd-shortcut-badge">⌘K</kbd>
 </button>
-<!-- Ask AI with Usage Meter -->
-<button aria-label="Ask Career Advisor AI" class="btn btn-ghost btn-sm ask-ai-topbar-btn" id="askAiTopBtn" type="button">
-<svg fill="none" height="15" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="15">
-<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+<!-- Theme Toggle in Topbar (Bug 7) -->
+<button aria-label="Toggle visual theme (Light / Dark)" class="btn btn-ghost btn-icon topbar-theme-toggle-btn" id="topbarThemeToggleBtn" type="button" title="Toggle Theme (Light / Dark)">
+<svg class="theme-icon-sun" fill="none" height="18" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="18">
+<circle cx="12" cy="12" r="5"></circle>
+<line x1="12" x2="12" y1="1" y2="3"></line>
+<line x1="12" x2="12" y1="21" y2="23"></line>
+<line x1="4.22" x2="5.64" y1="4.22" y2="5.64"></line>
+<line x1="18.36" x2="19.78" y1="18.36" y2="19.78"></line>
+<line x1="1" x2="3" y1="12" y2="12"></line>
+<line x1="21" x2="23" y1="12" y2="12"></line>
+<line x1="4.22" x2="5.64" y1="19.78" y2="18.36"></line>
+<line x1="18.36" x2="19.78" y1="5.64" y2="4.22"></line>
 </svg>
-<span>Ask AI</span>
-<span class="usage-meter-badge" id="askAiUsageMeter">5 left</span>
+<svg class="theme-icon-moon hidden" fill="none" height="18" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="18">
+<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+</svg>
 </button>
 <!-- Notifications Drawer Trigger -->
 <button aria-label="View Field Updates" class="btn btn-ghost btn-sm btn-icon pos-relative" id="notifTriggerBtn" title="Notifications" type="button">
@@ -194,28 +238,32 @@
 </svg>
 <span class="pos-absolute rounded-full" id="notifBadgeCount"></span>
 </button>
-<!-- Avatar Dropdown Menu -->
+<!-- Avatar Dropdown Menu (Bug 10) -->
 <div class="pos-relative">
 <button aria-expanded="false" aria-label="Open User Menu" class="user-avatar-btn" id="userAvatarMenuBtn" type="button">
-<span id="topbarAvatarInitials">ST</span>
+<span id="topbarAvatarInitials">G</span>
 </button>
 <div class="user-avatar-dropdown" id="userAvatarDropdown" role="menu">
-<div class="border-bottom">
-<div class="font-semibold text-sm" id="dropdownUserName">Guest Student</div>
-<div class="text-xs text-tertiary" id="dropdownUserEmail">guest@careermatch.ai</div>
+<div class="p-2 border-bottom">
+<div class="font-semibold text-sm text-primary" id="dropdownUserName">Guest User</div>
+<div class="text-xs text-tertiary" id="dropdownUserEmail">Transient Guest Session</div>
 </div>
-<button class="avatar-menu-item" id="themeToggleBtn" type="button">
-<svg fill="none" height="15" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="15"><circle cx="12" cy="12" r="5"></circle><line x1="12" x2="12" y1="1" y2="3"></line><line x1="12" x2="12" y1="21" y2="23"></line><line x1="4.22" x2="5.64" y1="4.22" y2="5.64"></line><line x1="18.36" x2="19.78" y1="18.36" y2="19.78"></line><line x1="1" x2="3" y1="12" y2="12"></line><line x1="21" x2="23" y1="12" y2="12"></line><line x1="4.22" x2="5.64" y1="19.78" y2="18.36"></line><line x1="18.36" x2="19.78" y1="5.64" y2="4.22"></line></svg>
-<span>Toggle Theme</span>
-</button>
-<button class="avatar-menu-item" id="langToggleBtn" type="button">
-<span class="font-mono text-xs font-bold text-center">HI</span>
-<span>Switch to Hindi</span>
-</button>
-<a class="avatar-menu-item" href="#/profile">
+<a class="avatar-menu-item" href="#/profile" id="dropdownProfileLink">
 <svg fill="none" height="15" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="15"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
 <span>My Profile</span>
 </a>
+<a class="avatar-menu-item" href="#/settings" id="dropdownSettingsLink">
+<svg fill="none" height="15" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="15"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+<span>Settings &amp; Privacy</span>
+</a>
+<div class="avatar-menu-divider"></div>
+<div class="p-2">
+<div class="text-xs text-tertiary mb-1 font-semibold">Language / भाषा</div>
+<div class="segmented-nav d-flex w-full" id="avatarLangSegmented">
+<button class="tab-btn active text-xs flex-1" id="langBtnEn" type="button">English</button>
+<button class="tab-btn text-xs flex-1" id="langBtnHi" type="button">हिन्दी</button>
+</div>
+</div>
 <div class="avatar-menu-divider"></div>
 <button class="avatar-menu-item" id="openAuthModalBtn" type="button">
 <svg fill="none" height="15" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="15"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" x2="3" y1="12" y2="12"></line></svg>
@@ -235,7 +283,7 @@
 <!-- Minimal Landing Topbar (Section 13 B) -->
 <header class="landing-topbar">
 <a class="rail-brand link-muted" href="#/landing">
-<span class="brand-mark">CM</span>
+<svg class="brand-logo" width="28" height="28" viewBox="0 0 200 200" aria-hidden="true"><use href="#cm-logo"/></svg>
 <span class="brand-name text-md font-bold text-primary ml-1">CareerMatch AI</span>
 </a>
 <nav class="landing-nav-links d-flex items-center gap-sm">
@@ -381,7 +429,7 @@
 <div class="d-grid grid-auto-fit gap-xl max-w-wide">
 <div>
 <div class="rail-brand mb-15">
-<span class="brand-mark">CM</span>
+<svg class="brand-logo" width="28" height="28" viewBox="0 0 200 200" aria-hidden="true"><use href="#cm-logo"/></svg>
 <span class="brand-name text-md font-bold text-primary ml-1">CareerMatch AI</span>
 </div>
 <p class="text-sm text-secondary m-0">
@@ -438,7 +486,7 @@
 <div class="auth-glass-card">
 <div class="text-center mb-3">
 <a class="rail-brand justify-center mb-1 link-muted" href="#/landing">
-<span class="brand-mark">CM</span>
+<svg class="brand-logo" width="28" height="28" viewBox="0 0 200 200" aria-hidden="true"><use href="#cm-logo"/></svg>
 <span class="brand-name text-lg font-bold text-primary ml-1">CareerMatch AI</span>
 </a>
 <p class="text-sm text-secondary m-0" id="authHeaderSubtitle">
