@@ -1046,3 +1046,36 @@
 .opacity-1 { opacity: 1; }
 .overflow-y-auto { overflow-y: auto; }
 .max-h-480 { max-height: 480px; }
+
+/* Non-intrusive Storage & Cookie Notice Banner */
+.storage-notice-banner {
+  position: fixed;
+  bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - var(--space-6));
+  max-width: 680px;
+  z-index: var(--z-modal);
+  background: var(--bg-overlay);
+  backdrop-filter: var(--overlay-blur);
+  -webkit-backdrop-filter: var(--overlay-blur);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-3) var(--space-4);
+}
+
+.storage-notice-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+@media (max-width: 600px) {
+  .storage-notice-banner {
+    bottom: calc(var(--bottom-nav-height, 60px) + var(--space-3));
+    width: calc(100% - var(--space-4));
+  }
+}

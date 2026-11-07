@@ -1215,3 +1215,203 @@ def get_ai_usage(user_id: str, is_authenticated: bool = False) -> Dict[str, Any]
         "limit": limit,
         "resetAt": tomorrow_str,
     }
+
+
+def export_owner_records(owner_id: str, is_authenticated: bool = False) -> Dict[str, Any]:
+    """
+    Export all data associated with an owner (guest or authenticated user).
+    Fulfills Data Portability requirements under India's DPDP Act 2023 & GDPR.
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    export_payload: Dict[str, Any] = {
+        "metadata": {
+            "ownerId": owner_id,
+            "isAuthenticated": is_authenticated,
+            "exportedAt": datetime.utcnow().isoformat() + "Z",
+            "regulatoryNotice": "Generated under the Digital Personal Data Protection Act 2023 (DPDP Act) and IT (SPDI) Rules 2011. Contains all personal career data and activity records.",
+            "formatVersion": "1.0",
+        },
+        "userProfile": None,
+        "studentProfile": None,
+        "resumes": [],
+        "analyses": [],
+        "roadmaps": [],
+        "interviews": [],
+        "assessments": [],
+        "githubProfiles": [],
+        "careerComparisons": [],
+        "readinessReports": [],
+    }
+
+    try:
+        # 1. User & Student Profile if authenticated
+        if is_authenticated:
+            cursor.execute(
+                "SELECT id, full_name, email, role, created_at, last_login_at FROM users WHERE id = ?",
+                (owner_id,)
+            )
+            u_row = cursor.fetchone()
+            if u_row:
+                export_payload["userProfile"] = dict(u_row)
+
+            cursor.execute("SELECT * FROM student_profiles WHERE user_id = ?", (owner_id,))
+            sp_row = cursor.fetchone()
+            if sp_row:
+                export_payload["studentProfile"] = dict(sp_row)
+
+        # 2. Resumes
+        cursor.execute("SELECT * FROM resumes WHERE owner_id = ? ORDER BY created_at DESC", (owner_id,))
+        for r_row in cursor.fetchall():
+            res_dict = dict(r_row)
+            for k in ["education_json", "skills_json", "projects_json", "experience_json", "certifications_json", "soft_skills_json", "skill_evidence_json"]:
+                if k in res_dict and isinstance(res_dict[k], str):
+                    try:
+                        res_dict[k.replace("_json", "")] = json.loads(res_dict[k])
+                        del res_dict[k]
+                    except Exception:
+                        pass
+            export_payload["resumes"].append(res_dict)
+
+        # 3. Analyses
+        cursor.execute("SELECT * FROM analyses WHERE owner_id = ? ORDER BY created_at DESC", (owner_id,))
+        for a_row in cursor.fetchall():
+            an_dict = dict(a_row)
+            for k in ["matched_skills_json", "partial_skills_json", "missing_skills_json", "skill_gaps_json", "roadmap_json", "courses_json", "projects_rec_json", "resume_improvements_json"]:
+                if k in an_dict and isinstance(an_dict[k], str):
+                    try:
+                        an_dict[k.replace("_json", "")] = json.loads(an_dict[k])
+                        del an_dict[k]
+                    except Exception:
+                        pass
+            export_payload["analyses"].append(an_dict)
+
+        # 4. Roadmaps
+        cursor.execute("SELECT * FROM learning_roadmaps WHERE owner_id = ? ORDER BY updated_at DESC", (owner_id,))
+        for lr_row in cursor.fetchall():
+            lr_dict = dict(lr_row)
+            for k in ["stages_json", "quiz_history_json", "adaptive_notes_json"]:
+                if k in lr_dict and isinstance(lr_dict[k], str):
+                    try:
+                        lr_dict[k.replace("_json", "")] = json.loads(lr_dict[k])
+                        del lr_dict[k]
+                    except Exception:
+                        pass
+            export_payload["roadmaps"].append(lr_dict)
+
+        # 5. Interviews
+        cursor.execute("SELECT * FROM interview_sessions WHERE owner_id = ? ORDER BY started_at DESC", (owner_id,))
+        for is_row in cursor.fetchall():
+            is_dict = dict(is_row)
+            session_id = is_dict.get("id")
+            if session_id:
+                cursor.execute("SELECT * FROM interview_questions_answers WHERE session_id = ? ORDER BY question_index ASC", (session_id,))
+                is_dict["questions"] = [dict(q) for q in cursor.fetchall()]
+            export_payload["interviews"].append(is_dict)
+
+        # 6. Assessments
+        cursor.execute("SELECT * FROM assessment_sessions WHERE owner_id = ? ORDER BY created_at DESC", (owner_id,))
+        for ass_row in cursor.fetchall():
+            ass_dict = dict(ass_row)
+            export_payload["assessments"].append(ass_dict)
+
+        # 7. GitHub
+        cursor.execute("SELECT * FROM github_profiles WHERE owner_id = ? ORDER BY analyzed_at DESC", (owner_id,))
+        for gh_row in cursor.fetchall():
+            export_payload["githubProfiles"].append(dict(gh_row))
+
+        # 8. Career comparisons
+        cursor.execute("SELECT * FROM career_comparisons WHERE owner_id = ? ORDER BY created_at DESC", (owner_id,))
+        for cc_row in cursor.fetchall():
+            export_payload["careerComparisons"].append(dict(cc_row))
+
+        # 9. PRI
+        cursor.execute("SELECT * FROM placement_readiness_reports WHERE owner_id = ? ORDER BY created_at DESC", (owner_id,))
+        for pri_row in cursor.fetchall():
+            export_payload["readinessReports"].append(dict(pri_row))
+
+    finally:
+        conn.close()
+
+    return export_payload
+
+
+def delete_owner_records(owner_id: str, is_authenticated: bool = False) -> Dict[str, Any]:
+    """
+    Permanently delete all user records and associated entities across the entire database.
+    Fulfills Right to Erasure / Right to be Forgotten under India's DPDP Act 2023 & GDPR.
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    deleted_counts: Dict[str, int] = {}
+    try:
+        # 1. Clean child records first to ensure referential integrity on all engines
+        cursor.execute(
+            "DELETE FROM interview_questions_answers WHERE session_id IN (SELECT id FROM interview_sessions WHERE owner_id = ?)",
+            (owner_id,)
+        )
+        deleted_counts["interview_questions_answers"] = getattr(cursor, "rowcount", 0)
+
+        cursor.execute(
+            "DELETE FROM learning_tasks WHERE roadmap_id IN (SELECT id FROM learning_roadmaps WHERE owner_id = ?)",
+            (owner_id,)
+        )
+        deleted_counts["learning_tasks"] = getattr(cursor, "rowcount", 0)
+
+        cursor.execute(
+            "DELETE FROM skill_records WHERE resume_id IN (SELECT id FROM resumes WHERE owner_id = ?)",
+            (owner_id,)
+        )
+        deleted_counts["skill_records"] = getattr(cursor, "rowcount", 0)
+
+        cursor.execute(
+            "DELETE FROM skill_gaps WHERE resume_id IN (SELECT id FROM resumes WHERE owner_id = ?)",
+            (owner_id,)
+        )
+        deleted_counts["skill_gaps"] = getattr(cursor, "rowcount", 0)
+
+        # 2. Main owner-scoped tables
+        owner_tables = [
+            "resumes",
+            "analyses",
+            "resume_analyses",
+            "roadmap_progress",
+            "job_matches",
+            "interview_sessions",
+            "github_profiles",
+            "learning_roadmaps",
+            "assessment_sessions",
+            "assessment_results",
+            "career_comparisons",
+            "placement_readiness_reports",
+        ]
+
+        for tbl in owner_tables:
+            cursor.execute(f"DELETE FROM {tbl} WHERE owner_id = ?", (owner_id,))
+            deleted_counts[tbl] = getattr(cursor, "rowcount", 0)
+
+        # Purge AI usage limits
+        cursor.execute("DELETE FROM ai_usage WHERE user_id = ?", (owner_id,))
+        deleted_counts["ai_usage"] = getattr(cursor, "rowcount", 0)
+
+        # If authenticated, remove registered profile & credentials
+        if is_authenticated:
+            cursor.execute("DELETE FROM student_profiles WHERE user_id = ?", (owner_id,))
+            deleted_counts["student_profiles"] = getattr(cursor, "rowcount", 0)
+            cursor.execute("DELETE FROM users WHERE id = ?", (owner_id,))
+            deleted_counts["users"] = getattr(cursor, "rowcount", 0)
+
+        conn.commit()
+    except Exception as exc:
+        conn.rollback()
+        raise exc
+    finally:
+        conn.close()
+
+    return {
+        "status": "success",
+        "message": "All personal data has been permanently erased.",
+        "deletedCounts": deleted_counts,
+    }

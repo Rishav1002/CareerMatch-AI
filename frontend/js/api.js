@@ -156,6 +156,8 @@ export const api = {
   profile: {
     get: () => request("/api/profile", { method: "GET" }),
     update: (data) => request("/api/profile", { method: "PUT", body: data }),
+    export: () => request("/api/profile/export", { method: "GET" }),
+    delete: () => request("/api/profile/delete", { method: "DELETE" }),
   },
   dashboard: {
     get: () => request("/api/dashboard", { method: "GET" }),

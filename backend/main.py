@@ -76,6 +76,8 @@ from backend.database import (
     check_and_increment_ai_usage,
     claim_guest_data,
     delete_analysis_record,
+    delete_owner_records,
+    export_owner_records,
     get_ai_usage,
     get_analysis_by_id,
     get_connection,
@@ -759,6 +761,45 @@ async def api_update_profile(
         return {"profile": update_student_profile(body, owner_id if is_auth else "guest")}
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.get("/api/profile/export")
+async def api_profile_export(
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Response:
+    """Export complete user data payload for data portability under DPDP Act & GDPR."""
+    owner_id, is_auth = owner_info
+    data = export_owner_records(owner_id, is_authenticated=is_auth)
+    content = json.dumps(data, indent=2, ensure_ascii=False)
+    timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    filename = f"careermatch_data_export_{timestamp}.json"
+    return Response(
+        content=content,
+        media_type="application/json",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "Cache-Control": "no-store, no-cache, must-revalidate",
+        },
+    )
+
+
+@app.delete("/api/profile/delete")
+async def api_profile_delete(
+    response: Response,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    """Permanently delete all user records from database (Right to Erasure)."""
+    owner_id, is_auth = owner_info
+    result = delete_owner_records(owner_id, is_authenticated=is_auth)
+    response.delete_cookie(key="cm_sid", path="/")
+    return result
+
+
+@app.post("/api/auth/logout")
+async def api_auth_logout(response: Response) -> Dict[str, Any]:
+    """Clear session cookies and authenticate status."""
+    response.delete_cookie(key="cm_sid", path="/")
+    return {"status": "ok", "message": "Signed out successfully."}
 
 
 @app.post("/api/jobs/market")
