@@ -132,7 +132,7 @@ async function request(path, options = {}, maxRetries = 2) {
         showWakeUpBanner();
       }, 2500);
 
-      const response = await fetch(path, { ...options, headers });
+      const response = await fetch(path, { credentials: "same-origin", ...options, headers });
       clearTimeout(wakeTimer);
 
       let data = null;

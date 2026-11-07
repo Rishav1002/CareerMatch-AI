@@ -959,9 +959,9 @@ def _build_tailored_interview_questions(
     ]
 
 
-def start_interview_session(body: Dict[str, Any]) -> Dict[str, Any]:
+def start_interview_session(body: Dict[str, Any], owner_id: str = "legacy_unowned") -> Dict[str, Any]:
     resume_id = sanitize_short_field(body.get("resumeId", ""), 80)
-    resume = body.get("resume") or get_resume_by_id(resume_id) or SAMPLE_RESUMES[0]
+    resume = body.get("resume") or get_resume_by_id(resume_id, owner_id=owner_id) or SAMPLE_RESUMES[0]
     target_role = sanitize_short_field(body.get("targetRole", "Full Stack Developer"), 100)
     goal_company = sanitize_short_field(body.get("goalCompany", "Industry Tech Bar"), 100)
     interview_round = sanitize_short_field(body.get("interviewRound", "Technical"), 40)
@@ -976,11 +976,11 @@ def start_interview_session(body: Dict[str, Any]) -> Dict[str, Any]:
     cursor.execute(
         """
         INSERT INTO interview_sessions (
-            id, resume_id, target_role, goal_company, interview_round,
+            id, owner_id, user_id, resume_id, target_role, goal_company, interview_round,
             difficulty, status, total_questions, answered_count, started_at
-        ) VALUES (?, ?, ?, ?, ?, ?, 'in_progress', ?, 0, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'in_progress', ?, 0, ?)
         """,
-        (session_id, resume["id"], target_role, goal_company, interview_round, difficulty, len(questions), now_iso),
+        (session_id, owner_id, owner_id, resume["id"], target_role, goal_company, interview_round, difficulty, len(questions), now_iso),
     )
 
     for q in questions:
@@ -1010,7 +1010,7 @@ def start_interview_session(body: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def submit_interview_answer(body: Dict[str, Any]) -> Dict[str, Any]:
+def submit_interview_answer(body: Dict[str, Any], owner_id: str = "legacy_unowned") -> Dict[str, Any]:
     session_id = sanitize_short_field(body.get("sessionId", ""), 80)
     question_index = int(body.get("questionIndex", 1))
     answer_text = sanitize_plain_text(body.get("answerText", ""), 8000)
@@ -1024,7 +1024,7 @@ def submit_interview_answer(body: Dict[str, Any]) -> Dict[str, Any]:
 
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM interview_sessions WHERE id = ?", (session_id,))
+    cursor.execute("SELECT * FROM interview_sessions WHERE id = ? AND owner_id = ?", (session_id, owner_id))
     sess = cursor.fetchone()
     if not sess:
         conn.close()
@@ -1267,16 +1267,21 @@ Score each dimension from 0 to 100 honestly. If the answer is very brief or vagu
     }
 
 
-def get_interview_history(resume_id: Optional[str] = None) -> Dict[str, Any]:
+def get_interview_history(resume_id: Optional[str] = None, owner_id: Optional[str] = None) -> Dict[str, Any]:
+    if not owner_id or owner_id == "legacy_unowned":
+        return {"history": []}
     conn = get_connection()
     cursor = conn.cursor()
     if resume_id:
         cursor.execute(
-            "SELECT * FROM interview_sessions WHERE resume_id = ? ORDER BY started_at DESC LIMIT 15",
-            (resume_id,),
+            "SELECT * FROM interview_sessions WHERE owner_id = ? AND resume_id = ? ORDER BY started_at DESC LIMIT 15",
+            (owner_id, resume_id),
         )
     else:
-        cursor.execute("SELECT * FROM interview_sessions ORDER BY started_at DESC LIMIT 15")
+        cursor.execute(
+            "SELECT * FROM interview_sessions WHERE owner_id = ? ORDER BY started_at DESC LIMIT 15",
+            (owner_id,),
+        )
     rows = cursor.fetchall()
 
     sessions: List[Dict[str, Any]] = []
@@ -1595,7 +1600,7 @@ GITHUB_LANG_TO_SKILL: Dict[str, List[str]] = {
 }
 
 
-def analyze_github_portfolio(body: Dict[str, Any]) -> Dict[str, Any]:
+def analyze_github_portfolio(body: Dict[str, Any], owner_id: str = "legacy_unowned") -> Dict[str, Any]:
     """
     Module 4: GitHub Skill Verification & Portfolio Analyzer.
     Fetches public repos from GitHub REST API, verifies resume skill claims
@@ -1786,12 +1791,14 @@ def analyze_github_portfolio(body: Dict[str, Any]) -> Dict[str, Any]:
     cursor.execute(
         """
         INSERT INTO github_profiles (
-            resume_id, github_username, data_source, public_repos_count, followers_count,
+            owner_id, user_id, resume_id, github_username, data_source, public_repos_count, followers_count,
             portfolio_strength_score, verified_skills_json, unverified_resume_skills_json,
             top_languages_json, repositories_json, readme_quality_report_json, recommended_projects_json, analyzed_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
+            owner_id,
+            owner_id,
             resume["id"],
             username,
             data_source,
@@ -1908,23 +1915,23 @@ STAGE_QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
 }
 
 
-def get_adaptive_roadmap(body: Dict[str, Any]) -> Dict[str, Any]:
+def get_adaptive_roadmap(body: Dict[str, Any], owner_id: str = "legacy_unowned") -> Dict[str, Any]:
     """
     Module 5: Adaptive AI Learning Roadmap.
     Creates or retrieves a persistent, task-driven roadmap with daily/weekly tasks,
     stage quizzes, skill-wise progress charts, and adaptive remediation tasks.
     """
     resume_id = sanitize_short_field(body.get("resumeId", ""), 80)
-    resume = body.get("resume") or get_resume_by_id(resume_id) or SAMPLE_RESUMES[0]
+    resume = body.get("resume") or get_resume_by_id(resume_id, owner_id=owner_id) or SAMPLE_RESUMES[0]
     target_role = sanitize_short_field(body.get("targetRole", "Full Stack Developer"), 100)
     weekly_hours = int(body.get("weeklyHoursGoal", 10))
     force_regenerate = bool(body.get("regenerate", False))
 
-    roadmap_id = f"rm-{resume['id']}-{re.sub(r'[^a-z0-9]+', '-', target_role.lower()).strip('-')}"
+    roadmap_id = f"rm-{owner_id[:8]}-{resume['id']}-{re.sub(r'[^a-z0-9]+', '-', target_role.lower()).strip('-')}"
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM learning_roadmaps WHERE id = ?", (roadmap_id,))
+    cursor.execute("SELECT * FROM learning_roadmaps WHERE id = ? AND owner_id = ?", (roadmap_id, owner_id))
     existing_rm = cursor.fetchone()
 
     if existing_rm and not force_regenerate:
@@ -2019,12 +2026,14 @@ def get_adaptive_roadmap(body: Dict[str, Any]) -> Dict[str, Any]:
     cursor.execute(
         """
         INSERT OR REPLACE INTO learning_roadmaps (
-            id, resume_id, target_role, overall_progress_pct, weekly_hours_goal,
+            id, owner_id, user_id, resume_id, target_role, overall_progress_pct, weekly_hours_goal,
             stages_json, quiz_history_json, adaptive_notes_json, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, '[]', '[]', ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, '[]', '[]', ?)
         """,
         (
             roadmap_id,
+            owner_id,
+            owner_id,
             resume["id"],
             target_role,
             round((1 / max(1, len(tasks_to_insert))) * 100, 1),
@@ -2055,14 +2064,21 @@ def get_adaptive_roadmap(body: Dict[str, Any]) -> Dict[str, Any]:
     return _format_adaptive_roadmap_response(rm_row, task_rows)
 
 
-def toggle_learning_task(body: Dict[str, Any]) -> Dict[str, Any]:
+def toggle_learning_task(body: Dict[str, Any], owner_id: str = "legacy_unowned") -> Dict[str, Any]:
     task_id = sanitize_short_field(body.get("taskId", ""), 100)
     completed = 1 if body.get("completed") else 0
     now_iso = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
 
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT roadmap_id FROM learning_tasks WHERE id = ?", (task_id,))
+    cursor.execute(
+        """
+        SELECT t.roadmap_id FROM learning_tasks t
+        JOIN learning_roadmaps r ON r.id = t.roadmap_id
+        WHERE t.id = ? AND r.owner_id = ?
+        """,
+        (task_id, owner_id),
+    )
     row = cursor.fetchone()
     if not row:
         conn.close()
@@ -2091,7 +2107,7 @@ def toggle_learning_task(body: Dict[str, Any]) -> Dict[str, Any]:
     return _format_adaptive_roadmap_response(rm_row, task_rows)
 
 
-def submit_roadmap_stage_quiz(body: Dict[str, Any]) -> Dict[str, Any]:
+def submit_roadmap_stage_quiz(body: Dict[str, Any], owner_id: str = "legacy_unowned") -> Dict[str, Any]:
     """
     Evaluate a stage quiz in Module 5. If score < 80%, automatically inject an
     adaptive remediation task into the student's roadmap for weak areas.
@@ -2102,7 +2118,7 @@ def submit_roadmap_stage_quiz(body: Dict[str, Any]) -> Dict[str, Any]:
 
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM learning_roadmaps WHERE id = ?", (roadmap_id,))
+    cursor.execute("SELECT * FROM learning_roadmaps WHERE id = ? AND owner_id = ?", (roadmap_id, owner_id))
     rm_row = cursor.fetchone()
     if not rm_row:
         conn.close()
@@ -2414,7 +2430,7 @@ ASSESSMENT_TOPICS_BANK: Dict[str, Dict[str, Any]] = {
 }
 
 
-def generate_skill_assessment(body: Dict[str, Any]) -> Dict[str, Any]:
+def generate_skill_assessment(body: Dict[str, Any], owner_id: str = "legacy_unowned") -> Dict[str, Any]:
     """
     Module 6: AI Skill Assessment Lab — Generate assessment session.
     Supports Python, Java, JavaScript, SQL, DSA, Aptitude, Technical Fundamentals.
@@ -2501,11 +2517,13 @@ def generate_skill_assessment(body: Dict[str, Any]) -> Dict[str, Any]:
     cursor.execute(
         """
         INSERT INTO assessment_sessions (
-            id, resume_id, topic, difficulty, questions_json, coding_challenge_json, status, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, 'generated', ?)
+            id, owner_id, user_id, resume_id, topic, difficulty, questions_json, coding_challenge_json, status, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'generated', ?)
         """,
         (
             session_id,
+            owner_id,
+            owner_id,
             resume_id,
             topic,
             difficulty,
@@ -2613,14 +2631,14 @@ def _evaluate_code_safely_without_exec(
     }
 
 
-def submit_skill_assessment(body: Dict[str, Any]) -> Dict[str, Any]:
+def submit_skill_assessment(body: Dict[str, Any], owner_id: str = "legacy_unowned") -> Dict[str, Any]:
     session_id = sanitize_short_field(body.get("sessionId", ""), 80)
     mcq_answers = body.get("mcqAnswers", [])
     code_submission = sanitize_plain_text(body.get("codeSubmission", ""), 15000)
 
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM assessment_sessions WHERE id = ?", (session_id,))
+    cursor.execute("SELECT * FROM assessment_sessions WHERE id = ? AND owner_id = ?", (session_id, owner_id))
     sess = cursor.fetchone()
     if not sess:
         conn.close()
@@ -2670,13 +2688,15 @@ def submit_skill_assessment(body: Dict[str, Any]) -> Dict[str, Any]:
     cursor.execute(
         """
         INSERT INTO assessment_results (
-            session_id, resume_id, topic, difficulty, overall_score, mcq_score,
+            session_id, owner_id, user_id, resume_id, topic, difficulty, overall_score, mcq_score,
             coding_score, correct_count, total_questions, evaluation_mode,
             question_reviews_json, coding_review_json, weak_subtopics_json, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             session_id,
+            owner_id,
+            owner_id,
             sess["resume_id"],
             sess["topic"],
             sess["difficulty"],
@@ -2712,16 +2732,18 @@ def submit_skill_assessment(body: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def get_assessment_history(resume_id: Optional[str] = None) -> Dict[str, Any]:
+def get_assessment_history(resume_id: Optional[str] = None, owner_id: Optional[str] = None) -> Dict[str, Any]:
+    if not owner_id or owner_id == "legacy_unowned":
+        return {"results": []}
     conn = get_connection()
     cursor = conn.cursor()
     if resume_id:
         cursor.execute(
-            "SELECT * FROM assessment_results WHERE resume_id = ? ORDER BY id DESC LIMIT 15",
-            (resume_id,),
+            "SELECT * FROM assessment_results WHERE owner_id = ? AND resume_id = ? ORDER BY id DESC LIMIT 15",
+            (owner_id, resume_id),
         )
     else:
-        cursor.execute("SELECT * FROM assessment_results ORDER BY id DESC LIMIT 15")
+        cursor.execute("SELECT * FROM assessment_results WHERE owner_id = ? ORDER BY id DESC LIMIT 15", (owner_id,))
     rows = cursor.fetchall()
     conn.close()
 
@@ -2857,7 +2879,7 @@ CAREER_SALARY_BENCHMARKS: Dict[str, Dict[str, Any]] = {
 }
 
 
-def compare_career_paths(body: Dict[str, Any]) -> Dict[str, Any]:
+def compare_career_paths(body: Dict[str, Any], owner_id: str = "legacy_unowned") -> Dict[str, Any]:
     """
     Module 7: Career Path & Salary Intelligence.
     Compares multiple roles against the student's current resume, calculates a
@@ -2923,7 +2945,7 @@ def compare_career_paths(body: Dict[str, Any]) -> Dict[str, Any]:
 # MODULE 8: PLACEMENT READINESS INDEX (PRI)
 # ============================================================================
 
-def compute_placement_readiness_index(body: Dict[str, Any]) -> Dict[str, Any]:
+def compute_placement_readiness_index(body: Dict[str, Any], owner_id: str = "legacy_unowned") -> Dict[str, Any]:
     """
     Module 8: Placement Readiness Index (PRI).
     Computes an explainable, configurable 0–100 score combining all 6 pillars:
@@ -2935,7 +2957,7 @@ def compute_placement_readiness_index(body: Dict[str, Any]) -> Dict[str, Any]:
     - Job-market alignment: 10%
     """
     resume_id = sanitize_short_field(body.get("resumeId", ""), 80)
-    resume = body.get("resume") or get_resume_by_id(resume_id) or SAMPLE_RESUMES[0]
+    resume = body.get("resume") or get_resume_by_id(resume_id, owner_id=owner_id) or SAMPLE_RESUMES[0]
     target_role = sanitize_short_field(body.get("targetRole", "Full Stack Developer"), 100)
     custom_weights = body.get("weights") or DEFAULT_PRI_WEIGHTS
 
@@ -2961,8 +2983,8 @@ def compute_placement_readiness_index(body: Dict[str, Any]) -> Dict[str, Any]:
 
     # 3. Interview Performance (from completed sessions in DB, or transparent baseline)
     cursor.execute(
-        "SELECT overall_score, answered_count FROM interview_sessions WHERE resume_id = ? AND answered_count > 0 ORDER BY started_at DESC LIMIT 5",
-        (resume["id"],),
+        "SELECT overall_score, answered_count FROM interview_sessions WHERE owner_id = ? AND resume_id = ? AND answered_count > 0 ORDER BY started_at DESC LIMIT 5",
+        (owner_id, resume["id"]),
     )
     int_rows = cursor.fetchall()
     if int_rows:
@@ -2976,8 +2998,8 @@ def compute_placement_readiness_index(body: Dict[str, Any]) -> Dict[str, Any]:
 
     # 4. Practical Portfolio Evidence (from GitHub analyzer + resume projects)
     cursor.execute(
-        "SELECT portfolio_strength_score, github_username FROM github_profiles WHERE resume_id = ? ORDER BY id DESC LIMIT 1",
-        (resume["id"],),
+        "SELECT portfolio_strength_score, github_username FROM github_profiles WHERE owner_id = ? AND resume_id = ? ORDER BY id DESC LIMIT 1",
+        (owner_id, resume["id"]),
     )
     gh_row = cursor.fetchone()
     if gh_row:
@@ -2991,8 +3013,8 @@ def compute_placement_readiness_index(body: Dict[str, Any]) -> Dict[str, Any]:
 
     # 5. Assessment Performance (from Skill Assessment Lab results)
     cursor.execute(
-        "SELECT overall_score, topic FROM assessment_results WHERE resume_id = ? ORDER BY id DESC LIMIT 5",
-        (resume["id"],),
+        "SELECT overall_score, topic FROM assessment_results WHERE owner_id = ? AND resume_id = ? ORDER BY id DESC LIMIT 5",
+        (owner_id, resume["id"]),
     )
     asmt_rows = cursor.fetchall()
     if asmt_rows:
@@ -3140,14 +3162,16 @@ def compute_placement_readiness_index(body: Dict[str, Any]) -> Dict[str, Any]:
     cursor.execute(
         """
         INSERT INTO placement_readiness_reports (
-            resume_id, target_role, pri_score, readiness_tier,
+            owner_id, user_id, resume_id, target_role, pri_score, readiness_tier,
             technical_score, resume_quality_score, interview_score,
             portfolio_score, assessment_score, market_alignment_score,
             weights_json, category_breakdown_json, strengths_json,
             weaknesses_json, next_actions_json, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
+            owner_id,
+            owner_id,
             resume["id"],
             target_role,
             pri_score,
@@ -3169,8 +3193,8 @@ def compute_placement_readiness_index(body: Dict[str, Any]) -> Dict[str, Any]:
     conn.commit()
 
     cursor.execute(
-        "SELECT pri_score, target_role, created_at FROM placement_readiness_reports WHERE resume_id = ? ORDER BY id DESC LIMIT 8",
-        (resume["id"],),
+        "SELECT pri_score, target_role, created_at FROM placement_readiness_reports WHERE owner_id = ? AND resume_id = ? ORDER BY id DESC LIMIT 8",
+        (owner_id, resume["id"]),
     )
     hist_rows = cursor.fetchall()
     conn.close()

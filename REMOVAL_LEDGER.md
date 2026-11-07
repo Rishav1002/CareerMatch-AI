@@ -30,7 +30,12 @@ This ledger records all deprecated files, hardcoded mock profiles, legacy naviga
 
 ---
 
-## 5. Legacy Monolithic Script & Global Window Coupling
+## 6. Dead Python Built-in HTTP Fallback
+- **`CareerMatchHTTPHandler` in `backend/main.py` (260 lines)**: Removed entirely.
+  - Reason: Legacy fallback duplicating FastAPI route definitions without parity, lacking dependency injection, ownership resolution, and modern async middleware. Replaced by standard Uvicorn/FastAPI runtime pinned in production.
+- **Global Insecure Wildcard CORS**: Replaced with strict environment-configured `CORS_ORIGINS`.
+- **Legacy Duplicate Token Keys (`cm:v1:token`, `careermatch_jwt_token`)**: Consolidated into single standard key `cm_jwt_token`.
+
 - **`frontend/js/app.js` (3,172 lines)**: Removed entirely.
   - Reason: Dual-architecture collision with modular ES pipeline (`main.js`). Contained 16 window globals, outdated workspace switching, and cold-boot module linking races.
   - Replaced by: 11 focused ES feature modules in `frontend/js/modules/` (`dashboard.js`, `analyzer.js`, `report.js`, `ats.js`, `roadmap.js`, `interview.js`, `assessment.js`, `github.js`, `market.js`, `career.js`, `pri.js`) exporting standard `init()`, `load()`, and `render()` contracts called directly by `router.js`.
