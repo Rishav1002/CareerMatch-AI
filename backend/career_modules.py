@@ -2226,7 +2226,22 @@ def submit_roadmap_stage_quiz(body: Dict[str, Any], owner_id: str = "legacy_unow
 
 
 def _format_adaptive_roadmap_response(rm_row: Any, task_rows: List[Any]) -> Dict[str, Any]:
-    stages = json.loads(rm_row["stages_json"] or "[]")
+    raw_stages = json.loads(rm_row["stages_json"] or "[]")
+    # Bug 14b / Bug 8: Never leak correctIndex or explanation to the client before submission
+    stages = []
+    for st in raw_stages:
+        s_copy = dict(st)
+        if "quizQuestions" in s_copy and isinstance(s_copy["quizQuestions"], list):
+            clean_q_list = []
+            for q in s_copy["quizQuestions"]:
+                clean_q_list.append({
+                    "id": q.get("id"),
+                    "question": q.get("question"),
+                    "options": q.get("options", []),
+                })
+            s_copy["quizQuestions"] = clean_q_list
+        stages.append(s_copy)
+
     tasks = [
         {
             "id": r["id"],

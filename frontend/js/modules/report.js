@@ -8,6 +8,7 @@
 import { api } from "../api.js";
 import { store } from "../store.js";
 import { escapeHtml } from "../formatters.js";
+import { roadmapDiagram } from "../components/roadmapDiagram.js";
 
 export class ReportModule {
   constructor() {
