@@ -324,7 +324,10 @@ def handle_analyze_payload(body: Dict[str, Any], owner_id: str = "legacy_unowned
     if not dont_save:
         save_resume(resume, owner_id=owner_id)
 
-    role_title = sanitize_short_field(body.get("roleTitle", "Full Stack Developer"), 100)
+    raw_role = body.get("roleTitle")
+    if not raw_role or not str(raw_role).strip() or str(raw_role).strip() == "Select role...":
+        raise ValueError("Target role is required for career match analysis.")
+    role_title = sanitize_short_field(str(raw_role).strip(), 100)
     goal_company = sanitize_short_field(body.get("goalCompany", ""), 100)
     custom_jd = sanitize_plain_text(body.get("customJdText", ""), 20000)
     job_url = sanitize_short_field(body.get("jobUrl", ""), 300)
