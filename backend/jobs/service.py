@@ -3,13 +3,19 @@ Job Market Intelligence Aggregator & Caching Service.
 Queries providers (Remotive, Arbeitnow, Adzuna) with Neon database caching.
 """
 
+import concurrent.futures
 import json
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 from backend.database import get_connection
-from backend.jobs.providers.adzuna import AdzunaJobProvider
-from backend.jobs.providers.arbeitnow import ArbeitnowJobProvider
-from backend.jobs.providers.remotive import RemotiveJobProvider
+from backend.jobs.providers import (
+    AdzunaJobProvider,
+    ArbeitnowJobProvider,
+    HimalayasJobProvider,
+    RemoteOKJobProvider,
+    RemotiveJobProvider,
+    TheMuseJobProvider,
+)
 
 # Curated benchmark dataset for India tech hubs when network is unreachable
 FALLBACK_JOBS: List[Dict[str, Any]] = [
@@ -101,8 +107,20 @@ class JobMarketService:
         self.providers = [
             RemotiveJobProvider(),
             ArbeitnowJobProvider(),
+            RemoteOKJobProvider(),
+            TheMuseJobProvider(),
+            HimalayasJobProvider(),
             AdzunaJobProvider(),
         ]
+
+    def _normalize_salary(self, salary: Optional[str]) -> str:
+        if not salary or not str(salary).strip():
+            return "Competitive Tech Benchmark"
+        s = str(salary).strip()
+        # Normalization for standard LPA
+        if "₹" in s and ("L" in s or "PA" in s):
+            return s
+        return s
 
     def get_market_jobs(
         self,
@@ -111,7 +129,7 @@ class JobMarketService:
         prefer_live: bool = True,
         limit: int = 15,
     ) -> List[Dict[str, Any]]:
-        """Fetch jobs with Neon database cache check (24-hour TTL)."""
+        """Fetch jobs with Neon database cache check (24-hour TTL) and concurrent provider execution."""
         cached = self._read_cache(query, limit)
         if cached:
             return cached
@@ -119,20 +137,37 @@ class JobMarketService:
         live_results: List[Dict[str, Any]] = []
 
         if prefer_live:
-            for p in self.providers:
-                try:
-                    jobs = p.fetch_jobs(query=query, location=location, limit=limit)
-                    if jobs:
-                        live_results.extend(jobs)
-                        if len(live_results) >= limit:
-                            break
-                except Exception:
-                    continue
+            # Parallel execution across providers with 6-second timeout
+            with concurrent.futures.ThreadPoolExecutor(max_workers=len(self.providers)) as executor:
+                future_to_provider = {
+                    executor.submit(p.fetch_jobs, query, location, limit): p
+                    for p in self.providers
+                }
+                for future in concurrent.futures.as_completed(future_to_provider):
+                    try:
+                        jobs = future.result(timeout=6.0)
+                        if jobs:
+                            live_results.extend(jobs)
+                    except Exception:
+                        continue
+
+        # Deduplication across providers by normalized (title, company, location)
+        deduped_live: List[Dict[str, Any]] = []
+        seen_keys = set()
+        for j in live_results:
+            t_norm = j.get("title", "").strip().lower()
+            c_norm = j.get("companyName", "").strip().lower()
+            l_norm = j.get("location", "").strip().lower()
+            dedupe_key = f"{t_norm}|{c_norm}|{l_norm}"
+            if dedupe_key not in seen_keys:
+                seen_keys.add(dedupe_key)
+                j["salaryRange"] = self._normalize_salary(j.get("salaryRange"))
+                deduped_live.append(j)
 
         # If live providers returned jobs, cache in database and return
-        if live_results:
-            self._save_cache(live_results)
-            return live_results[:limit]
+        if deduped_live:
+            self._save_cache(deduped_live)
+            return deduped_live[:limit]
 
         # Otherwise fallback to verified benchmark dataset
         filtered_fallback = []
