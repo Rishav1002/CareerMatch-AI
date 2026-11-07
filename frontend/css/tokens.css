@@ -17,6 +17,13 @@
   --bg-active: rgba(225, 230, 238, 0.75);
   --overlay: rgba(18, 20, 26, 0.45);
 
+  /* Dedicated High-Opacity Frosted Overlay Tokens (Bug 5) */
+  --bg-overlay: rgba(255, 255, 255, 0.94);
+  --bg-overlay-solid: #ffffff;
+  --overlay-border: rgba(0, 0, 0, 0.08);
+  --overlay-shadow: 0 16px 40px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --overlay-backdrop: blur(20px) saturate(160%);
+
   /* Frosted Glass Tokens */
   --glass-bg: rgba(255, 255, 255, 0.65);
   --glass-bg-subtle: rgba(255, 255, 255, 0.45);
@@ -184,6 +191,13 @@
   --bg-active: rgba(40, 46, 56, 0.7);
   --overlay: rgba(0, 0, 0, 0.7);
 
+  /* Dedicated High-Opacity Frosted Overlay Tokens (Bug 5) */
+  --bg-overlay: rgba(18, 20, 24, 0.94);
+  --bg-overlay-solid: #121418;
+  --overlay-border: rgba(255, 255, 255, 0.1);
+  --overlay-shadow: 0 20px 48px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+  --overlay-backdrop: blur(20px) saturate(160%);
+
   /* Dark Frosted Glass Tokens */
   --glass-bg: rgba(22, 24, 30, 0.6);
   --glass-bg-subtle: rgba(22, 24, 30, 0.4);
@@ -261,6 +275,13 @@
     --bg-sunken: rgba(14, 16, 21, 0.65);
     --bg-active: rgba(40, 46, 56, 0.7);
     --overlay: rgba(0, 0, 0, 0.7);
+
+  /* Dedicated High-Opacity Frosted Overlay Tokens (Bug 5) */
+  --bg-overlay: rgba(18, 20, 24, 0.94);
+  --bg-overlay-solid: #121418;
+  --overlay-border: rgba(255, 255, 255, 0.1);
+  --overlay-shadow: 0 20px 48px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+  --overlay-backdrop: blur(20px) saturate(160%);
 
     /* Dark Frosted Glass Tokens */
     --glass-bg: rgba(22, 24, 30, 0.6);
@@ -343,4 +364,19 @@
 [lang="hi"] h4,
 [lang="hi"] .font-serif {
   font-family: "Noto Serif Devanagari", var(--font-display);
+}
+
+/* Accessibility & Compatibility Fallbacks for Frosted Surfaces (Bug 5) */
+@supports not (backdrop-filter: blur(1px)) {
+  :root {
+    --bg-overlay: var(--bg-overlay-solid);
+    --overlay-backdrop: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :root, [data-theme="dark"] {
+    --bg-overlay: var(--bg-overlay-solid);
+    --overlay-backdrop: none;
+  }
 }
