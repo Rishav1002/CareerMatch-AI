@@ -48,6 +48,7 @@ from backend.career_modules import (
     fetch_job_market_intelligence,
     generate_skill_assessment,
     get_adaptive_roadmap,
+    get_assessment_hint,
     get_assessment_history,
     get_interview_history,
     get_student_profile,
@@ -937,7 +938,21 @@ async def api_assessment_submit(
         body = await request.json()
         return submit_skill_assessment(body, owner_id=owner_id)
     except ValueError as exc:
-        raise HTTPException(status_code=404, detail=str(exc))
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/api/assessment/hint")
+async def api_assessment_hint(
+    request: Request,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    """Provide on-demand tiered hint with score penalty."""
+    owner_id, _ = owner_info
+    try:
+        body = await request.json()
+        return get_assessment_hint(body, owner_id=owner_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
 
 @app.get("/api/assessment/history")

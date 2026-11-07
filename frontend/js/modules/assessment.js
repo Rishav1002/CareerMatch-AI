@@ -117,27 +117,80 @@ export class AssessmentModule {
       mcqBox.innerHTML = (data.questions || [])
         .map(
           (q, qIdx) => `
-          <div class="card" style="margin-bottom: 12px; padding: 14px 18px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <span class="status-badge" style="font-size: 0.72rem; letter-spacing: 0.04em;">Question ${qIdx + 1} of ${(data.questions || []).length} · ${escapeHtml(q.subtopic || data.topic)}</span>
+          <div class="card p-3 mb-3 border-subtle" data-q-card="${qIdx}">
+            <div class="d-flex flex-between align-center mb-1">
+              <span class="status-badge text-xxs font-mono">Question ${qIdx + 1} of ${(data.questions || []).length} · ${escapeHtml(q.subtopic || data.topic)}</span>
+              <button type="button" class="btn btn-ghost btn-sm text-xxs asmt-hint-btn" data-qidx="${qIdx}" data-tier="1">
+                💡 Hint 1 (-25% pts)
+              </button>
             </div>
-            <strong style="display: block; font-size: 0.95rem; margin-bottom: 10px; color: var(--text-primary);">${qIdx + 1}. ${escapeHtml(q.question)}</strong>
-            <div style="display: flex; flex-direction: column; gap: 8px;">
+            <strong class="d-block text-sm text-primary mb-2">${qIdx + 1}. ${escapeHtml(q.question)}</strong>
+            <div class="d-flex flex-col gap-xs mb-2">
               ${(q.options || [])
                 .map(
                   (opt, oIdx) => `
-                  <label class="asmt-option-label" style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: var(--radius-sm); background: var(--bg-card); border: 1px solid var(--border-subtle); cursor: pointer;">
-                    <input type="radio" name="asmt_mcq_${qIdx}" value="${oIdx}" style="accent-color: var(--brand-accent); width: 16px; height: 16px; margin: 0;" />
-                    <span style="font-size: 0.88rem; color: var(--text-primary);">${escapeHtml(opt)}</span>
+                  <label class="asmt-option-label d-flex align-center gap-xs p-2 rounded-sm bg-card border-subtle cursor-pointer">
+                    <input type="radio" name="asmt_mcq_${qIdx}" value="${oIdx}" class="cursor-pointer" />
+                    <span class="text-xs text-primary">${escapeHtml(opt)}</span>
                   </label>
                 `
                 )
                 .join("")}
             </div>
+            <div class="asmt-hint-box text-xs p-2 bg-sunken border-subtle rounded-sm hidden" id="asmtHint_${qIdx}"></div>
           </div>
         `
         )
         .join("");
+
+      // Wire hint buttons
+      mcqBox.querySelectorAll(".asmt-hint-btn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const qIdx = parseInt(btn.getAttribute("data-qidx"), 10);
+          const tier = parseInt(btn.getAttribute("data-tier"), 10);
+          const hintBox = document.getElementById(`asmtHint_${qIdx}`);
+          
+          btn.disabled = true;
+          btn.textContent = "Loading hint...";
+
+          try {
+            const token = store.get("token");
+            const headers = { "Content-Type": "application/json" };
+            if (token) headers["Authorization"] = `Bearer ${token}`;
+
+            const res = await fetch("/api/assessment/hint", {
+              method: "POST",
+              headers,
+              body: JSON.stringify({
+                sessionId: this.currentAssessment.sessionId,
+                questionIndex: qIdx,
+                tier: tier,
+              }),
+            });
+
+            const hintData = await res.json();
+            if (!res.ok) throw new Error(hintData.detail || "Failed to fetch hint.");
+
+            if (hintBox) {
+              hintBox.innerHTML = `<strong>Hint (Tier ${tier} · -${hintData.penaltyPct}% score):</strong> ${escapeHtml(hintData.hint)}`;
+              hintBox.classList.remove("hidden");
+            }
+
+            if (tier < 3) {
+              btn.disabled = false;
+              btn.setAttribute("data-tier", String(tier + 1));
+              btn.textContent = `💡 Hint ${tier + 1} (-${(tier + 1) * 25}% pts)`;
+            } else {
+              btn.disabled = true;
+              btn.textContent = "All hints unlocked";
+            }
+          } catch (e) {
+            btn.disabled = false;
+            btn.textContent = `💡 Hint ${tier}`;
+            if (window.showToast) window.showToast("Could not retrieve hint: " + e.message, "error");
+          }
+        });
+      });
     }
 
     // Coding challenge

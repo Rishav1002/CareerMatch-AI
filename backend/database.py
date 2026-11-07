@@ -560,6 +560,21 @@ def init_db() -> None:
             except Exception as exc:
                 print(f"SQLite migration notice for {tbl}.owner_id: {exc}")
 
+    # Additive migration for assessment hints tracking
+    if is_pg:
+        try:
+            cursor.execute("ALTER TABLE assessment_sessions ADD COLUMN IF NOT EXISTS hints_used_json TEXT DEFAULT '{}';")
+        except Exception:
+            pass
+    else:
+        try:
+            cursor.execute("PRAGMA table_info(assessment_sessions);")
+            cols = [row[1] for row in cursor.fetchall()]
+            if "hints_used_json" not in cols:
+                cursor.execute("ALTER TABLE assessment_sessions ADD COLUMN hints_used_json TEXT DEFAULT '{}';")
+        except Exception:
+            pass
+
     # Mark legacy guest/unowned rows as legacy_unowned so they are NEVER served to any new visitor
     for tbl in tables_needing_owner:
         try:

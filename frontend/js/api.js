@@ -207,6 +207,7 @@ export const api = {
   assessment: {
     generate: (payload) => request("/api/assessment/generate", { method: "POST", body: payload }),
     submit: (payload) => request("/api/assessment/submit", { method: "POST", body: payload }),
+    hint: (payload) => request("/api/assessment/hint", { method: "POST", body: payload }),
     history: () => request("/api/assessment/history", { method: "GET" }),
   },
 

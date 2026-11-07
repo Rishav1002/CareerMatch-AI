@@ -647,8 +647,9 @@ def fetch_job_market_intelligence(body: Dict[str, Any]) -> Dict[str, Any]:
     location, experience, skill, and work mode, and calculates candidate resume match %.
     """
     resume_id = sanitize_short_field(body.get("resumeId", ""), 80)
-    resume = body.get("resume") or get_resume_by_id(resume_id) or SAMPLE_RESUMES[0]
-    candidate_skills = set(resume.get("technicalSkills", []))
+    resume = body.get("resume") or (get_resume_by_id(resume_id) if resume_id else None)
+    has_resume = bool(resume and resume.get("technicalSkills"))
+    candidate_skills = set(resume.get("technicalSkills", [])) if has_resume else set()
 
     role_filter = sanitize_short_field(body.get("roleFilter", ""), 100)
     location_filter = sanitize_short_field(body.get("locationFilter", ""), 100)
@@ -664,7 +665,7 @@ def fetch_job_market_intelligence(body: Dict[str, Any]) -> Dict[str, Any]:
         limit=15,
     )
     data_source_label = (
-        "Live Market Provider (Remotive / Arbeitnow / Adzuna) · Cached in Neon"
+        "Live Market Providers (Remotive / Arbeitnow / RemoteOK / The Muse / Himalayas / Adzuna) · Cached in Neon"
         if combined_raw and any("Live" in j.get("dataSource", "") for j in combined_raw)
         else "Verified Indian Tech Hub Benchmark Dataset"
     )
@@ -711,16 +712,22 @@ def fetch_job_market_intelligence(body: Dict[str, Any]) -> Dict[str, Any]:
             if not any(skill_filter.lower() == s.lower() for s in all_job_skills):
                 continue
 
-        matched = [s for s in req_skills if s in candidate_skills]
-        missing = [s for s in req_skills if s not in candidate_skills]
-        pref_matched = [s for s in pref_skills if s in candidate_skills]
-
-        mand_pct = (len(matched) / len(req_skills) * 100.0) if req_skills else 0.0
-        pref_pct = (len(pref_matched) / len(pref_skills) * 100.0) if pref_skills else 100.0
-        match_score = round(mand_pct * 0.8 + pref_pct * 0.2, 1)
+        if has_resume:
+            matched = [s for s in req_skills if s in candidate_skills]
+            missing = [s for s in req_skills if s not in candidate_skills]
+            pref_matched = [s for s in pref_skills if s in candidate_skills]
+            mand_pct = (len(matched) / len(req_skills) * 100.0) if req_skills else 0.0
+            pref_pct = (len(pref_matched) / len(pref_skills) * 100.0) if pref_skills else 100.0
+            match_score = round(mand_pct * 0.8 + pref_pct * 0.2, 1)
+        else:
+            matched = []
+            missing = []
+            pref_matched = []
+            match_score = None
 
         item = {
             **j,
+            "hasResumeComparison": has_resume,
             "matchScore": match_score,
             "matchedSkills": matched,
             "missingSkills": missing,
@@ -2311,6 +2318,11 @@ ASSESSMENT_TOPICS_BANK: Dict[str, Dict[str, Any]] = {
                 "options": ["O(n)", "O(log n)", "O(1)", "O(n log n)"],
                 "correctIndex": 2,
                 "explanation": "Python dictionaries are implemented as hash tables, providing O(1) average-case lookup.",
+                "hints": [
+                    "Tier 1: Think about the underlying data structure used by Python for hash lookups.",
+                    "Tier 2: The hash table calculates a hash code and indexes a contiguous array directly.",
+                    "Tier 3: In average conditions without hash collisions, hash table indexing takes constant time O(1).",
+                ],
             },
             {
                 "id": "py-2",
@@ -2319,6 +2331,11 @@ ASSESSMENT_TOPICS_BANK: Dict[str, Dict[str, Any]] = {
                 "options": ["`[x * 2 for x in range(1000)]`", "`(x * 2 for x in range(1000))`", "`{x * 2 for x in range(1000)}`", "`list(range(1000))`"],
                 "correctIndex": 1,
                 "explanation": "Parentheses `(expr for x in iterable)` create a lazy generator expression.",
+                "hints": [
+                    "Tier 1: Look at the enclosure syntax: square brackets create lists, curly braces create dicts or sets.",
+                    "Tier 2: Generator expressions use parentheses `(...)` instead of square brackets.",
+                    "Tier 3: Parentheses without a function call create a lazy generator object that yields elements on demand.",
+                ],
             },
             {
                 "id": "py-3",
@@ -2327,6 +2344,11 @@ ASSESSMENT_TOPICS_BANK: Dict[str, Dict[str, Any]] = {
                 "options": ["`__init__` and `__del__`", "`__enter__` and `__exit__`", "`__iter__` and `__next__`", "`__open__` and `__close__`"],
                 "correctIndex": 1,
                 "explanation": "The context manager protocol relies on `__enter__` and `__exit__` to guarantee deterministic cleanup.",
+                "hints": [
+                    "Tier 1: Context managers are designed for entering a runtime scope and exiting it safely.",
+                    "Tier 2: Look for the methods that run upon entering the `with` block and exiting it.",
+                    "Tier 3: The context manager protocol explicitly requires `__enter__` and `__exit__`.",
+                ],
             },
             {
                 "id": "py-4",
@@ -2335,6 +2357,11 @@ ASSESSMENT_TOPICS_BANK: Dict[str, Dict[str, Any]] = {
                 "options": ["`threading`", "`asyncio`", "`multiprocessing`", "`queue`"],
                 "correctIndex": 2,
                 "explanation": "`multiprocessing` spawns separate Python interpreter processes, each with its own GIL.",
+                "hints": [
+                    "Tier 1: CPython's GIL restricts pure multi-threading to one core at a time for bytecode execution.",
+                    "Tier 2: To bypass the GIL, you need separate operating system processes rather than threads in the same process.",
+                    "Tier 3: The `multiprocessing` module creates separate OS processes with independent GILs.",
+                ],
             },
         ],
         "codingChallenge": {
@@ -2358,6 +2385,11 @@ ASSESSMENT_TOPICS_BANK: Dict[str, Dict[str, Any]] = {
                 "options": ["INNER JOIN", "LEFT OUTER JOIN", "CROSS JOIN", "RIGHT INNER JOIN"],
                 "correctIndex": 1,
                 "explanation": "`LEFT OUTER JOIN` preserves all rows from the left table regardless of whether a match exists on the right.",
+                "hints": [
+                    "Tier 1: Consider which table's rows you want to preserve completely.",
+                    "Tier 2: A LEFT JOIN preserves every row from the table preceding the JOIN keyword.",
+                    "Tier 3: LEFT OUTER JOIN returns all rows from the left table, with NULLs for unmatched right-table rows.",
+                ],
             },
             {
                 "id": "sql-2",
@@ -2366,6 +2398,11 @@ ASSESSMENT_TOPICS_BANK: Dict[str, Dict[str, Any]] = {
                 "options": ["`RANK()`", "`DENSE_RANK()`", "`ROW_NUMBER()`", "`NTILE(1)`"],
                 "correctIndex": 2,
                 "explanation": "`ROW_NUMBER()` always produces unique sequential integers without ties.",
+                "hints": [
+                    "Tier 1: RANK() and DENSE_RANK() handle ties by giving equal rank numbers.",
+                    "Tier 2: Look for a function whose name specifically suggests numbering individual rows uniquely.",
+                    "Tier 3: `ROW_NUMBER()` assigns sequential integers 1, 2, 3... without gaps or duplicate values.",
+                ],
             },
             {
                 "id": "sql-3",
@@ -2374,6 +2411,11 @@ ASSESSMENT_TOPICS_BANK: Dict[str, Dict[str, Any]] = {
                 "options": ["`WHERE salary > 90000`", "`WHERE department_id = 4 AND salary > 90000`", "`WHERE LOWER(department_id) = '4'`", "`WHERE salary BETWEEN 50000 AND 80000`"],
                 "correctIndex": 1,
                 "explanation": "Composite B-Tree indexes follow the leftmost-prefix rule (`department_id` first, then `salary`).",
+                "hints": [
+                    "Tier 1: Composite B-Tree indexes require predicates to follow a specific prefix order.",
+                    "Tier 2: The leftmost prefix rule states that an index on (A, B) can only be used if A is queried.",
+                    "Tier 3: A query filtering on `department_id = ... AND salary > ...` uses the leftmost column first.",
+                ],
             },
             {
                 "id": "sql-4",
@@ -2382,6 +2424,11 @@ ASSESSMENT_TOPICS_BANK: Dict[str, Dict[str, Any]] = {
                 "options": ["They always return the same value", "`COUNT(*)` counts all rows including NULLs, while `COUNT(column_name)` counts only non-NULL values in that column", "`COUNT(column_name)` is faster than `COUNT(*)` on unindexed text", "`COUNT(*)` ignores duplicate rows"],
                 "correctIndex": 1,
                 "explanation": "`COUNT(col)` ignores NULL values in `col`, whereas `COUNT(*)` counts total rows.",
+                "hints": [
+                    "Tier 1: Aggregate functions like COUNT, AVG, and SUM treat NULL values in a special way.",
+                    "Tier 2: Most aggregate functions skip NULLs entirely, while COUNT(*) counts all rows.",
+                    "Tier 3: COUNT(column) counts non-NULL values, whereas COUNT(*) counts total rows including NULLs.",
+                ],
             },
         ],
         "codingChallenge": {
@@ -2404,6 +2451,11 @@ ASSESSMENT_TOPICS_BANK: Dict[str, Dict[str, Any]] = {
                 "options": ["Nested loops", "Two-pointer inward scan (`left = 0`, `right = n - 1`)", "Hash map frequency table", "Bubble sort"],
                 "correctIndex": 1,
                 "explanation": "On a sorted array, advancing `left` when the sum is too small and decrementing `right` when too large runs in O(n) time and O(1) space.",
+                "hints": [
+                    "Tier 1: Notice that the input array is already sorted in ascending order.",
+                    "Tier 2: You can initialize pointers at the two extreme ends of the array.",
+                    "Tier 3: The two-pointer scan compares array[left] + array[right] against T and moves inward in O(1) space.",
+                ],
             },
             {
                 "id": "dsa-2",
@@ -2412,6 +2464,11 @@ ASSESSMENT_TOPICS_BANK: Dict[str, Dict[str, Any]] = {
                 "options": ["Pre-order", "In-order (Left, Root, Right)", "Post-order", "Level-order BFS"],
                 "correctIndex": 1,
                 "explanation": "In-order traversal visits all smaller keys in the left subtree, then the root, then larger keys in the right subtree.",
+                "hints": [
+                    "Tier 1: In a BST, all keys in the left subtree are smaller than the root, and keys in the right subtree are larger.",
+                    "Tier 2: To output smallest to largest, you must traverse Left, then Root, then Right.",
+                    "Tier 3: `In-order` traversal always yields BST keys in sorted numerical order.",
+                ],
             },
             {
                 "id": "dsa-3",
@@ -2420,6 +2477,11 @@ ASSESSMENT_TOPICS_BANK: Dict[str, Dict[str, Any]] = {
                 "options": ["O(N log K)", "O(N^2)", "O(K log N)", "O(1)"],
                 "correctIndex": 0,
                 "explanation": "Maintaining a min-heap of size K across N elements performs at most N heap operations of cost O(log K).",
+                "hints": [
+                    "Tier 1: The heap only holds K elements at any given time.",
+                    "Tier 2: Each insertion or eviction in a heap of size K costs O(log K) comparisons.",
+                    "Tier 3: Iterating over all N elements with heap operations of size K gives O(N log K) overall.",
+                ],
             },
             {
                 "id": "dsa-4",
@@ -2428,6 +2490,11 @@ ASSESSMENT_TOPICS_BANK: Dict[str, Dict[str, Any]] = {
                 "options": ["Greedy choice and bipartite graph", "Overlapping subproblems and optimal substructure", "Sorted input and constant memory", "Divide and conquer without shared state"],
                 "correctIndex": 1,
                 "explanation": "Dynamic programming caches solutions to overlapping subproblems that combine via optimal substructure.",
+                "hints": [
+                    "Tier 1: Think about why recursion without memoization repeats identical calculations.",
+                    "Tier 2: DP requires recurring smaller sub-calculations and building the global solution from optimal sub-solutions.",
+                    "Tier 3: The canonical dual criteria are 'Overlapping Subproblems' and 'Optimal Substructure'.",
+                ],
             },
         ],
         "codingChallenge": {
@@ -2471,6 +2538,11 @@ def generate_skill_assessment(body: Dict[str, Any], owner_id: str = "legacy_unow
                     ],
                     "correctIndex": 1,
                     "explanation": f"Production {topic} systems rely on bounded timeouts, validation, and deterministic cleanup.",
+                    "hints": [
+                        f"Tier 1: Consider resilience patterns that prevent {topic} servers from crashing under unexpected load.",
+                        f"Tier 2: Avoid ignoring errors or leaving file/socket descriptors open.",
+                        f"Tier 3: Standard production hygiene requires deterministic resource cleanup, timeouts, and structured error handling.",
+                    ],
                 },
                 {
                     "id": f"{topic.lower()[:3]}-2",
@@ -2484,6 +2556,11 @@ def generate_skill_assessment(body: Dict[str, Any], owner_id: str = "legacy_unow
                     ],
                     "correctIndex": 0,
                     "explanation": "Algorithmic complexity reduction (O(n^2) -> O(n)) has the highest leverage on throughput.",
+                    "hints": [
+                        f"Tier 1: Look at the Big-O difference between searching arrays vs hash sets.",
+                        f"Tier 2: Linear scans O(n) inside a loop create quadratic bottlenecks O(n^2).",
+                        f"Tier 3: Replacing O(n) scans with O(1) hash lookups gives orders-of-magnitude speedup.",
+                    ],
                 },
                 {
                     "id": f"{topic.lower()[:3]}-3",
@@ -2497,6 +2574,11 @@ def generate_skill_assessment(body: Dict[str, Any], owner_id: str = "legacy_unow
                     ],
                     "correctIndex": 1,
                     "explanation": "Boundary value analysis catches off-by-one errors, null dereferences, and empty-collection crashes.",
+                    "hints": [
+                        f"Tier 1: Think about inputs that commonly cause null pointer or index out-of-range exceptions.",
+                        f"Tier 2: Happy path alone fails to verify edge cases and boundary limits.",
+                        f"Tier 3: Thorough unit tests must assert empty inputs, nulls, singletons, and upper bounds.",
+                    ],
                 },
                 {
                     "id": f"{topic.lower()[:3]}-4",
@@ -2510,6 +2592,11 @@ def generate_skill_assessment(body: Dict[str, Any], owner_id: str = "legacy_unow
                     ],
                     "correctIndex": 0,
                     "explanation": "Unsynchronized concurrent mutation of shared state leads to lost updates and corrupted state.",
+                    "hints": [
+                        f"Tier 1: Think about two independent threads reading and writing the same memory address.",
+                        f"Tier 2: Without locks, mutexes, or atomic primitives, execution order is unpredictable.",
+                        f"Tier 3: A race condition occurs when concurrent tasks access and mutate shared state without synchronization.",
+                    ],
                 },
             ],
             "codingChallenge": {
@@ -2646,6 +2733,80 @@ def _evaluate_code_safely_without_exec(
     }
 
 
+def get_assessment_hint(body: Dict[str, Any], owner_id: str = "legacy_unowned") -> Dict[str, Any]:
+    """
+    On-Demand Tiered Hint Fetcher.
+    Tier 1 (Nudge): -25% question score penalty.
+    Tier 2 (Concept): -50% question score penalty.
+    Tier 3 (Near-Answer): -75% question score penalty.
+    Strictly scopes to session owner and persists used tier server-side.
+    """
+    session_id = sanitize_short_field(body.get("sessionId", ""), 80)
+    q_idx = int(body.get("questionIndex", 0))
+    tier = int(body.get("tier", 1))
+    if tier not in (1, 2, 3):
+        tier = 1
+
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM assessment_sessions WHERE id = ? AND owner_id = ?", (session_id, owner_id))
+    sess = cursor.fetchone()
+    if not sess:
+        conn.close()
+        raise ValueError("Assessment session not found.")
+
+    if sess["status"] == "completed":
+        conn.close()
+        raise ValueError("Assessment session has already been completed.")
+
+    questions = json.loads(sess["questions_json"] or "[]")
+    if q_idx < 0 or q_idx >= len(questions):
+        conn.close()
+        raise ValueError("Invalid question index.")
+
+    target_q = questions[q_idx]
+    hints = target_q.get("hints", [])
+    if not hints:
+        hints = [
+            f"Nudge: Re-read the technical constraints of {sess['topic']}.",
+            f"Concept: Focus on standard production paradigms and eliminate obviously flawed choices.",
+            f"Guidance: Review the canonical documentation for {target_q.get('subtopic', sess['topic'])}.",
+        ]
+
+    hint_text = hints[min(tier - 1, len(hints) - 1)]
+
+    # Record hint usage in session
+    hints_used: Dict[str, int] = {}
+    if "hints_used_json" in sess.keys() and sess["hints_used_json"]:
+        try:
+            hints_used = json.loads(sess["hints_used_json"])
+        except Exception:
+            hints_used = {}
+
+    prev_tier = hints_used.get(str(q_idx), 0)
+    hints_used[str(q_idx)] = max(prev_tier, tier)
+
+    try:
+        cursor.execute(
+            "UPDATE assessment_sessions SET hints_used_json = ? WHERE id = ?",
+            (json.dumps(hints_used), session_id),
+        )
+        conn.commit()
+    except Exception as exc:
+        print(f"Warning updating hints_used_json: {exc}")
+    finally:
+        conn.close()
+
+    penalty_pct = tier * 25
+    return {
+        "sessionId": session_id,
+        "questionIndex": q_idx,
+        "tier": tier,
+        "hint": hint_text,
+        "penaltyPct": penalty_pct,
+    }
+
+
 def submit_skill_assessment(body: Dict[str, Any], owner_id: str = "legacy_unowned") -> Dict[str, Any]:
     session_id = sanitize_short_field(body.get("sessionId", ""), 80)
     mcq_answers = body.get("mcqAnswers", [])
@@ -2659,10 +2820,23 @@ def submit_skill_assessment(body: Dict[str, Any], owner_id: str = "legacy_unowne
         conn.close()
         raise ValueError("Assessment session not found.")
 
+    if sess["status"] == "completed":
+        conn.close()
+        raise ValueError("Assessment session has already been submitted and completed.")
+
     questions = json.loads(sess["questions_json"] or "[]")
     challenge = json.loads(sess["coding_challenge_json"] or "{}")
 
+    # Read used hints
+    hints_used: Dict[str, int] = {}
+    if "hints_used_json" in sess.keys() and sess["hints_used_json"]:
+        try:
+            hints_used = json.loads(sess["hints_used_json"])
+        except Exception:
+            hints_used = {}
+
     correct_cnt = 0
+    earned_points = 0.0
     question_reviews: List[Dict[str, Any]] = []
     weak_subtopics: List[str] = []
 
@@ -2670,8 +2844,13 @@ def submit_skill_assessment(body: Dict[str, Any], owner_id: str = "legacy_unowne
         selected = int(mcq_answers[idx]) if idx < len(mcq_answers) and mcq_answers[idx] is not None else -1
         correct_idx = int(q.get("correctIndex", 0))
         is_ok = selected == correct_idx
+        used_tier = hints_used.get(str(idx), 0)
+
         if is_ok:
             correct_cnt += 1
+            # Apply tiered score penalty for used hints
+            penalty_multiplier = max(0.25, 1.0 - (used_tier * 0.25))
+            earned_points += penalty_multiplier
         else:
             weak_subtopics.append(q.get("subtopic", sess["topic"]))
 
@@ -2684,12 +2863,14 @@ def submit_skill_assessment(body: Dict[str, Any], owner_id: str = "legacy_unowne
                 "selectedOption": opts[selected] if 0 <= selected < len(opts) else "No Answer",
                 "correctOption": opts[correct_idx] if 0 <= correct_idx < len(opts) else "",
                 "isCorrect": is_ok,
+                "usedHintTier": used_tier,
+                "scoreEarned": round(max(0.25, 1.0 - (used_tier * 0.25)) * 100) if is_ok else 0,
                 "explanation": q.get("explanation", ""),
             }
         )
 
     total_q = max(1, len(questions))
-    mcq_score = round((correct_cnt / total_q) * 100.0, 1)
+    mcq_score = round((earned_points / total_q) * 100.0, 1)
     coding_review = _evaluate_code_safely_without_exec(code_submission, sess["topic"], challenge)
     coding_score = float(coding_review["score"])
 
@@ -2743,6 +2924,7 @@ def submit_skill_assessment(body: Dict[str, Any], owner_id: str = "legacy_unowne
         "questionReviews": question_reviews,
         "codingReview": coding_review,
         "weakSubtopics": weak_subtopics,
+        "hintsUsed": hints_used,
         "completedAt": now_iso,
     }
 

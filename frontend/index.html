@@ -1145,20 +1145,61 @@
 <!-- ==================================================================
                VIEW 7: WEEKLY STUDY PLANNER (#/planner)
                ================================================================== -->
+<!-- ==================================================================
+               VIEW 7: STUDY PLANNER & MILESTONE STREAKS (#/planner)
+               ================================================================== -->
 <section class="view-panel" hidden="" id="view-planner">
-<div class="planner-header-card">
+<div class="planner-header-card d-flex flex-between align-center flex-wrap gap-md mb-3">
 <div>
-<h2 class="text-xl m-0">Weekly Study Planner &amp; Milestone Goals</h2>
-<p class="text-sm text-secondary">
-                  Derived from your learning roadmap. Break down complex topics into steady daily deliverables.
-                </p>
+<h2 class="text-xl m-0 font-serif text-primary">Weekly Study Planner &amp; Milestones</h2>
+<p class="text-sm text-secondary m-0">
+Derived from your verified roadmap and skill gaps. Structured daily deliverables.
+</p>
 </div>
-<div class="streak-counter">
-<span>🔥</span>
-<span id="plannerStreakDisplay">3 Days</span>
-<span class="text-xs text-tertiary font-medium">Active Streak</span>
+<div class="d-flex gap-xs align-center">
+<button class="btn btn-secondary btn-sm" id="plannerExportIcsBtn" type="button">Export .ICS</button>
+<button class="btn btn-primary btn-sm" id="plannerBuildPlanBtn" type="button">Build Study Plan</button>
+<div class="streak-counter p-2 border-subtle bg-sunken rounded-sm d-flex flex-col items-center">
+<span id="plannerStreakDisplay" class="font-mono font-bold text-accent text-sm">0 Days</span>
+<span class="text-xxs text-tertiary uppercase tracking-wide">Verified Streak</span>
 </div>
 </div>
+</div>
+
+<!-- Plan Builder Panel -->
+<div id="plannerBuilderBox" class="card p-3 bg-sunken border-subtle mb-3 hidden">
+<div class="d-flex flex-between align-center mb-2">
+<h4 class="text-sm font-semibold m-0 text-primary">Plan Builder: Targeted Milestone Generation</h4>
+<button type="button" class="btn btn-ghost btn-sm" id="plannerCloseBuilderBtn">✕ Close</button>
+</div>
+<div class="d-grid grid-auto-fit gap-sm mb-3">
+<div>
+<label class="form-label text-xs" for="plannerTargetRole">Target Role</label>
+<input class="form-input text-xs" id="plannerTargetRole" type="text" value="Backend Engineer"/>
+</div>
+<div>
+<label class="form-label text-xs" for="plannerIntensity">Study Pace &amp; Intensity</label>
+<select class="form-select text-xs" id="plannerIntensity">
+<option value="light">Light (5 hrs/week · 1 task/day)</option>
+<option selected="" value="standard">Standard (10 hrs/week · 2 tasks/day)</option>
+<option value="sprint">Placement Sprint (20 hrs/week · 3 tasks/day)</option>
+</select>
+</div>
+<div>
+<label class="form-label text-xs" for="plannerSessionLen">Session Length</label>
+<select class="form-select text-xs" id="plannerSessionLen">
+<option value="25">25 mins (Pomodoro Focus)</option>
+<option selected="" value="45">45 mins (Deep Work)</option>
+<option value="60">60 mins (Extended Sprint)</option>
+</select>
+</div>
+</div>
+<div class="d-flex justify-end gap-xs">
+<button type="button" class="btn btn-secondary btn-sm" id="plannerCancelBuilderBtn">Cancel</button>
+<button type="button" class="btn btn-primary btn-sm" id="plannerGenerateScheduleBtn">Generate Weekly Schedule</button>
+</div>
+</div>
+
 <div class="planner-week-grid" id="plannerWeekGrid">
 <!-- Monday to Sunday populated dynamically -->
 </div>
@@ -1392,60 +1433,85 @@
 <!-- ==================================================================
                VIEW 11: LIVE JOB MARKET INTELLIGENCE (#/market)
                ================================================================== -->
+<!-- ==================================================================
+               VIEW 11: LIVE JOBS AGGREGATOR (#/market -> #view-jobs)
+               ================================================================== -->
 <section class="view-panel" hidden="" id="view-jobs">
 <div class="card mb-3">
-<div class="card-header">
+<div class="card-header d-flex flex-between align-center flex-wrap gap-sm">
 <div>
-<h2 class="text-xl m-0">Live Jobs</h2>
+<h2 class="text-xl m-0 font-serif text-primary">Live Job Market Intelligence</h2>
 <span class="text-sm text-tertiary">
-                    Openings across tech hubs
-                  </span>
+Verified openings across Indian tech hubs and remote engineering teams
+</span>
 </div>
-<button class="btn btn-secondary btn-sm" id="runJobsFilterBtn" type="button">
-                  Refresh
-                </button>
+<div class="d-flex gap-xs align-center">
+<button class="btn btn-secondary btn-sm" id="jobsExportCsvBtn" type="button">Download CSV</button>
+<button class="btn btn-secondary btn-sm" id="runJobsFilterBtn" type="button">Refresh</button>
+</div>
 </div>
 <div class="card-body">
 <!-- Filters Bar -->
-<div class="d-grid gap-sm mb-3">
-<select class="form-select text-xs" id="jobFilterRole">
+<div class="d-grid grid-auto-fit gap-sm mb-3">
+<select class="form-select text-xs" id="jobFilterRole" aria-label="Filter by Target Role">
+<option value="All">All Roles</option>
 <option selected="" value="Data Engineer">Data Engineer</option>
 <option value="Full Stack Developer">Full Stack</option>
-<option value="DevOps Engineer">DevOps</option>
+<option value="DevOps Engineer">DevOps &amp; Cloud</option>
+<option value="Machine Learning">Machine Learning / AI</option>
+<option value="Cyber Security">Cyber Security</option>
 </select>
-<select class="form-select text-xs" id="jobFilterLocation">
-<option value="">All India</option>
+<select class="form-select text-xs" id="jobFilterLocation" aria-label="Filter by Location">
+<option value="">All Locations</option>
 <option value="Bengaluru">Bengaluru</option>
 <option value="Hyderabad">Hyderabad</option>
 <option value="Pune">Pune</option>
+<option value="Delhi">Delhi NCR</option>
+<option value="Mumbai">Mumbai</option>
+<option value="Chennai">Chennai</option>
+<option value="Remote">Remote (India / Global)</option>
 </select>
-<select class="form-select text-xs" id="jobFilterMode">
-<option value="">Any Mode</option>
+<select class="form-select text-xs" id="jobFilterMode" aria-label="Filter by Work Mode">
+<option value="">Any Work Mode</option>
 <option value="Remote">Remote</option>
 <option value="Hybrid">Hybrid</option>
 <option value="Onsite">Onsite</option>
 </select>
-<input class="form-input text-xs" id="jobFilterSkill" placeholder="Skill keyword..." type="text"/>
-<label class="checkbox-label text-xs whitespace-nowrap">
-<input id="jobPreferLiveCheck" type="checkbox"/>
-<span>Live API</span>
+<select class="form-select text-xs" id="jobFilterExp" aria-label="Filter by Experience">
+<option value="">Any Experience</option>
+<option value="Entry">Fresher / 0-2 yrs</option>
+<option value="Mid">Mid-Level (2-5 yrs)</option>
+<option value="Senior">Senior (5+ yrs)</option>
+</select>
+<input class="form-input text-xs" id="jobFilterSkill" placeholder="Filter by skill (e.g. Python, React, AWS)..." type="text" aria-label="Filter by skill"/>
+<label class="checkbox-label text-xs whitespace-nowrap d-flex align-center gap-xxs cursor-pointer">
+<input id="jobPreferLiveCheck" type="checkbox" checked=""/>
+<span>Prefer Live APIs</span>
 </label>
 </div>
+
 <!-- Trending Skills & Hiring Matrix -->
 <div class="d-grid grid-2 gap-lg mb-3">
-<div class="card p-2 bg-sunken">
-<h4 class="text-sm mb-05">In-Demand Skills</h4>
+<div class="card p-3 bg-sunken border-subtle">
+<div class="d-flex flex-between align-center mb-2">
+<h4 class="text-sm font-semibold m-0 text-primary">In-Demand Market Skills</h4>
+<span class="text-xs text-tertiary">Real employer demand</span>
+</div>
 <div class="d-flex flex-col gap-xs" id="jobsTrendingChart"></div>
 </div>
-<div class="card p-2 bg-sunken">
-<h4 class="text-sm mb-05">Hiring Matrix</h4>
-<div class="ledger-table-wrapper border-none">
-<table class="ledger-table">
+<div class="card p-3 bg-sunken border-subtle">
+<div class="d-flex flex-between align-center mb-2">
+<h4 class="text-sm font-semibold m-0 text-primary">Hiring Company Benchmarks</h4>
+<span class="text-xs text-tertiary">Verified tech employers</span>
+</div>
+<div class="table-container border-none">
+<table class="table-compact text-xs w-full">
 <thead>
 <tr>
 <th>Company</th>
-<th>Active Roles</th>
-<th>Avg CTC</th>
+<th>Role Title</th>
+<th>CTC Range (INR)</th>
+<th>Match</th>
 </tr>
 </thead>
 <tbody id="jobsCompanyMatrixBody"></tbody>
@@ -1453,17 +1519,30 @@
 </div>
 </div>
 </div>
-<!-- Job Postings Grid -->
-<div class="d-flex justify-between items-baseline mb-1">
-<h4 class="text-base">Openings (<span id="jobsTotalCount">12</span>)</h4>
-<span class="font-mono text-xs text-tertiary" id="jobsLastUpdatedLabel">Today</span>
+
+<!-- Job Postings Header & Counter -->
+<div class="d-flex justify-between items-baseline mb-2">
+<h4 class="text-base text-primary m-0">Verified Openings (<span id="jobsTotalCount">0</span>)</h4>
+<span class="font-mono text-xs text-tertiary" id="jobsLastUpdatedLabel">Just now</span>
 </div>
+
+<!-- Job Cards Grid -->
 <div class="d-grid grid-2 gap-md" id="jobsCardsGrid"></div>
-<!-- Hidden compatibility tags -->
-<div class="hidden">
-<span id="jobsDataSourceLabel"></span>
-<input id="jobUrlInput"/>
+
+<!-- Legal Job Providers & Attribution Footnote -->
+<div class="mt-4 pt-3 border-top d-flex flex-between align-center flex-wrap gap-xs text-xs text-tertiary">
+<div>
+<span>Aggregated with legal timeouts from: </span>
+<a href="https://remotive.com" target="_blank" rel="noopener noreferrer" class="link-subtle">Remotive</a> · 
+<a href="https://www.arbeitnow.com" target="_blank" rel="noopener noreferrer" class="link-subtle">Arbeitnow</a> · 
+<a href="https://developer.adzuna.com" target="_blank" rel="noopener noreferrer" class="link-subtle">Adzuna</a> · 
+<a href="https://remoteok.com" target="_blank" rel="noopener noreferrer" class="link-subtle">RemoteOK</a> · 
+<a href="https://www.themuse.com" target="_blank" rel="noopener noreferrer" class="link-subtle">The Muse</a> · 
+<a href="https://himalayas.app" target="_blank" rel="noopener noreferrer" class="link-subtle">Himalayas</a>
 </div>
+<span id="jobsDataSourceLabel" class="font-mono text-xxs"></span>
+</div>
+<input id="jobUrlInput" type="hidden"/>
 </div>
 </div>
 </section>
