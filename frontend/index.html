@@ -340,7 +340,7 @@
 <a class="btn btn-primary btn-lg min-w-200" href="#/analyzer" id="landingAnalyzeCtaBtn">
                     Analyze your resume →
                   </a>
-<a class="how-it-works-link" href="#landingHowItWorks">
+<a class="how-it-works-link" href="#/landing" data-scroll-to="landingHowItWorks" id="howItWorksLink">
                     How it works ↓
                   </a>
 </div>
@@ -349,7 +349,7 @@
 <!-- Below the Fold: Slim 3-Step Strip (Upload, Analyze, Improve) -->
 <div class="landing-steps-strip" id="landingHowItWorks">
 <div class="text-center max-w-form">
-<h2 class="font-serif text-score-huge text-primary">
+<h2 class="font-serif text-score-huge text-primary" id="landingHowItWorksHeading" tabindex="-1">
                   How It Works in 3 Steps
                 </h2>
 <p class="text-base text-secondary m-0">
@@ -618,17 +618,37 @@
 
 </div>
 <div class="card-body">
+<!-- Visually hidden file input placed OUTSIDE the drop zone for accessible synchronous triggering -->
+<input accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" class="visually-hidden" id="resumeFileInput" type="file" aria-label="Upload resume file (PDF, DOCX, TXT up to 5 MB)"/>
+
 <!-- Dropzone -->
-<div aria-label="Upload resume file" class="upload-drop-zone" id="uploadDropZone" role="button" tabindex="0">
-<svg fill="none" height="32" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="32">
+<div aria-label="Upload resume file by dropping or choosing a file" class="upload-drop-zone" id="uploadDropZone" role="button" tabindex="0">
+<svg fill="none" height="32" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="32" aria-hidden="true">
 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
 <polyline points="17 8 12 3 7 8"></polyline>
 <line x1="12" x2="12" y1="3" y2="15"></line>
 </svg>
-<div class="upload-title">Drop resume or <span class="text-underline text-accent">browse</span></div>
-
-<input accept=".pdf,.docx,.txt" class="hidden" id="resumeFileInput" type="file"/>
+<div class="upload-title">Drop resume here or choose file</div>
+<div class="text-xs text-tertiary mt-05">PDF, DOCX, or TXT (Max 5 MB)</div>
+<div class="mt-1">
+  <button type="button" class="btn btn-secondary btn-sm" id="chooseFileBtn">Choose file</button>
 </div>
+</div>
+
+<!-- Selected file banner with size and remove action -->
+<div class="selected-file-banner hidden mt-1 p-1 bg-sunken border-subtle rounded-sm" id="selectedFileBanner">
+  <div class="d-flex justify-between items-center text-xs">
+    <div class="d-flex items-center gap-xs">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+      <span class="font-medium text-primary" id="selectedFileName">resume.pdf</span>
+    </div>
+    <div class="d-flex items-center gap-sm">
+      <span class="text-tertiary tabular-nums" id="selectedFileSize">0 KB</span>
+      <button type="button" class="btn btn-ghost btn-xs text-low" id="removeFileBtn" aria-label="Remove uploaded resume">Remove</button>
+    </div>
+  </div>
+</div>
+
 <div class="text-sm text-accent text-center mt-05" id="uploadStatusText"></div>
 <div class="text-center font-mono text-xs text-tertiary">
                       or paste text
@@ -732,8 +752,8 @@
 </label>
 </div>
 <div class="mt-3">
-<button class="btn btn-primary btn-lg w-full" id="runAnalysisBtn" type="button">
-                        Run Match Analysis →
+<button class="btn btn-primary btn-lg w-full" id="runAnalysisBtn" type="button" disabled>
+                        Run Match Analysis
                       </button>
 <div class="text-sm text-tertiary text-center mt-05 hidden" id="analysisProgressBox">
                         Evaluating semantic skill matching...
@@ -864,13 +884,13 @@
 <div class="mt-15 border-top">
 <strong class="text-xs">Recommended Courses:</strong>
 <div class="mt-05">
-<a class="text-sm font-semibold d-block" href="#" id="inspFreeCourseLink" target="_blank">
+<a class="text-sm font-semibold d-block" href="javascript:void(0)" id="inspFreeCourseLink" rel="noopener noreferrer" target="_blank">
 <span id="inspFreeCourseTitle">Free Course</span>
 </a>
 <span class="text-xs text-tertiary" id="inspFreeCourseMeta"></span>
 </div>
 <div class="mt-1">
-<a class="text-sm font-semibold d-block" href="#" id="inspPaidCourseLink" target="_blank">
+<a class="text-sm font-semibold d-block" href="javascript:void(0)" id="inspPaidCourseLink" rel="noopener noreferrer" target="_blank">
 <span id="inspPaidCourseTitle">Paid Course</span>
 </a>
 <span class="text-xs text-tertiary" id="inspPaidCourseMeta"></span>
