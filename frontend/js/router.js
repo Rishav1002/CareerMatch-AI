@@ -323,6 +323,24 @@ export class Router {
   }
 
   init() {
+    // Intercept data-scroll-to anchors for in-page smooth navigation without 404 route drift
+    document.addEventListener("click", (e) => {
+      const trigger = e.target.closest("[data-scroll-to]");
+      if (!trigger) return;
+      const targetId = trigger.getAttribute("data-scroll-to");
+      const targetEl = document.getElementById(targetId);
+      if (targetEl) {
+        e.preventDefault();
+        const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        targetEl.scrollIntoView({ behavior: prefersReduced ? "auto" : "smooth" });
+        const focusable = targetEl.querySelector("h1, h2, h3, [tabindex]") || targetEl;
+        if (focusable) {
+          focusable.setAttribute("tabindex", "-1");
+          focusable.focus({ preventScroll: true });
+        }
+      }
+    });
+
     // Initialize all feature modules
     dashboardModule.init();
     analyzerModule.init();
@@ -360,7 +378,25 @@ export class Router {
     // Resolve aliases (e.g. jobs -> market, pri -> readiness)
     const targetKey = this.aliases[requestedView] || requestedView;
     const isKnown = Boolean(this.registry[targetKey]);
-    const activeRouteKey = isKnown ? targetKey : "404";
+    let activeRouteKey = isKnown ? targetKey : "404";
+
+    // Gracefully handle in-page section anchors without dropping into 404
+    if (!isKnown) {
+      const inPageEl = document.getElementById(rawHash) || document.getElementById(requestedView);
+      if (inPageEl) {
+        activeRouteKey = this.currentRoute || "landing";
+        setTimeout(() => {
+          const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          inPageEl.scrollIntoView({ behavior: prefersReduced ? "auto" : "smooth" });
+          const focusable = inPageEl.querySelector("h1, h2, h3, [tabindex]") || inPageEl;
+          if (focusable) {
+            focusable.setAttribute("tabindex", "-1");
+            focusable.focus({ preventScroll: true });
+          }
+        }, 30);
+      }
+    }
+
     const route = this.registry[activeRouteKey];
 
     this.currentRoute = activeRouteKey;
