@@ -26,12 +26,29 @@ def test_roles_catalog_has_over_40_roles():
         assert cat in categories, f"Missing category {cat}"
 
 
-def test_health_check_returns_database_connected():
+def test_health_check_returns_sanitized_status():
+    """Bug 3: Public health check returns minimal status without leaking stack internals."""
     res, status_code = handle_health_check()
     assert status_code == 200
-    assert res["status"] == "healthy"
-    assert res["database"] == "connected"
-    assert "engine" in res
+    assert res == {"status": "ok"}
+    assert "database" not in res
+    assert "engine" not in res
+    assert "version" not in res
+
+
+def test_health_check_diagnostics_with_key():
+    """Bug 3: Authorized health check with X-Health-Key returns detailed diagnostics."""
+    import backend.main as main_mod
+    original_key = main_mod.HEALTH_KEY
+    main_mod.HEALTH_KEY = "test-secret-health-key-123"
+    try:
+        res, status_code = handle_health_check("test-secret-health-key-123")
+        assert status_code == 200
+        assert res["status"] == "ok"
+        assert res["database"] == "connected"
+        assert "engine" in res
+    finally:
+        main_mod.HEALTH_KEY = original_key
 
 
 def test_ai_rate_limiter_and_usage():

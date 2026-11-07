@@ -112,17 +112,6 @@ function initApp() {
   // Mark boot complete for the watchdog safety net
   window.__cmBooted = true;
   window.dispatchEvent(new CustomEvent("careermatch:booted"));
-  console.info("CareerMatch AI: application successfully booted (__cmBooted = true).");
-
-  // Populate build SHA from health endpoint
-  try {
-    fetch("/api/health").then(r => r.json()).then(data => {
-      if (data && data.build_sha) {
-        const el = document.getElementById("appBuildSha");
-        if (el) el.textContent = data.build_sha;
-      }
-    }).catch(() => {});
-  } catch (e) {}
 }
 
 function attachShellListeners() {
@@ -231,34 +220,6 @@ function attachShellListeners() {
       setTimeout(() => window.location.reload(), 1000);
     }
   });
-
-  // Cold Start Detection for Render & Neon Server
-  const banner = document.getElementById("serverColdStartBanner");
-  const origFetch = window.fetch;
-  window.fetch = async function (...args) {
-    const urlStr = String(args[0] || "");
-    const isApi = urlStr.includes("/api/");
-    let timer = null;
-
-    if (isApi && banner) {
-      timer = setTimeout(() => {
-        banner.style.display = "flex";
-      }, 2500);
-    }
-
-    try {
-      const resp = await origFetch.apply(this, args);
-      if (timer) clearTimeout(timer);
-      if (banner) banner.style.display = "none";
-      return resp;
-    } catch (err) {
-      if (timer) clearTimeout(timer);
-      if (isApi && banner) {
-        banner.style.display = "flex";
-      }
-      throw err;
-    }
-  };
 
   // Language Switcher Toggle (EN/HI)
   const langBtn = document.getElementById("langToggleBtn");

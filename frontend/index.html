@@ -37,10 +37,6 @@
 <link href="/frontend/css/styles.css" rel="stylesheet"/>
 </head>
 <body>
-<!-- Cold Start Reconnect Alert -->
-<div class="server-cold-start-banner" id="serverColdStartBanner" role="alert">
-<span>Waking up server instance... Render free tier and Neon DB resume automatically in ~15-30s.</span>
-</div>
 <!-- Boot Failure Safety Net Banner -->
 <div class="boot-failure-banner hidden" id="cmBootFailureBanner" role="alert">
 <span>Something failed to load.</span>
@@ -423,11 +419,14 @@
 </div>
 <div class="border-top max-w-wide mx-auto d-flex flex-wrap gap-md text-xs text-tertiary flex-between">
 <div>
-                  Live job feeds aggregated from verified Indian tech benchmarks.
-                </div>
+  <span>&copy; <span id="landingCopyrightYear">2026</span> CareerMatch AI. All rights reserved.</span>
+</div>
 <div class="d-flex items-center gap-md">
-<span>Build: <code class="build-sha" id="appBuildSha">4.0.0</code></span>
-<span>© <span id="landingCopyrightYear">2026</span> CareerMatch AI.</span>
+  <a class="text-tertiary link-muted" href="#/privacy">Privacy</a>
+  <span aria-hidden="true">&middot;</span>
+  <a class="text-tertiary link-muted" href="#/terms">Terms</a>
+  <span aria-hidden="true">&middot;</span>
+  <a class="text-tertiary link-muted" href="#/cookies">Cookies</a>
 </div>
 </div>
 </footer>

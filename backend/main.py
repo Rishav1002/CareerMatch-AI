@@ -211,8 +211,17 @@ def handle_health_check(request_key: Optional[str] = None) -> tuple[Dict[str, An
         db_ok = False
 
     status_code = 200 if db_ok else 503
+
+    # Bug 3: Public response is sanitized to prevent infrastructure information disclosure
+    # Detailed diagnostics only served when authorized with confidential X-Health-Key
+    is_authorized = bool(
+        HEALTH_KEY and request_key and hmac.compare_digest(str(request_key).strip(), str(HEALTH_KEY).strip())
+    )
+    if not is_authorized:
+        return {"status": "ok" if db_ok else "unavailable"}, status_code
+
     return {
-        "status": "healthy" if db_ok else "unhealthy",
+        "status": "ok" if db_ok else "unavailable",
         "database": "connected" if db_ok else "disconnected",
         "engine": engine,
         "version": "4.0.0",
@@ -501,7 +510,12 @@ async def session_and_security_middleware(request: Request, call_next: Any) -> A
             path="/",
         )
 
-    # 4. Enforce strict production security headers
+    # 4. Enforce strict production security headers and strip server fingerprints
+    if "Server" in response.headers:
+        del response.headers["Server"]
+    if "X-Powered-By" in response.headers:
+        del response.headers["X-Powered-By"]
+
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "SAMEORIGIN"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
