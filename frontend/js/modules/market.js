@@ -17,9 +17,14 @@ export class MarketModule {
     if (this.initialized) return;
     this.initialized = true;
 
-    const filterBtn = document.getElementById("applyJobFiltersBtn");
+    const filterBtn = document.getElementById("runJobsFilterBtn") || document.getElementById("applyJobFiltersBtn");
     if (filterBtn) {
       filterBtn.addEventListener("click", () => this.load(true));
+    }
+
+    const exportCsvBtn = document.getElementById("jobsExportCsvBtn");
+    if (exportCsvBtn) {
+      exportCsvBtn.addEventListener("click", () => this.exportCsv());
     }
 
     const searchInput = document.getElementById("jobFilterSkill");
@@ -32,17 +37,54 @@ export class MarketModule {
       });
     }
 
+    ["jobFilterRole", "jobFilterLocation", "jobFilterMode", "jobFilterExp"].forEach((id) => {
+      document.getElementById(id)?.addEventListener("change", () => this.load());
+    });
+
     store.subscribe("activeResume", () => {
-      if (store.get("currentView") === "market") {
+      if (store.get("currentView") === "market" || store.get("currentView") === "jobs") {
         this.load();
       }
     });
   }
 
+  exportCsv() {
+    const data = store.get("jobsData");
+    const jobs = data?.jobs || [];
+    if (!jobs.length) {
+      if (window.showToast) window.showToast("No jobs to export. Please load openings first.");
+      return;
+    }
+
+    const headers = ["Title", "Company", "Location", "WorkMode", "Experience", "SalaryRange", "MatchScore", "Source", "ApplyUrl"];
+    const rows = jobs.map((j) => [
+      `"${(j.title || "").replace(/"/g, '""')}"`,
+      `"${(j.companyName || "").replace(/"/g, '""')}"`,
+      `"${(j.location || "").replace(/"/g, '""')}"`,
+      `"${(j.workMode || "").replace(/"/g, '""')}"`,
+      `"${(j.experienceLevel || "").replace(/"/g, '""')}"`,
+      `"${(j.salaryRange || "").replace(/"/g, '""')}"`,
+      j.matchScore != null ? `${j.matchScore}%` : "N/A",
+      `"${(j.dataSource || "").replace(/"/g, '""')}"`,
+      `"${(j.applyUrl || "").replace(/"/g, '""')}"`,
+    ]);
+
+    const csvContent = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `careermatch_jobs_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    if (window.showToast) window.showToast("Exported jobs to CSV");
+  }
+
   async load(showToastMsg = false) {
     const roleFilter = document.getElementById("jobFilterRole")?.value || "All";
-    const workModeFilter = document.getElementById("jobFilterMode")?.value || "All";
+    const workModeFilter = document.getElementById("jobFilterMode")?.value || "";
     const locationFilter = document.getElementById("jobFilterLocation")?.value || "";
+    const experienceFilter = document.getElementById("jobFilterExp")?.value || "";
     const skillFilter = document.getElementById("jobFilterSkill")?.value || "";
     const preferLiveApi = Boolean(document.getElementById("jobPreferLiveCheck")?.checked);
 
@@ -61,6 +103,7 @@ export class MarketModule {
           roleFilter,
           workModeFilter,
           locationFilter,
+          experienceFilter,
           skillFilter,
           preferLiveApi,
         }),
@@ -71,6 +114,7 @@ export class MarketModule {
 
       store.set("jobsData", data);
       this.render(data);
+      if (showToastMsg && window.showToast) window.showToast(`Found ${data.totalListings || 0} active openings`);
     } catch (err) {
       this.renderError(err.message);
     }
@@ -144,24 +188,26 @@ export class MarketModule {
       cardsGrid.innerHTML = (data.jobs || [])
         .map(
           (j) => `
-          <div class="card" style="padding: 16px; display: flex; flex-direction: column; justify-content: space-between; margin-bottom: 12px;">
+          <div class="card p-3 d-flex flex-col flex-between mb-2 border-subtle">
             <div>
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                <span class="step-badge">${escapeHtml(j.workMode)} · ${escapeHtml(j.experienceLevel)}</span>
-                <span class="tag tag-match tabular-nums">${Math.round(j.matchScore)}% Match</span>
+              <div class="d-flex flex-between align-center mb-1">
+                <span class="badge-tag">${escapeHtml(j.workMode)} · ${escapeHtml(j.experienceLevel)}</span>
+                ${j.matchScore != null ? `<span class="tag tag-match tabular-nums font-semibold">${Math.round(j.matchScore)}% Match</span>` : ""}
               </div>
-              <h4 style="margin:4px 0; font-size:1.05rem;">${escapeHtml(j.title)}</h4>
-              <p style="margin:0 0 6px; font-size:0.85rem;"><strong>${escapeHtml(j.companyName)}</strong> · ${escapeHtml(j.location)} · <span class="tabular-nums" style="color:var(--brand-accent); font-weight:600;">${escapeHtml(j.salaryRange)}</span></p>
-              <p style="margin-bottom:8px; font-size:0.8125rem; color:var(--text-secondary);">${escapeHtml(j.descriptionSummary)}</p>
-              <div style="display:flex; flex-wrap:wrap; gap:4px;">
-                ${(j.matchedSkills || []).map((s) => `<span class="tag tag-match">● [✓] ${escapeHtml(s)}</span>`).join("")}
-                ${(j.missingSkills || []).map((s) => `<span class="tag tag-gap">⬡ [✕] ${escapeHtml(s)}</span>`).join("")}
-              </div>
+              <h4 class="text-base font-semibold m-0 mb-1 text-primary">${escapeHtml(j.title)}</h4>
+              <p class="text-xs text-secondary m-0 mb-1"><strong>${escapeHtml(j.companyName)}</strong> · ${escapeHtml(j.location)} · <span class="tabular-nums font-semibold text-accent">${escapeHtml(j.salaryRange)}</span></p>
+              <p class="text-xs text-tertiary mb-2 line-clamp-2">${escapeHtml(j.descriptionSummary)}</p>
+              ${j.matchedSkills?.length || j.missingSkills?.length ? `
+                <div class="d-flex flex-wrap gap-xxs mb-2">
+                  ${(j.matchedSkills || []).map((s) => `<span class="tag tag-match text-xxs">✓ ${escapeHtml(s)}</span>`).join("")}
+                  ${(j.missingSkills || []).map((s) => `<span class="tag tag-gap text-xxs">✕ ${escapeHtml(s)}</span>`).join("")}
+                </div>
+              ` : ""}
             </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:8px;border-top:1px solid var(--border-subtle);">
-              <small style="color:var(--text-tertiary);font-size:0.75rem;font-family:var(--font-mono);">${escapeHtml(j.dataSource)}</small>
-              <div style="display:flex;gap:6px;align-items:center;">
-                <button type="button" class="btn btn-secondary btn-sm" data-track-job="${encodeURIComponent(JSON.stringify(j))}">+ Track in Kanban</button>
+            <div class="d-flex flex-between align-center pt-2 border-top mt-2">
+              <small class="text-tertiary font-mono text-xxs">${escapeHtml(j.dataSource)}</small>
+              <div class="d-flex gap-xs align-center">
+                <button type="button" class="btn btn-secondary btn-sm" data-track-job="${encodeURIComponent(JSON.stringify(j))}">+ Track</button>
                 <a href="${escapeHtml(j.applyUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">Apply ↗</a>
               </div>
             </div>
@@ -185,14 +231,14 @@ export class MarketModule {
                 location: job.location,
                 stage: "wishlist",
                 salary: job.salaryRange,
-                match: job.matchScore,
+                match: job.matchScore || 0,
                 appliedDate: new Date().toISOString().split("T")[0],
               };
               currentTracker.push(newJob);
               store.set("trackerJobs", currentTracker);
-              alert(`Added "${job.title} at ${job.companyName}" to your Application Kanban!`);
+              if (window.showToast) window.showToast(`Added "${job.title}" to Application Tracker`);
             } else {
-              alert("This role is already in your application tracker.");
+              if (window.showToast) window.showToast("Role is already in your application tracker", "warning");
             }
           } catch (_) {}
         });

@@ -1,7 +1,7 @@
 """
-Relational Database Layer for CareerMatch AI (PostgreSQL / MySQL / SQLite Dual Engine).
+Relational Database Layer for CareerMatch AI (PostgreSQL / SQLite Dual Engine).
 Uses parameterized SQL statements to prevent SQL injection and persists all 17
-normalized tables for the Unified AI Career Intelligence Engine:
+normalized tables with strict owner-based data isolation:
 1. users
 2. student_profiles
 3. resumes
@@ -19,16 +19,17 @@ normalized tables for the Unified AI Career Intelligence Engine:
 15. assessment_results
 16. career_comparisons
 17. placement_readiness_reports
+18. ai_usage
 """
 
 import json
 import os
 import sqlite3
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
-from backend.config import DATABASE_PATH, DATABASE_URL
+from backend.config import DATABASE_PATH, DATABASE_URL, GUEST_DATA_TTL_DAYS
 
 DB_PATH = os.environ.get("DATABASE_PATH", DATABASE_PATH)
 
@@ -56,6 +57,13 @@ class PostgresCursorWrapper:
             if params and len(params) >= 2:
                 try:
                     self._cur.execute("DELETE FROM roadmap_progress WHERE resume_id = %s AND target_role = %s", (params[0], params[1]))
+                except Exception:
+                    pass
+            query = query.replace("INSERT OR REPLACE INTO", "INSERT INTO")
+        elif "INSERT OR REPLACE INTO learning_roadmaps" in query:
+            if params and len(params) >= 1:
+                try:
+                    self._cur.execute("DELETE FROM learning_roadmaps WHERE id = %s", (params[0],))
                 except Exception:
                     pass
             query = query.replace("INSERT OR REPLACE INTO", "INSERT INTO")
@@ -87,6 +95,13 @@ class PostgresCursorWrapper:
             return self._cur.lastrowid or 1
         except Exception:
             return 1
+
+    @property
+    def rowcount(self) -> int:
+        try:
+            return self._cur.rowcount
+        except Exception:
+            return 0
 
     def close(self) -> None:
         try:
@@ -156,7 +171,7 @@ def get_connection() -> Any:
 
 
 def init_db() -> None:
-    """Create all 17 CareerMatch AI relational tables if they do not exist."""
+    """Create all relational tables and execute additive, idempotent migrations."""
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -194,7 +209,8 @@ def init_db() -> None:
 
         CREATE TABLE IF NOT EXISTS resumes (
             id TEXT PRIMARY KEY,
-            user_id TEXT DEFAULT 'guest',
+            owner_id TEXT DEFAULT 'legacy_unowned',
+            user_id TEXT DEFAULT 'legacy_unowned',
             candidate_name TEXT NOT NULL,
             email TEXT,
             phone TEXT,
@@ -214,6 +230,7 @@ def init_db() -> None:
 
         CREATE TABLE IF NOT EXISTS analyses (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            owner_id TEXT DEFAULT 'legacy_unowned',
             resume_id TEXT NOT NULL,
             candidate_name TEXT NOT NULL,
             target_role TEXT NOT NULL,
@@ -240,7 +257,8 @@ def init_db() -> None:
 
         CREATE TABLE IF NOT EXISTS resume_analyses (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id TEXT DEFAULT 'guest',
+            owner_id TEXT DEFAULT 'legacy_unowned',
+            user_id TEXT DEFAULT 'legacy_unowned',
             resume_id TEXT NOT NULL,
             candidate_name TEXT NOT NULL,
             target_role TEXT NOT NULL,
@@ -270,6 +288,7 @@ def init_db() -> None:
         CREATE TABLE IF NOT EXISTS roadmap_progress (
             resume_id TEXT NOT NULL,
             target_role TEXT NOT NULL,
+            owner_id TEXT DEFAULT 'legacy_unowned',
             completed_nodes_json TEXT NOT NULL,
             updated_at TEXT NOT NULL,
             PRIMARY KEY (resume_id, target_role)
@@ -295,7 +314,8 @@ def init_db() -> None:
 
         CREATE TABLE IF NOT EXISTS job_matches (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id TEXT DEFAULT 'guest',
+            owner_id TEXT DEFAULT 'legacy_unowned',
+            user_id TEXT DEFAULT 'legacy_unowned',
             resume_id TEXT NOT NULL,
             job_id TEXT NOT NULL,
             match_score REAL NOT NULL,
@@ -332,7 +352,8 @@ def init_db() -> None:
 
         CREATE TABLE IF NOT EXISTS interview_sessions (
             id TEXT PRIMARY KEY,
-            user_id TEXT DEFAULT 'guest',
+            owner_id TEXT DEFAULT 'legacy_unowned',
+            user_id TEXT DEFAULT 'legacy_unowned',
             resume_id TEXT,
             target_role TEXT NOT NULL,
             goal_company TEXT,
@@ -378,7 +399,8 @@ def init_db() -> None:
 
         CREATE TABLE IF NOT EXISTS github_profiles (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id TEXT DEFAULT 'guest',
+            owner_id TEXT DEFAULT 'legacy_unowned',
+            user_id TEXT DEFAULT 'legacy_unowned',
             resume_id TEXT,
             github_username TEXT NOT NULL,
             data_source TEXT NOT NULL,
@@ -396,7 +418,8 @@ def init_db() -> None:
 
         CREATE TABLE IF NOT EXISTS learning_roadmaps (
             id TEXT PRIMARY KEY,
-            user_id TEXT DEFAULT 'guest',
+            owner_id TEXT DEFAULT 'legacy_unowned',
+            user_id TEXT DEFAULT 'legacy_unowned',
             resume_id TEXT NOT NULL,
             target_role TEXT NOT NULL,
             overall_progress_pct REAL NOT NULL DEFAULT 0.0,
@@ -426,7 +449,8 @@ def init_db() -> None:
 
         CREATE TABLE IF NOT EXISTS assessment_sessions (
             id TEXT PRIMARY KEY,
-            user_id TEXT DEFAULT 'guest',
+            owner_id TEXT DEFAULT 'legacy_unowned',
+            user_id TEXT DEFAULT 'legacy_unowned',
             resume_id TEXT,
             topic TEXT NOT NULL,
             difficulty TEXT NOT NULL,
@@ -439,8 +463,9 @@ def init_db() -> None:
 
         CREATE TABLE IF NOT EXISTS assessment_results (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            owner_id TEXT DEFAULT 'legacy_unowned',
             session_id TEXT NOT NULL,
-            user_id TEXT DEFAULT 'guest',
+            user_id TEXT DEFAULT 'legacy_unowned',
             resume_id TEXT,
             topic TEXT NOT NULL,
             difficulty TEXT NOT NULL,
@@ -459,7 +484,8 @@ def init_db() -> None:
 
         CREATE TABLE IF NOT EXISTS career_comparisons (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id TEXT DEFAULT 'guest',
+            owner_id TEXT DEFAULT 'legacy_unowned',
+            user_id TEXT DEFAULT 'legacy_unowned',
             resume_id TEXT,
             primary_role TEXT NOT NULL,
             compared_roles_json TEXT NOT NULL,
@@ -470,7 +496,8 @@ def init_db() -> None:
 
         CREATE TABLE IF NOT EXISTS placement_readiness_reports (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id TEXT DEFAULT 'guest',
+            owner_id TEXT DEFAULT 'legacy_unowned',
+            user_id TEXT DEFAULT 'legacy_unowned',
             resume_id TEXT NOT NULL,
             target_role TEXT NOT NULL,
             pri_score REAL NOT NULL,
@@ -499,25 +526,104 @@ def init_db() -> None:
         """
     )
 
-    # Ensure backward-compatible `user_id` column exists if upgrading an older SQLite db
-    try:
-        cursor.execute("ALTER TABLE resumes ADD COLUMN IF NOT EXISTS user_id TEXT DEFAULT 'guest';")
-    except Exception:
+    # -------------------------------------------------------------------------
+    # ADDITIVE IDEMPOTENT MIGRATIONS FOR NEON (Postgres) & SQLITE
+    # -------------------------------------------------------------------------
+    tables_needing_owner = [
+        "resumes",
+        "analyses",
+        "resume_analyses",
+        "roadmap_progress",
+        "job_matches",
+        "interview_sessions",
+        "github_profiles",
+        "learning_roadmaps",
+        "assessment_sessions",
+        "assessment_results",
+        "career_comparisons",
+        "placement_readiness_reports",
+    ]
+
+    is_pg = hasattr(conn, "_conn")
+    for tbl in tables_needing_owner:
+        if is_pg:
+            try:
+                cursor.execute(f"ALTER TABLE {tbl} ADD COLUMN IF NOT EXISTS owner_id TEXT DEFAULT 'legacy_unowned';")
+            except Exception as exc:
+                print(f"Postgres migration notice for {tbl}.owner_id: {exc}")
+        else:
+            try:
+                cursor.execute(f"PRAGMA table_info({tbl});")
+                cols = [row[1] for row in cursor.fetchall()]
+                if "owner_id" not in cols:
+                    cursor.execute(f"ALTER TABLE {tbl} ADD COLUMN owner_id TEXT DEFAULT 'legacy_unowned';")
+            except Exception as exc:
+                print(f"SQLite migration notice for {tbl}.owner_id: {exc}")
+
+    # Additive migration for assessment hints tracking
+    if is_pg:
         try:
-            cursor.execute("ALTER TABLE resumes ADD COLUMN user_id TEXT DEFAULT 'guest';")
+            cursor.execute("ALTER TABLE assessment_sessions ADD COLUMN IF NOT EXISTS hints_used_json TEXT DEFAULT '{}';")
         except Exception:
             pass
+    else:
+        try:
+            cursor.execute("PRAGMA table_info(assessment_sessions);")
+            cols = [row[1] for row in cursor.fetchall()]
+            if "hints_used_json" not in cols:
+                cursor.execute("ALTER TABLE assessment_sessions ADD COLUMN hints_used_json TEXT DEFAULT '{}';")
+        except Exception:
+            pass
+
+    # Mark legacy guest/unowned rows as legacy_unowned so they are NEVER served to any new visitor
+    for tbl in tables_needing_owner:
+        try:
+            cursor.execute(f"UPDATE {tbl} SET owner_id = 'legacy_unowned' WHERE (owner_id IS NULL OR owner_id = '' OR owner_id = 'guest');")
+        except Exception:
+            pass
+
+    # Create composite indexes for fast owner-scoped queries
+    index_statements = [
+        ("idx_resumes_owner_created", "CREATE INDEX IF NOT EXISTS idx_resumes_owner_created ON resumes (owner_id, created_at DESC);"),
+        ("idx_analyses_owner_created", "CREATE INDEX IF NOT EXISTS idx_analyses_owner_created ON analyses (owner_id, created_at DESC);"),
+        ("idx_resume_analyses_owner_created", "CREATE INDEX IF NOT EXISTS idx_resume_analyses_owner_created ON resume_analyses (owner_id, created_at DESC);"),
+        ("idx_interview_owner_started", "CREATE INDEX IF NOT EXISTS idx_interview_owner_started ON interview_sessions (owner_id, started_at DESC);"),
+        ("idx_github_owner_analyzed", "CREATE INDEX IF NOT EXISTS idx_github_owner_analyzed ON github_profiles (owner_id, analyzed_at DESC);"),
+        ("idx_roadmaps_owner_updated", "CREATE INDEX IF NOT EXISTS idx_roadmaps_owner_updated ON learning_roadmaps (owner_id, updated_at DESC);"),
+        ("idx_assessments_owner_created", "CREATE INDEX IF NOT EXISTS idx_assessments_owner_created ON assessment_sessions (owner_id, created_at DESC);"),
+        ("idx_assessment_res_owner_created", "CREATE INDEX IF NOT EXISTS idx_assessment_res_owner_created ON assessment_results (owner_id, created_at DESC);"),
+        ("idx_career_comp_owner_created", "CREATE INDEX IF NOT EXISTS idx_career_comp_owner_created ON career_comparisons (owner_id, created_at DESC);"),
+        ("idx_pri_owner_created", "CREATE INDEX IF NOT EXISTS idx_pri_owner_created ON placement_readiness_reports (owner_id, created_at DESC);"),
+    ]
+
+    for idx_name, stmt in index_statements:
+        try:
+            cursor.execute(stmt)
+        except Exception as exc:
+            print(f"Index creation notice for {idx_name}: {exc}")
 
     conn.commit()
     conn.close()
 
+    # Clean expired guest sessions according to GUEST_DATA_TTL_DAYS
+    try:
+        cleanup_expired_guest_data()
+    except Exception as exc:
+        print(f"Guest session retention cleanup notice: {exc}")
+
 
 # ============================================================================
-# EXISTING RESUME & ANALYSIS CRUD (100% Backward Compatible)
+# RESUME & ANALYSIS CRUD WITH STRICT OWNER ISOLATION
 # ============================================================================
 
-def save_resume(profile: Dict[str, Any], user_id: str = "guest") -> Dict[str, Any]:
-    """Insert or replace a parsed candidate resume into SQLite and sync skill_records."""
+def save_resume(profile: Dict[str, Any], user_id: str = "guest", owner_id: str = "legacy_unowned") -> Dict[str, Any]:
+    """Insert or replace a parsed candidate resume into database and sync skill_records."""
+    if profile.get("dontSave", False):
+        return profile
+
+    if owner_id == "legacy_unowned" and user_id and user_id != "guest":
+        owner_id = user_id
+
     conn = get_connection()
     cursor = conn.cursor()
     now_iso = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
@@ -525,20 +631,21 @@ def save_resume(profile: Dict[str, Any], user_id: str = "guest") -> Dict[str, An
     cursor.execute(
         """
         INSERT OR REPLACE INTO resumes (
-            id, user_id, candidate_name, email, phone, location, filename, raw_text, summary,
+            id, owner_id, user_id, candidate_name, email, phone, location, filename, raw_text, summary,
             education_json, skills_json, projects_json, experience_json,
             certifications_json, soft_skills_json, skill_evidence_json, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             profile["id"],
+            owner_id,
             user_id,
             profile["contact"]["name"],
             profile["contact"].get("email", ""),
             profile["contact"].get("phone", ""),
             profile["contact"].get("location", ""),
             profile["filename"],
-            profile["rawText"],
+            profile.get("rawText", "")[:8000],  # Data minimization: truncate raw text storage
             profile.get("summary", ""),
             json.dumps(profile.get("education", [])),
             json.dumps(profile.get("technicalSkills", [])),
@@ -569,11 +676,14 @@ def save_resume(profile: Dict[str, Any], user_id: str = "guest") -> Dict[str, An
     return profile
 
 
-def get_resume_by_id(resume_id: str) -> Optional[Dict[str, Any]]:
-    """Retrieve a stored resume profile from SQLite."""
+def get_resume_by_id(resume_id: str, owner_id: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    """Retrieve a stored resume profile from database with optional owner verification."""
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM resumes WHERE id = ?", (resume_id,))
+    if owner_id:
+        cursor.execute("SELECT * FROM resumes WHERE id = ? AND owner_id = ?", (resume_id, owner_id))
+    else:
+        cursor.execute("SELECT * FROM resumes WHERE id = ?", (resume_id,))
     row = cursor.fetchone()
     conn.close()
     if not row:
@@ -581,19 +691,28 @@ def get_resume_by_id(resume_id: str) -> Optional[Dict[str, Any]]:
     return _row_to_resume(row)
 
 
-def list_all_resumes() -> List[Dict[str, Any]]:
+def list_all_resumes(owner_id: Optional[str] = None) -> List[Dict[str, Any]]:
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM resumes ORDER BY created_at DESC LIMIT 25")
+    if owner_id:
+        cursor.execute("SELECT * FROM resumes WHERE owner_id = ? ORDER BY created_at DESC LIMIT 25", (owner_id,))
+    else:
+        cursor.execute("SELECT * FROM resumes WHERE owner_id != 'legacy_unowned' ORDER BY created_at DESC LIMIT 25")
     rows = cursor.fetchall()
     conn.close()
     return [_row_to_resume(r) for r in rows]
 
 
-def update_resume_skills(resume_id: str, updated_skills: List[str]) -> Optional[Dict[str, Any]]:
-    """Update a candidate's verified technical skills list in SQLite."""
+def update_resume_skills(resume_id: str, updated_skills: List[str], owner_id: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    """Update a candidate's verified technical skills list with owner verification."""
     conn = get_connection()
     cursor = conn.cursor()
+    if owner_id:
+        cursor.execute("SELECT id FROM resumes WHERE id = ? AND owner_id = ?", (resume_id, owner_id))
+        if not cursor.fetchone():
+            conn.close()
+            return None
+
     now_iso = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
     cursor.execute(
         "UPDATE resumes SET skills_json = ? WHERE id = ?",
@@ -611,7 +730,7 @@ def update_resume_skills(resume_id: str, updated_skills: List[str]) -> Optional[
         )
     conn.commit()
     conn.close()
-    return get_resume_by_id(resume_id)
+    return get_resume_by_id(resume_id, owner_id=owner_id)
 
 
 def save_analysis_record(
@@ -627,13 +746,15 @@ def save_analysis_record(
     improvements: Dict[str, Any],
     ats_score: float = 0.0,
     ats_report: Optional[Dict[str, Any]] = None,
+    owner_id: str = "legacy_unowned",
 ) -> int:
-    """Save a complete job match analysis and AI recommendations to SQLite."""
+    """Save a complete job match analysis and AI recommendations with owner scope."""
     conn = get_connection()
     cursor = conn.cursor()
     now_iso = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
 
     params = (
+        owner_id,
         resume_id,
         candidate_name,
         target_role,
@@ -660,14 +781,14 @@ def save_analysis_record(
     cursor.execute(
         """
         INSERT INTO analyses (
-            resume_id, candidate_name, target_role, goal_company,
+            owner_id, resume_id, candidate_name, target_role, goal_company,
             overall_score, technical_score, projects_score, education_score,
             certifications_score, soft_skills_score,
             mandatory_met_pct, preferred_met_pct,
             matched_skills_json, partial_skills_json, missing_skills_json,
             skill_gaps_json, roadmap_json, courses_json,
             projects_rec_json, resume_improvements_json, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         params,
     )
@@ -676,16 +797,18 @@ def save_analysis_record(
     cursor.execute(
         """
         INSERT INTO resume_analyses (
-            resume_id, candidate_name, target_role, goal_company,
+            owner_id, user_id, resume_id, candidate_name, target_role, goal_company,
             overall_score, technical_score, projects_score, education_score,
             certifications_score, soft_skills_score, ats_score,
             mandatory_met_pct, preferred_met_pct,
             matched_skills_json, partial_skills_json, missing_skills_json,
             skill_gaps_json, roadmap_json, courses_json,
             projects_rec_json, resume_improvements_json, ats_report_json, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
+            owner_id,
+            owner_id,
             resume_id,
             candidate_name,
             target_role,
@@ -745,28 +868,38 @@ def save_analysis_record(
     return analysis_id
 
 
-def delete_analysis_record(analysis_id: int) -> bool:
+def delete_analysis_record(analysis_id: int, owner_id: Optional[str] = None) -> bool:
+    """Delete an analysis record with mandatory owner verification."""
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM analyses WHERE id = ?", (analysis_id,))
-    deleted = cursor.rowcount > 0
-    cursor.execute("DELETE FROM resume_analyses WHERE id = ?", (analysis_id,))
+    if owner_id:
+        cursor.execute("DELETE FROM analyses WHERE id = ? AND owner_id = ?", (analysis_id, owner_id))
+        deleted = cursor.rowcount > 0
+        cursor.execute("DELETE FROM resume_analyses WHERE id = ? AND owner_id = ?", (analysis_id, owner_id))
+    else:
+        cursor.execute("DELETE FROM analyses WHERE id = ?", (analysis_id,))
+        deleted = cursor.rowcount > 0
+        cursor.execute("DELETE FROM resume_analyses WHERE id = ?", (analysis_id,))
     conn.commit()
     conn.close()
     return deleted
 
 
-def get_analysis_by_id(analysis_id: int) -> Optional[Dict[str, Any]]:
-    """Retrieve a saved analysis record by ID from SQLite so users can reload past reports."""
+def get_analysis_by_id(analysis_id: int, owner_id: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    """Retrieve a saved analysis record by ID with owner verification."""
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM analyses WHERE id = ?", (analysis_id,))
+    if owner_id:
+        cursor.execute("SELECT * FROM analyses WHERE id = ? AND owner_id = ?", (analysis_id, owner_id))
+    else:
+        cursor.execute("SELECT * FROM analyses WHERE id = ?", (analysis_id,))
     row = cursor.fetchone()
     conn.close()
     if not row:
         return None
     return {
         "id": row["id"],
+        "ownerId": row["owner_id"] if "owner_id" in row.keys() else "",
         "resumeId": row["resume_id"],
         "candidateName": row["candidate_name"],
         "targetRole": row["target_role"],
@@ -786,14 +919,20 @@ def get_analysis_by_id(analysis_id: int) -> Optional[Dict[str, Any]]:
     }
 
 
-def get_roadmap_progress(resume_id: str, target_role: str) -> Dict[str, bool]:
-    """Load saved roadmap node completion checkboxes from SQLite."""
+def get_roadmap_progress(resume_id: str, target_role: str, owner_id: Optional[str] = None) -> Dict[str, bool]:
+    """Load saved roadmap node completion checkboxes with owner scope."""
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute(
-        "SELECT completed_nodes_json FROM roadmap_progress WHERE resume_id = ? AND target_role = ?",
-        (resume_id, target_role),
-    )
+    if owner_id:
+        cursor.execute(
+            "SELECT completed_nodes_json FROM roadmap_progress WHERE resume_id = ? AND target_role = ? AND owner_id = ?",
+            (resume_id, target_role, owner_id),
+        )
+    else:
+        cursor.execute(
+            "SELECT completed_nodes_json FROM roadmap_progress WHERE resume_id = ? AND target_role = ?",
+            (resume_id, target_role),
+        )
     row = cursor.fetchone()
     conn.close()
     if not row:
@@ -805,39 +944,53 @@ def get_roadmap_progress(resume_id: str, target_role: str) -> Dict[str, bool]:
         return {}
 
 
-def save_roadmap_progress(resume_id: str, target_role: str, completed_nodes: Dict[str, bool]) -> Dict[str, bool]:
-    """Persist roadmap node completion checkboxes to SQLite."""
+def save_roadmap_progress(resume_id: str, target_role: str, completed_nodes: Dict[str, bool], owner_id: str = "legacy_unowned") -> Dict[str, bool]:
+    """Persist roadmap node completion checkboxes with owner scope."""
     conn = get_connection()
     cursor = conn.cursor()
     now_iso = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
     cursor.execute(
         """
-        INSERT OR REPLACE INTO roadmap_progress (resume_id, target_role, completed_nodes_json, updated_at)
-        VALUES (?, ?, ?, ?)
+        INSERT OR REPLACE INTO roadmap_progress (resume_id, target_role, owner_id, completed_nodes_json, updated_at)
+        VALUES (?, ?, ?, ?, ?)
         """,
-        (resume_id, target_role, json.dumps(completed_nodes), now_iso),
+        (resume_id, target_role, owner_id, json.dumps(completed_nodes), now_iso),
     )
     conn.commit()
     conn.close()
     return completed_nodes
 
 
-def get_dashboard_metrics(resume_id: Optional[str] = None) -> Dict[str, Any]:
-    """Compute student dashboard statistics for the current resume ('my score over time')."""
+def get_dashboard_metrics(resume_id: Optional[str] = None, owner_id: Optional[str] = None) -> Dict[str, Any]:
+    """Compute student dashboard statistics scoped exclusively to the verified owner."""
+    if not owner_id or owner_id == "legacy_unowned":
+        return {
+            "totalResumes": 0,
+            "totalJobsCompared": 0,
+            "averageCompatibilityScore": 0.0,
+            "readinessStatus": "Upload a Resume to Begin",
+            "topMatchedSkills": [],
+            "topMissingSkills": [],
+            "recentHistory": [],
+        }
+
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT COUNT(*) AS cnt FROM resumes")
+    cursor.execute("SELECT COUNT(*) AS cnt FROM resumes WHERE owner_id = ?", (owner_id,))
     total_resumes = cursor.fetchone()["cnt"]
 
     if resume_id:
         cursor.execute(
-            "SELECT * FROM analyses WHERE resume_id = ? ORDER BY id DESC LIMIT 20",
-            (resume_id,),
+            "SELECT * FROM analyses WHERE owner_id = ? AND resume_id = ? ORDER BY id DESC LIMIT 20",
+            (owner_id, resume_id),
         )
         rows = cursor.fetchall()
     else:
-        cursor.execute("SELECT * FROM analyses ORDER BY id DESC LIMIT 20")
+        cursor.execute(
+            "SELECT * FROM analyses WHERE owner_id = ? ORDER BY id DESC LIMIT 20",
+            (owner_id,),
+        )
         rows = cursor.fetchall()
     conn.close()
 
@@ -915,10 +1068,79 @@ def get_dashboard_metrics(resume_id: Optional[str] = None) -> Dict[str, Any]:
     }
 
 
-def _row_to_resume(row: sqlite3.Row) -> Dict[str, Any]:
+def claim_guest_data(guest_id: str, user_id: str) -> int:
+    """Transfer ownership of guest resources from cm_sid session to newly signed-in user account."""
+    if not guest_id or not user_id or guest_id == user_id:
+        return 0
+    if not guest_id.startswith("guest_"):
+        return 0
+
+    tables = [
+        "resumes",
+        "analyses",
+        "resume_analyses",
+        "roadmap_progress",
+        "job_matches",
+        "interview_sessions",
+        "github_profiles",
+        "learning_roadmaps",
+        "assessment_sessions",
+        "assessment_results",
+        "career_comparisons",
+        "placement_readiness_reports",
+    ]
+    conn = get_connection()
+    cursor = conn.cursor()
+    total_transferred = 0
+    for tbl in tables:
+        try:
+            cursor.execute(f"UPDATE {tbl} SET owner_id = ? WHERE owner_id = ?", (user_id, guest_id))
+            total_transferred += cursor.rowcount
+        except Exception as exc:
+            print(f"Error transferring guest data on {tbl}: {exc}")
+    conn.commit()
+    conn.close()
+    return total_transferred
+
+
+def cleanup_expired_guest_data(ttl_days: Optional[int] = None) -> int:
+    """Delete guest session data older than GUEST_DATA_TTL_DAYS (default 30 days)."""
+    if ttl_days is None:
+        ttl_days = GUEST_DATA_TTL_DAYS
+
+    cutoff = (datetime.utcnow() - timedelta(days=ttl_days)).strftime("%Y-%m-%d %H:%M")
+    tables = [
+        ("resumes", "created_at"),
+        ("analyses", "created_at"),
+        ("resume_analyses", "created_at"),
+        ("interview_sessions", "started_at"),
+        ("github_profiles", "analyzed_at"),
+        ("learning_roadmaps", "updated_at"),
+        ("assessment_sessions", "created_at"),
+        ("assessment_results", "created_at"),
+        ("career_comparisons", "created_at"),
+        ("placement_readiness_reports", "created_at"),
+    ]
+    conn = get_connection()
+    cursor = conn.cursor()
+    purged = 0
+    for tbl, time_col in tables:
+        try:
+            cursor.execute(f"DELETE FROM {tbl} WHERE owner_id LIKE 'guest_%' AND {time_col} < ?", (cutoff,))
+            purged += cursor.rowcount
+        except Exception:
+            pass
+    conn.commit()
+    conn.close()
+    return purged
+
+
+def _row_to_resume(row: Any) -> Dict[str, Any]:
     skills = json.loads(row["skills_json"])
+    owner = row["owner_id"] if "owner_id" in row.keys() else (row["user_id"] if "user_id" in row.keys() else "")
     return {
         "id": row["id"],
+        "ownerId": owner,
         "filename": row["filename"],
         "uploadedAt": row["created_at"],
         "rawText": row["raw_text"],
@@ -938,14 +1160,14 @@ def _row_to_resume(row: sqlite3.Row) -> Dict[str, Any]:
         "skillEvidence": json.loads(row["skill_evidence_json"]),
     }
 
+
 def check_and_increment_ai_usage(user_id: str, is_authenticated: bool = False) -> tuple[bool, int, int, str]:
     """
     Rate limiter for Ask AI:
-    - Guests: 5 queries/day
+    - Guests: 5 queries/day per unique browser (owner_id)
     - Signed-in: 20 queries/day
     Returns: (is_allowed, remaining_today, limit_today, reset_at_iso)
     """
-    from datetime import timedelta
     limit = 20 if is_authenticated else 5
     now = datetime.utcnow()
     today_str = now.strftime("%Y-%m-%d")
@@ -986,7 +1208,6 @@ def check_and_increment_ai_usage(user_id: str, is_authenticated: bool = False) -
 
 
 def get_ai_usage(user_id: str, is_authenticated: bool = False) -> Dict[str, Any]:
-    from datetime import timedelta
     limit = 20 if is_authenticated else 5
     now = datetime.utcnow()
     today_str = now.strftime("%Y-%m-%d")
@@ -1008,4 +1229,204 @@ def get_ai_usage(user_id: str, is_authenticated: bool = False) -> Dict[str, Any]
         "remaining": max(0, limit - used),
         "limit": limit,
         "resetAt": tomorrow_str,
+    }
+
+
+def export_owner_records(owner_id: str, is_authenticated: bool = False) -> Dict[str, Any]:
+    """
+    Export all data associated with an owner (guest or authenticated user).
+    Fulfills Data Portability requirements under India's DPDP Act 2023 & GDPR.
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    export_payload: Dict[str, Any] = {
+        "metadata": {
+            "ownerId": owner_id,
+            "isAuthenticated": is_authenticated,
+            "exportedAt": datetime.utcnow().isoformat() + "Z",
+            "regulatoryNotice": "Generated under the Digital Personal Data Protection Act 2023 (DPDP Act) and IT (SPDI) Rules 2011. Contains all personal career data and activity records.",
+            "formatVersion": "1.0",
+        },
+        "userProfile": None,
+        "studentProfile": None,
+        "resumes": [],
+        "analyses": [],
+        "roadmaps": [],
+        "interviews": [],
+        "assessments": [],
+        "githubProfiles": [],
+        "careerComparisons": [],
+        "readinessReports": [],
+    }
+
+    try:
+        # 1. User & Student Profile if authenticated
+        if is_authenticated:
+            cursor.execute(
+                "SELECT id, full_name, email, role, created_at, last_login_at FROM users WHERE id = ?",
+                (owner_id,)
+            )
+            u_row = cursor.fetchone()
+            if u_row:
+                export_payload["userProfile"] = dict(u_row)
+
+            cursor.execute("SELECT * FROM student_profiles WHERE user_id = ?", (owner_id,))
+            sp_row = cursor.fetchone()
+            if sp_row:
+                export_payload["studentProfile"] = dict(sp_row)
+
+        # 2. Resumes
+        cursor.execute("SELECT * FROM resumes WHERE owner_id = ? ORDER BY created_at DESC", (owner_id,))
+        for r_row in cursor.fetchall():
+            res_dict = dict(r_row)
+            for k in ["education_json", "skills_json", "projects_json", "experience_json", "certifications_json", "soft_skills_json", "skill_evidence_json"]:
+                if k in res_dict and isinstance(res_dict[k], str):
+                    try:
+                        res_dict[k.replace("_json", "")] = json.loads(res_dict[k])
+                        del res_dict[k]
+                    except Exception:
+                        pass
+            export_payload["resumes"].append(res_dict)
+
+        # 3. Analyses
+        cursor.execute("SELECT * FROM analyses WHERE owner_id = ? ORDER BY created_at DESC", (owner_id,))
+        for a_row in cursor.fetchall():
+            an_dict = dict(a_row)
+            for k in ["matched_skills_json", "partial_skills_json", "missing_skills_json", "skill_gaps_json", "roadmap_json", "courses_json", "projects_rec_json", "resume_improvements_json"]:
+                if k in an_dict and isinstance(an_dict[k], str):
+                    try:
+                        an_dict[k.replace("_json", "")] = json.loads(an_dict[k])
+                        del an_dict[k]
+                    except Exception:
+                        pass
+            export_payload["analyses"].append(an_dict)
+
+        # 4. Roadmaps
+        cursor.execute("SELECT * FROM learning_roadmaps WHERE owner_id = ? ORDER BY updated_at DESC", (owner_id,))
+        for lr_row in cursor.fetchall():
+            lr_dict = dict(lr_row)
+            for k in ["stages_json", "quiz_history_json", "adaptive_notes_json"]:
+                if k in lr_dict and isinstance(lr_dict[k], str):
+                    try:
+                        lr_dict[k.replace("_json", "")] = json.loads(lr_dict[k])
+                        del lr_dict[k]
+                    except Exception:
+                        pass
+            export_payload["roadmaps"].append(lr_dict)
+
+        # 5. Interviews
+        cursor.execute("SELECT * FROM interview_sessions WHERE owner_id = ? ORDER BY started_at DESC", (owner_id,))
+        for is_row in cursor.fetchall():
+            is_dict = dict(is_row)
+            session_id = is_dict.get("id")
+            if session_id:
+                cursor.execute("SELECT * FROM interview_questions_answers WHERE session_id = ? ORDER BY question_index ASC", (session_id,))
+                is_dict["questions"] = [dict(q) for q in cursor.fetchall()]
+            export_payload["interviews"].append(is_dict)
+
+        # 6. Assessments
+        cursor.execute("SELECT * FROM assessment_sessions WHERE owner_id = ? ORDER BY created_at DESC", (owner_id,))
+        for ass_row in cursor.fetchall():
+            ass_dict = dict(ass_row)
+            export_payload["assessments"].append(ass_dict)
+
+        # 7. GitHub
+        cursor.execute("SELECT * FROM github_profiles WHERE owner_id = ? ORDER BY analyzed_at DESC", (owner_id,))
+        for gh_row in cursor.fetchall():
+            export_payload["githubProfiles"].append(dict(gh_row))
+
+        # 8. Career comparisons
+        cursor.execute("SELECT * FROM career_comparisons WHERE owner_id = ? ORDER BY created_at DESC", (owner_id,))
+        for cc_row in cursor.fetchall():
+            export_payload["careerComparisons"].append(dict(cc_row))
+
+        # 9. PRI
+        cursor.execute("SELECT * FROM placement_readiness_reports WHERE owner_id = ? ORDER BY created_at DESC", (owner_id,))
+        for pri_row in cursor.fetchall():
+            export_payload["readinessReports"].append(dict(pri_row))
+
+    finally:
+        conn.close()
+
+    return export_payload
+
+
+def delete_owner_records(owner_id: str, is_authenticated: bool = False) -> Dict[str, Any]:
+    """
+    Permanently delete all user records and associated entities across the entire database.
+    Fulfills Right to Erasure / Right to be Forgotten under India's DPDP Act 2023 & GDPR.
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    deleted_counts: Dict[str, int] = {}
+    try:
+        # 1. Clean child records first to ensure referential integrity on all engines
+        cursor.execute(
+            "DELETE FROM interview_questions_answers WHERE session_id IN (SELECT id FROM interview_sessions WHERE owner_id = ?)",
+            (owner_id,)
+        )
+        deleted_counts["interview_questions_answers"] = getattr(cursor, "rowcount", 0)
+
+        cursor.execute(
+            "DELETE FROM learning_tasks WHERE roadmap_id IN (SELECT id FROM learning_roadmaps WHERE owner_id = ?)",
+            (owner_id,)
+        )
+        deleted_counts["learning_tasks"] = getattr(cursor, "rowcount", 0)
+
+        cursor.execute(
+            "DELETE FROM skill_records WHERE resume_id IN (SELECT id FROM resumes WHERE owner_id = ?)",
+            (owner_id,)
+        )
+        deleted_counts["skill_records"] = getattr(cursor, "rowcount", 0)
+
+        cursor.execute(
+            "DELETE FROM skill_gaps WHERE resume_id IN (SELECT id FROM resumes WHERE owner_id = ?)",
+            (owner_id,)
+        )
+        deleted_counts["skill_gaps"] = getattr(cursor, "rowcount", 0)
+
+        # 2. Main owner-scoped tables
+        owner_tables = [
+            "resumes",
+            "analyses",
+            "resume_analyses",
+            "roadmap_progress",
+            "job_matches",
+            "interview_sessions",
+            "github_profiles",
+            "learning_roadmaps",
+            "assessment_sessions",
+            "assessment_results",
+            "career_comparisons",
+            "placement_readiness_reports",
+        ]
+
+        for tbl in owner_tables:
+            cursor.execute(f"DELETE FROM {tbl} WHERE owner_id = ?", (owner_id,))
+            deleted_counts[tbl] = getattr(cursor, "rowcount", 0)
+
+        # Purge AI usage limits
+        cursor.execute("DELETE FROM ai_usage WHERE user_id = ?", (owner_id,))
+        deleted_counts["ai_usage"] = getattr(cursor, "rowcount", 0)
+
+        # If authenticated, remove registered profile & credentials
+        if is_authenticated:
+            cursor.execute("DELETE FROM student_profiles WHERE user_id = ?", (owner_id,))
+            deleted_counts["student_profiles"] = getattr(cursor, "rowcount", 0)
+            cursor.execute("DELETE FROM users WHERE id = ?", (owner_id,))
+            deleted_counts["users"] = getattr(cursor, "rowcount", 0)
+
+        conn.commit()
+    except Exception as exc:
+        conn.rollback()
+        raise exc
+    finally:
+        conn.close()
+
+    return {
+        "status": "success",
+        "message": "All personal data has been permanently erased.",
+        "deletedCounts": deleted_counts,
     }

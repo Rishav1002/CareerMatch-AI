@@ -37,10 +37,41 @@
 <link href="/frontend/css/styles.css" rel="stylesheet"/>
 </head>
 <body>
-<!-- Cold Start Reconnect Alert -->
-<div class="server-cold-start-banner" id="serverColdStartBanner" role="alert">
-<span>Waking up server instance... Render free tier and Neon DB resume automatically in ~15-30s.</span>
-</div>
+<!-- SVG Icon Sprite Definitions -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none;" aria-hidden="true">
+  <symbol id="cm-logo" viewBox="0 0 200 200">
+    <defs>
+      <linearGradient id="cmGoldGradSymbol" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#FDE047" />
+        <stop offset="35%" stop-color="#FBBF24" />
+        <stop offset="70%" stop-color="#F97316" />
+        <stop offset="100%" stop-color="#EA580C" />
+      </linearGradient>
+    </defs>
+    <g transform="translate(100, 100)">
+      <g transform="rotate(0)">
+        <path d="M -24 -76 C -8 -88, 20 -86, 46 -68 C 64 -54, 70 -36, 64 -20 C 58 -6, 44 4, 32 -4 C 22 -12, 22 -26, 28 -38 C 34 -50, 24 -64, 4 -68 C -12 -72, -22 -68, -24 -76 Z" fill="url(#cmGoldGradSymbol)" opacity="0.95" />
+        <path d="M -50 -35 C -28 -50, -4 -42, 6 -24 C 14 -8, 8 10, -4 20 C -16 28, -32 24, -38 10 C -44 -4, -36 -18, -22 -22 C -10 -26, -18 -38, -50 -35 Z" fill="url(#cmGoldGradSymbol)" opacity="0.95" />
+        <circle cx="6" cy="-76" r="6.5" fill="#FDE047" />
+      </g>
+      <g transform="rotate(90)">
+        <path d="M -24 -76 C -8 -88, 20 -86, 46 -68 C 64 -54, 70 -36, 64 -20 C 58 -6, 44 4, 32 -4 C 22 -12, 22 -26, 28 -38 C 34 -50, 24 -64, 4 -68 C -12 -72, -22 -68, -24 -76 Z" fill="url(#cmGoldGradSymbol)" opacity="0.95" />
+        <path d="M -50 -35 C -28 -50, -4 -42, 6 -24 C 14 -8, 8 10, -4 20 C -16 28, -32 24, -38 10 C -44 -4, -36 -18, -22 -22 C -10 -26, -18 -38, -50 -35 Z" fill="url(#cmGoldGradSymbol)" opacity="0.95" />
+        <circle cx="6" cy="-76" r="6.5" fill="#FDE047" />
+      </g>
+      <g transform="rotate(180)">
+        <path d="M -24 -76 C -8 -88, 20 -86, 46 -68 C 64 -54, 70 -36, 64 -20 C 58 -6, 44 4, 32 -4 C 22 -12, 22 -26, 28 -38 C 34 -50, 24 -64, 4 -68 C -12 -72, -22 -68, -24 -76 Z" fill="url(#cmGoldGradSymbol)" opacity="0.95" />
+        <path d="M -50 -35 C -28 -50, -4 -42, 6 -24 C 14 -8, 8 10, -4 20 C -16 28, -32 24, -38 10 C -44 -4, -36 -18, -22 -22 C -10 -26, -18 -38, -50 -35 Z" fill="url(#cmGoldGradSymbol)" opacity="0.95" />
+        <circle cx="6" cy="-76" r="6.5" fill="#FDE047" />
+      </g>
+      <g transform="rotate(270)">
+        <path d="M -24 -76 C -8 -88, 20 -86, 46 -68 C 64 -54, 70 -36, 64 -20 C 58 -6, 44 4, 32 -4 C 22 -12, 22 -26, 28 -38 C 34 -50, 24 -64, 4 -68 C -12 -72, -22 -68, -24 -76 Z" fill="url(#cmGoldGradSymbol)" opacity="0.95" />
+        <path d="M -50 -35 C -28 -50, -4 -42, 6 -24 C 14 -8, 8 10, -4 20 C -16 28, -32 24, -38 10 C -44 -4, -36 -18, -22 -22 C -10 -26, -18 -38, -50 -35 Z" fill="url(#cmGoldGradSymbol)" opacity="0.95" />
+        <circle cx="6" cy="-76" r="6.5" fill="#FDE047" />
+      </g>
+    </g>
+  </symbol>
+</svg>
 <!-- Boot Failure Safety Net Banner -->
 <div class="boot-failure-banner hidden" id="cmBootFailureBanner" role="alert">
 <span>Something failed to load.</span>
@@ -55,7 +86,7 @@
 <!-- Rail Header: Brand + Collapse Toggle -->
 <div class="rail-header">
 <a class="rail-brand" href="#/landing" title="CareerMatch AI">
-<span class="brand-mark">CM</span>
+<svg class="brand-logo" width="28" height="28" viewBox="0 0 200 200" aria-hidden="true"><use href="#cm-logo"/></svg>
 <div class="brand-titles">
 <span class="brand-name">CareerMatch</span>
 <span class="brand-edition">AI</span>
@@ -182,13 +213,22 @@
 <span class="cmd-text">Jump...</span>
 <kbd class="cmd-shortcut-badge">⌘K</kbd>
 </button>
-<!-- Ask AI with Usage Meter -->
-<button aria-label="Ask Career Advisor AI" class="btn btn-ghost btn-sm ask-ai-topbar-btn" id="askAiTopBtn" type="button">
-<svg fill="none" height="15" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="15">
-<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+<!-- Theme Toggle in Topbar (Bug 7) -->
+<button aria-label="Toggle visual theme (Light / Dark)" class="btn btn-ghost btn-icon topbar-theme-toggle-btn" id="topbarThemeToggleBtn" type="button" title="Toggle Theme (Light / Dark)">
+<svg class="theme-icon-sun" fill="none" height="18" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="18">
+<circle cx="12" cy="12" r="5"></circle>
+<line x1="12" x2="12" y1="1" y2="3"></line>
+<line x1="12" x2="12" y1="21" y2="23"></line>
+<line x1="4.22" x2="5.64" y1="4.22" y2="5.64"></line>
+<line x1="18.36" x2="19.78" y1="18.36" y2="19.78"></line>
+<line x1="1" x2="3" y1="12" y2="12"></line>
+<line x1="21" x2="23" y1="12" y2="12"></line>
+<line x1="4.22" x2="5.64" y1="19.78" y2="18.36"></line>
+<line x1="18.36" x2="19.78" y1="5.64" y2="4.22"></line>
 </svg>
-<span>Ask AI</span>
-<span class="usage-meter-badge" id="askAiUsageMeter">5 left</span>
+<svg class="theme-icon-moon hidden" fill="none" height="18" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="18">
+<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+</svg>
 </button>
 <!-- Notifications Drawer Trigger -->
 <button aria-label="View Field Updates" class="btn btn-ghost btn-sm btn-icon pos-relative" id="notifTriggerBtn" title="Notifications" type="button">
@@ -198,28 +238,32 @@
 </svg>
 <span class="pos-absolute rounded-full" id="notifBadgeCount"></span>
 </button>
-<!-- Avatar Dropdown Menu -->
+<!-- Avatar Dropdown Menu (Bug 10) -->
 <div class="pos-relative">
 <button aria-expanded="false" aria-label="Open User Menu" class="user-avatar-btn" id="userAvatarMenuBtn" type="button">
-<span id="topbarAvatarInitials">ST</span>
+<span id="topbarAvatarInitials">G</span>
 </button>
 <div class="user-avatar-dropdown" id="userAvatarDropdown" role="menu">
-<div class="border-bottom">
-<div class="font-semibold text-sm" id="dropdownUserName">Guest Student</div>
-<div class="text-xs text-tertiary" id="dropdownUserEmail">guest@careermatch.ai</div>
+<div class="p-2 border-bottom">
+<div class="font-semibold text-sm text-primary" id="dropdownUserName">Guest User</div>
+<div class="text-xs text-tertiary" id="dropdownUserEmail">Transient Guest Session</div>
 </div>
-<button class="avatar-menu-item" id="themeToggleBtn" type="button">
-<svg fill="none" height="15" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="15"><circle cx="12" cy="12" r="5"></circle><line x1="12" x2="12" y1="1" y2="3"></line><line x1="12" x2="12" y1="21" y2="23"></line><line x1="4.22" x2="5.64" y1="4.22" y2="5.64"></line><line x1="18.36" x2="19.78" y1="18.36" y2="19.78"></line><line x1="1" x2="3" y1="12" y2="12"></line><line x1="21" x2="23" y1="12" y2="12"></line><line x1="4.22" x2="5.64" y1="19.78" y2="18.36"></line><line x1="18.36" x2="19.78" y1="5.64" y2="4.22"></line></svg>
-<span>Toggle Theme</span>
-</button>
-<button class="avatar-menu-item" id="langToggleBtn" type="button">
-<span class="font-mono text-xs font-bold text-center">HI</span>
-<span>Switch to Hindi</span>
-</button>
-<a class="avatar-menu-item" href="#/profile">
+<a class="avatar-menu-item" href="#/profile" id="dropdownProfileLink">
 <svg fill="none" height="15" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="15"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
 <span>My Profile</span>
 </a>
+<a class="avatar-menu-item" href="#/settings" id="dropdownSettingsLink">
+<svg fill="none" height="15" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="15"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+<span>Settings &amp; Privacy</span>
+</a>
+<div class="avatar-menu-divider"></div>
+<div class="p-2">
+<div class="text-xs text-tertiary mb-1 font-semibold">Language / भाषा</div>
+<div class="segmented-nav d-flex w-full" id="avatarLangSegmented">
+<button class="tab-btn active text-xs flex-1" id="langBtnEn" type="button">English</button>
+<button class="tab-btn text-xs flex-1" id="langBtnHi" type="button">हिन्दी</button>
+</div>
+</div>
 <div class="avatar-menu-divider"></div>
 <button class="avatar-menu-item" id="openAuthModalBtn" type="button">
 <svg fill="none" height="15" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="15"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" x2="3" y1="12" y2="12"></line></svg>
@@ -239,7 +283,7 @@
 <!-- Minimal Landing Topbar (Section 13 B) -->
 <header class="landing-topbar">
 <a class="rail-brand link-muted" href="#/landing">
-<span class="brand-mark">CM</span>
+<svg class="brand-logo" width="28" height="28" viewBox="0 0 200 200" aria-hidden="true"><use href="#cm-logo"/></svg>
 <span class="brand-name text-md font-bold text-primary ml-1">CareerMatch AI</span>
 </a>
 <nav class="landing-nav-links d-flex items-center gap-sm">
@@ -340,7 +384,7 @@
 <a class="btn btn-primary btn-lg min-w-200" href="#/analyzer" id="landingAnalyzeCtaBtn">
                     Analyze your resume →
                   </a>
-<a class="how-it-works-link" href="#landingHowItWorks">
+<a class="how-it-works-link" href="#/landing" data-scroll-to="landingHowItWorks" id="howItWorksLink">
                     How it works ↓
                   </a>
 </div>
@@ -349,7 +393,7 @@
 <!-- Below the Fold: Slim 3-Step Strip (Upload, Analyze, Improve) -->
 <div class="landing-steps-strip" id="landingHowItWorks">
 <div class="text-center max-w-form">
-<h2 class="font-serif text-score-huge text-primary">
+<h2 class="font-serif text-score-huge text-primary" id="landingHowItWorksHeading" tabindex="-1">
                   How It Works in 3 Steps
                 </h2>
 <p class="text-base text-secondary m-0">
@@ -385,7 +429,7 @@
 <div class="d-grid grid-auto-fit gap-xl max-w-wide">
 <div>
 <div class="rail-brand mb-15">
-<span class="brand-mark">CM</span>
+<svg class="brand-logo" width="28" height="28" viewBox="0 0 200 200" aria-hidden="true"><use href="#cm-logo"/></svg>
 <span class="brand-name text-md font-bold text-primary ml-1">CareerMatch AI</span>
 </div>
 <p class="text-sm text-secondary m-0">
@@ -423,11 +467,14 @@
 </div>
 <div class="border-top max-w-wide mx-auto d-flex flex-wrap gap-md text-xs text-tertiary flex-between">
 <div>
-                  Live job feeds aggregated from verified Indian tech benchmarks.
-                </div>
+  <span>&copy; <span id="landingCopyrightYear">2026</span> CareerMatch AI. All rights reserved.</span>
+</div>
 <div class="d-flex items-center gap-md">
-<span>Build: <code class="build-sha" id="appBuildSha">4.0.0</code></span>
-<span>© <span id="landingCopyrightYear">2026</span> CareerMatch AI.</span>
+  <a class="text-tertiary link-muted" href="#/privacy">Privacy</a>
+  <span aria-hidden="true">&middot;</span>
+  <a class="text-tertiary link-muted" href="#/terms">Terms</a>
+  <span aria-hidden="true">&middot;</span>
+  <a class="text-tertiary link-muted" href="#/cookies">Cookies</a>
 </div>
 </div>
 </footer>
@@ -439,7 +486,7 @@
 <div class="auth-glass-card">
 <div class="text-center mb-3">
 <a class="rail-brand justify-center mb-1 link-muted" href="#/landing">
-<span class="brand-mark">CM</span>
+<svg class="brand-logo" width="28" height="28" viewBox="0 0 200 200" aria-hidden="true"><use href="#cm-logo"/></svg>
 <span class="brand-name text-lg font-bold text-primary ml-1">CareerMatch AI</span>
 </a>
 <p class="text-sm text-secondary m-0" id="authHeaderSubtitle">
@@ -618,17 +665,37 @@
 
 </div>
 <div class="card-body">
+<!-- Visually hidden file input placed OUTSIDE the drop zone for accessible synchronous triggering -->
+<input accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" class="visually-hidden" id="resumeFileInput" type="file" aria-label="Upload resume file (PDF, DOCX, TXT up to 5 MB)"/>
+
 <!-- Dropzone -->
-<div aria-label="Upload resume file" class="upload-drop-zone" id="uploadDropZone" role="button" tabindex="0">
-<svg fill="none" height="32" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="32">
+<div aria-label="Upload resume file by dropping or choosing a file" class="upload-drop-zone" id="uploadDropZone" role="button" tabindex="0">
+<svg fill="none" height="32" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="32" aria-hidden="true">
 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
 <polyline points="17 8 12 3 7 8"></polyline>
 <line x1="12" x2="12" y1="3" y2="15"></line>
 </svg>
-<div class="upload-title">Drop resume or <span class="text-underline text-accent">browse</span></div>
-
-<input accept=".pdf,.docx,.txt" class="hidden" id="resumeFileInput" type="file"/>
+<div class="upload-title">Drop resume here or choose file</div>
+<div class="text-xs text-tertiary mt-05">PDF, DOCX, or TXT (Max 5 MB)</div>
+<div class="mt-1">
+  <button type="button" class="btn btn-secondary btn-sm" id="chooseFileBtn">Choose file</button>
 </div>
+</div>
+
+<!-- Selected file banner with size and remove action -->
+<div class="selected-file-banner hidden mt-1 p-1 bg-sunken border-subtle rounded-sm" id="selectedFileBanner">
+  <div class="d-flex justify-between items-center text-xs">
+    <div class="d-flex items-center gap-xs">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+      <span class="font-medium text-primary" id="selectedFileName">resume.pdf</span>
+    </div>
+    <div class="d-flex items-center gap-sm">
+      <span class="text-tertiary tabular-nums" id="selectedFileSize">0 KB</span>
+      <button type="button" class="btn btn-ghost btn-xs text-low" id="removeFileBtn" aria-label="Remove uploaded resume">Remove</button>
+    </div>
+  </div>
+</div>
+
 <div class="text-sm text-accent text-center mt-05" id="uploadStatusText"></div>
 <div class="text-center font-mono text-xs text-tertiary">
                       or paste text
@@ -732,8 +799,8 @@
 </label>
 </div>
 <div class="mt-3">
-<button class="btn btn-primary btn-lg w-full" id="runAnalysisBtn" type="button">
-                        Run Match Analysis →
+<button class="btn btn-primary btn-lg w-full" id="runAnalysisBtn" type="button" disabled>
+                        Run Match Analysis
                       </button>
 <div class="text-sm text-tertiary text-center mt-05 hidden" id="analysisProgressBox">
                         Evaluating semantic skill matching...
@@ -864,13 +931,13 @@
 <div class="mt-15 border-top">
 <strong class="text-xs">Recommended Courses:</strong>
 <div class="mt-05">
-<a class="text-sm font-semibold d-block" href="#" id="inspFreeCourseLink" target="_blank">
+<a class="text-sm font-semibold d-block" href="javascript:void(0)" id="inspFreeCourseLink" rel="noopener noreferrer" target="_blank">
 <span id="inspFreeCourseTitle">Free Course</span>
 </a>
 <span class="text-xs text-tertiary" id="inspFreeCourseMeta"></span>
 </div>
 <div class="mt-1">
-<a class="text-sm font-semibold d-block" href="#" id="inspPaidCourseLink" target="_blank">
+<a class="text-sm font-semibold d-block" href="javascript:void(0)" id="inspPaidCourseLink" rel="noopener noreferrer" target="_blank">
 <span id="inspPaidCourseTitle">Paid Course</span>
 </a>
 <span class="text-xs text-tertiary" id="inspPaidCourseMeta"></span>
@@ -1035,6 +1102,14 @@
                 </button>
 </div>
 <div class="card-body">
+<!-- Interactive Learning Roadmap Diagram (Bug 8) -->
+<div class="roadmap-diagram-card card mb-3 bg-sunken p-2 border-subtle" id="roadmapDiagramCard">
+  <div class="d-flex justify-between items-center mb-1">
+    <h3 class="text-sm font-semibold m-0 text-primary">Milestone Progression Tree</h3>
+    <span class="text-xs text-tertiary">Click node for learning labs &amp; projects</span>
+  </div>
+  <div class="roadmap-diagram-viewport" id="roadmapDiagramViewport"></div>
+</div>
 <div class="d-grid grid-3 gap-md mb-3" id="adapSkillProgressBars"></div>
 <div class="d-grid grid-2 gap-lg">
 <!-- Weekly Tasks Container -->
@@ -1070,20 +1145,61 @@
 <!-- ==================================================================
                VIEW 7: WEEKLY STUDY PLANNER (#/planner)
                ================================================================== -->
+<!-- ==================================================================
+               VIEW 7: STUDY PLANNER & MILESTONE STREAKS (#/planner)
+               ================================================================== -->
 <section class="view-panel" hidden="" id="view-planner">
-<div class="planner-header-card">
+<div class="planner-header-card d-flex flex-between align-center flex-wrap gap-md mb-3">
 <div>
-<h2 class="text-xl m-0">Weekly Study Planner &amp; Milestone Goals</h2>
-<p class="text-sm text-secondary">
-                  Derived from your learning roadmap. Break down complex topics into steady daily deliverables.
-                </p>
+<h2 class="text-xl m-0 font-serif text-primary">Weekly Study Planner &amp; Milestones</h2>
+<p class="text-sm text-secondary m-0">
+Derived from your verified roadmap and skill gaps. Structured daily deliverables.
+</p>
 </div>
-<div class="streak-counter">
-<span>🔥</span>
-<span id="plannerStreakDisplay">3 Days</span>
-<span class="text-xs text-tertiary font-medium">Active Streak</span>
+<div class="d-flex gap-xs align-center">
+<button class="btn btn-secondary btn-sm" id="plannerExportIcsBtn" type="button">Export .ICS</button>
+<button class="btn btn-primary btn-sm" id="plannerBuildPlanBtn" type="button">Build Study Plan</button>
+<div class="streak-counter p-2 border-subtle bg-sunken rounded-sm d-flex flex-col items-center">
+<span id="plannerStreakDisplay" class="font-mono font-bold text-accent text-sm">0 Days</span>
+<span class="text-xxs text-tertiary uppercase tracking-wide">Verified Streak</span>
 </div>
 </div>
+</div>
+
+<!-- Plan Builder Panel -->
+<div id="plannerBuilderBox" class="card p-3 bg-sunken border-subtle mb-3 hidden">
+<div class="d-flex flex-between align-center mb-2">
+<h4 class="text-sm font-semibold m-0 text-primary">Plan Builder: Targeted Milestone Generation</h4>
+<button type="button" class="btn btn-ghost btn-sm" id="plannerCloseBuilderBtn">✕ Close</button>
+</div>
+<div class="d-grid grid-auto-fit gap-sm mb-3">
+<div>
+<label class="form-label text-xs" for="plannerTargetRole">Target Role</label>
+<input class="form-input text-xs" id="plannerTargetRole" type="text" value="Backend Engineer"/>
+</div>
+<div>
+<label class="form-label text-xs" for="plannerIntensity">Study Pace &amp; Intensity</label>
+<select class="form-select text-xs" id="plannerIntensity">
+<option value="light">Light (5 hrs/week · 1 task/day)</option>
+<option selected="" value="standard">Standard (10 hrs/week · 2 tasks/day)</option>
+<option value="sprint">Placement Sprint (20 hrs/week · 3 tasks/day)</option>
+</select>
+</div>
+<div>
+<label class="form-label text-xs" for="plannerSessionLen">Session Length</label>
+<select class="form-select text-xs" id="plannerSessionLen">
+<option value="25">25 mins (Pomodoro Focus)</option>
+<option selected="" value="45">45 mins (Deep Work)</option>
+<option value="60">60 mins (Extended Sprint)</option>
+</select>
+</div>
+</div>
+<div class="d-flex justify-end gap-xs">
+<button type="button" class="btn btn-secondary btn-sm" id="plannerCancelBuilderBtn">Cancel</button>
+<button type="button" class="btn btn-primary btn-sm" id="plannerGenerateScheduleBtn">Generate Weekly Schedule</button>
+</div>
+</div>
+
 <div class="planner-week-grid" id="plannerWeekGrid">
 <!-- Monday to Sunday populated dynamically -->
 </div>
@@ -1317,60 +1433,85 @@
 <!-- ==================================================================
                VIEW 11: LIVE JOB MARKET INTELLIGENCE (#/market)
                ================================================================== -->
+<!-- ==================================================================
+               VIEW 11: LIVE JOBS AGGREGATOR (#/market -> #view-jobs)
+               ================================================================== -->
 <section class="view-panel" hidden="" id="view-jobs">
 <div class="card mb-3">
-<div class="card-header">
+<div class="card-header d-flex flex-between align-center flex-wrap gap-sm">
 <div>
-<h2 class="text-xl m-0">Live Jobs</h2>
+<h2 class="text-xl m-0 font-serif text-primary">Live Job Market Intelligence</h2>
 <span class="text-sm text-tertiary">
-                    Openings across tech hubs
-                  </span>
+Verified openings across Indian tech hubs and remote engineering teams
+</span>
 </div>
-<button class="btn btn-secondary btn-sm" id="runJobsFilterBtn" type="button">
-                  Refresh
-                </button>
+<div class="d-flex gap-xs align-center">
+<button class="btn btn-secondary btn-sm" id="jobsExportCsvBtn" type="button">Download CSV</button>
+<button class="btn btn-secondary btn-sm" id="runJobsFilterBtn" type="button">Refresh</button>
+</div>
 </div>
 <div class="card-body">
 <!-- Filters Bar -->
-<div class="d-grid gap-sm mb-3">
-<select class="form-select text-xs" id="jobFilterRole">
+<div class="d-grid grid-auto-fit gap-sm mb-3">
+<select class="form-select text-xs" id="jobFilterRole" aria-label="Filter by Target Role">
+<option value="All">All Roles</option>
 <option selected="" value="Data Engineer">Data Engineer</option>
 <option value="Full Stack Developer">Full Stack</option>
-<option value="DevOps Engineer">DevOps</option>
+<option value="DevOps Engineer">DevOps &amp; Cloud</option>
+<option value="Machine Learning">Machine Learning / AI</option>
+<option value="Cyber Security">Cyber Security</option>
 </select>
-<select class="form-select text-xs" id="jobFilterLocation">
-<option value="">All India</option>
+<select class="form-select text-xs" id="jobFilterLocation" aria-label="Filter by Location">
+<option value="">All Locations</option>
 <option value="Bengaluru">Bengaluru</option>
 <option value="Hyderabad">Hyderabad</option>
 <option value="Pune">Pune</option>
+<option value="Delhi">Delhi NCR</option>
+<option value="Mumbai">Mumbai</option>
+<option value="Chennai">Chennai</option>
+<option value="Remote">Remote (India / Global)</option>
 </select>
-<select class="form-select text-xs" id="jobFilterMode">
-<option value="">Any Mode</option>
+<select class="form-select text-xs" id="jobFilterMode" aria-label="Filter by Work Mode">
+<option value="">Any Work Mode</option>
 <option value="Remote">Remote</option>
 <option value="Hybrid">Hybrid</option>
 <option value="Onsite">Onsite</option>
 </select>
-<input class="form-input text-xs" id="jobFilterSkill" placeholder="Skill keyword..." type="text"/>
-<label class="checkbox-label text-xs whitespace-nowrap">
-<input id="jobPreferLiveCheck" type="checkbox"/>
-<span>Live API</span>
+<select class="form-select text-xs" id="jobFilterExp" aria-label="Filter by Experience">
+<option value="">Any Experience</option>
+<option value="Entry">Fresher / 0-2 yrs</option>
+<option value="Mid">Mid-Level (2-5 yrs)</option>
+<option value="Senior">Senior (5+ yrs)</option>
+</select>
+<input class="form-input text-xs" id="jobFilterSkill" placeholder="Filter by skill (e.g. Python, React, AWS)..." type="text" aria-label="Filter by skill"/>
+<label class="checkbox-label text-xs whitespace-nowrap d-flex align-center gap-xxs cursor-pointer">
+<input id="jobPreferLiveCheck" type="checkbox" checked=""/>
+<span>Prefer Live APIs</span>
 </label>
 </div>
+
 <!-- Trending Skills & Hiring Matrix -->
 <div class="d-grid grid-2 gap-lg mb-3">
-<div class="card p-2 bg-sunken">
-<h4 class="text-sm mb-05">In-Demand Skills</h4>
+<div class="card p-3 bg-sunken border-subtle">
+<div class="d-flex flex-between align-center mb-2">
+<h4 class="text-sm font-semibold m-0 text-primary">In-Demand Market Skills</h4>
+<span class="text-xs text-tertiary">Real employer demand</span>
+</div>
 <div class="d-flex flex-col gap-xs" id="jobsTrendingChart"></div>
 </div>
-<div class="card p-2 bg-sunken">
-<h4 class="text-sm mb-05">Hiring Matrix</h4>
-<div class="ledger-table-wrapper border-none">
-<table class="ledger-table">
+<div class="card p-3 bg-sunken border-subtle">
+<div class="d-flex flex-between align-center mb-2">
+<h4 class="text-sm font-semibold m-0 text-primary">Hiring Company Benchmarks</h4>
+<span class="text-xs text-tertiary">Verified tech employers</span>
+</div>
+<div class="table-container border-none">
+<table class="table-compact text-xs w-full">
 <thead>
 <tr>
 <th>Company</th>
-<th>Active Roles</th>
-<th>Avg CTC</th>
+<th>Role Title</th>
+<th>CTC Range (INR)</th>
+<th>Match</th>
 </tr>
 </thead>
 <tbody id="jobsCompanyMatrixBody"></tbody>
@@ -1378,17 +1519,30 @@
 </div>
 </div>
 </div>
-<!-- Job Postings Grid -->
-<div class="d-flex justify-between items-baseline mb-1">
-<h4 class="text-base">Openings (<span id="jobsTotalCount">12</span>)</h4>
-<span class="font-mono text-xs text-tertiary" id="jobsLastUpdatedLabel">Today</span>
+
+<!-- Job Postings Header & Counter -->
+<div class="d-flex justify-between items-baseline mb-2">
+<h4 class="text-base text-primary m-0">Verified Openings (<span id="jobsTotalCount">0</span>)</h4>
+<span class="font-mono text-xs text-tertiary" id="jobsLastUpdatedLabel">Just now</span>
 </div>
+
+<!-- Job Cards Grid -->
 <div class="d-grid grid-2 gap-md" id="jobsCardsGrid"></div>
-<!-- Hidden compatibility tags -->
-<div class="hidden">
-<span id="jobsDataSourceLabel"></span>
-<input id="jobUrlInput"/>
+
+<!-- Legal Job Providers & Attribution Footnote -->
+<div class="mt-4 pt-3 border-top d-flex flex-between align-center flex-wrap gap-xs text-xs text-tertiary">
+<div>
+<span>Aggregated with legal timeouts from: </span>
+<a href="https://remotive.com" target="_blank" rel="noopener noreferrer" class="link-subtle">Remotive</a> · 
+<a href="https://www.arbeitnow.com" target="_blank" rel="noopener noreferrer" class="link-subtle">Arbeitnow</a> · 
+<a href="https://developer.adzuna.com" target="_blank" rel="noopener noreferrer" class="link-subtle">Adzuna</a> · 
+<a href="https://remoteok.com" target="_blank" rel="noopener noreferrer" class="link-subtle">RemoteOK</a> · 
+<a href="https://www.themuse.com" target="_blank" rel="noopener noreferrer" class="link-subtle">The Muse</a> · 
+<a href="https://himalayas.app" target="_blank" rel="noopener noreferrer" class="link-subtle">Himalayas</a>
 </div>
+<span id="jobsDataSourceLabel" class="font-mono text-xxs"></span>
+</div>
+<input id="jobUrlInput" type="hidden"/>
 </div>
 </div>
 </section>
@@ -1746,17 +1900,113 @@
                VIEW: PRIVACY POLICY (#/privacy)
                ================================================================== -->
 <section class="view-panel" hidden="" id="view-privacy">
-<div class="card glass-panel measure-prose max-w-narrow mx-auto p-clamp-hero">
-<h1 class="font-serif text-2xl text-primary">Privacy Policy</h1>
-<span class="font-mono text-xs text-tertiary">Effective Date: November 2026</span>
-<div class="mt-2 text-sm lh-relaxed text-secondary d-flex flex-col gap-md">
-<p>CareerMatch AI is engineered on the principle of <strong>data minimization and transparent scoring</strong>. We believe student career data belongs strictly to the individual.</p>
-<h3 class="text-md text-primary">1. Transient Session Privacy</h3>
-<p>When you select the <em>"Do not save my resume on the server"</em> option, parsing occurs exclusively in transient memory. No text, contact details, or PDF bytes are recorded into our persistent database.</p>
-<h3 class="text-md text-primary">2. Zero Model Training on Student Resumes</h3>
-<p>We never sell your resume to third-party recruiters or use candidate submissions to train external generative models.</p>
-<h3 class="text-md text-primary">3. Scoped Local Storage</h3>
-<p>Guest sessions store all data under scoped browser keys (IndexedDB <code>cm:v1:*</code>). You have full control to export or wipe this data at any time via Settings.</p>
+<div class="card glass-panel measure-prose max-w-prose mx-auto p-clamp-hero">
+<div class="d-flex flex-between align-center mb-3">
+<div>
+<h1 class="font-serif text-2xl text-primary">Privacy Policy &amp; Data Charter</h1>
+<span class="font-mono text-xs text-tertiary">Version 4.0.0 · Effective Date: November 2026</span>
+</div>
+<a href="#/settings" class="btn btn-secondary btn-sm">Manage My Data</a>
+</div>
+
+<!-- Plain Language Summary Box -->
+<div class="card bg-sunken p-3 mb-4 border-subtle">
+<strong class="text-xs font-mono uppercase text-accent tracking-wider d-block mb-1">Plain Language Summary</strong>
+<p class="text-xs text-secondary lh-relaxed mb-0">
+CareerMatch AI is engineered on strict data minimization for Indian engineering students and early-career developers. 
+We process your resume and assessment responses solely to benchmark technical readiness and provide learning recommendations. 
+When you check "Do not save my resume", processing is strictly in transient memory. 
+Guest sessions expire after 30 days. We <strong>never</strong> sell candidate data to recruitment brokers or third parties, 
+and we <strong>never</strong> train external generative AI foundation models on your submitted resumes. 
+You can export or permanently erase your data at any time from your <a href="#/settings" class="link-subtle">Settings</a>.
+</p>
+</div>
+
+<div class="text-sm lh-relaxed text-secondary d-flex flex-col gap-lg">
+<div>
+<h3 class="text-md text-primary font-serif mb-1">1. Data Fiduciary &amp; Regulatory Framework</h3>
+<p>This Privacy Policy is published in compliance with the <strong>Digital Personal Data Protection Act, 2023 (DPDP Act 2023)</strong>, the <strong>Information Technology Act, 2000</strong>, and the <strong>Information Technology (Reasonable Security Practices and Procedures and Sensitive Personal Data or Information) Rules, 2011</strong>. It also upholds data protection standards for international visitors under the European Union General Data Protection Regulation (GDPR).</p>
+<p class="text-xs text-tertiary">Data Fiduciary Identity: CareerMatch AI Technologies [PLACEHOLDER: Legal Entity Name, Tech Innovation Park, Sector 62, Noida, UP 201309, India. Contact: privacy@careermatch.ai].</p>
+</div>
+
+<div>
+<h3 class="text-md text-primary font-serif mb-1">2. Data We Collect &amp; Purpose Specification</h3>
+<ul class="list-bulleted text-sm d-flex flex-col gap-xs pl-3">
+<li><strong>Contact &amp; Account Identifiers:</strong> Name, email address, and encrypted credentials (salted bcrypt hash) when registering an account.</li>
+<li><strong>Career &amp; Educational Documents:</strong> Resume text, uploaded PDF/DOCX files, technical skills, projects, degrees, certifications, and work experience.</li>
+<li><strong>Interactive Evaluation Artifacts:</strong> Mock interview answer transcripts, speech durations, AI scoring feedback, and coding assessment quiz responses.</li>
+<li><strong>Public Technical Proofs:</strong> Public GitHub repository statistics, commit frequency, and primary language usage (fetched only upon your explicit request).</li>
+<li><strong>Essential Technical Telemetry:</strong> Session identifier cookie (<code>cm_sid</code>) and temporary IP logs utilized solely for rate-limiting and DDoS mitigation.</li>
+</ul>
+</div>
+
+<div>
+<h3 class="text-md text-primary font-serif mb-1">3. Lawful Basis &amp; Explicit Consent</h3>
+<p>Under Section 6 of the DPDP Act 2023, personal data is processed strictly on the basis of your free, specific, informed, and unambiguous consent. You signal consent by actively uploading a resume, registering an account, or starting a mock interview. You maintain the right to withdraw consent and delete your records at any time.</p>
+</div>
+
+<div>
+<h3 class="text-md text-primary font-serif mb-1">4. Resume Processing &amp; Google Gemini AI Boundaries</h3>
+<p>To deliver automated skill extraction and role gap benchmarks, extracted text excerpts are evaluated using the Google Gemini API. The following strict boundaries govern this processing:</p>
+<ul class="list-bulleted text-sm d-flex flex-col gap-xs pl-3">
+<li><strong>No Foundation Model Training:</strong> Under enterprise API service terms, student resume submissions are not used to train or refine Google Gemini models.</li>
+<li><strong>Data Isolation:</strong> AI requests are processed in private, encrypted memory channels and are discarded once analysis is returned.</li>
+<li><strong>Ephemeral Privacy Mode:</strong> Checking "Do not save my resume on the server" executes analysis in RAM only without writing to the database.</li>
+</ul>
+</div>
+
+<div>
+<h3 class="text-md text-primary font-serif mb-1">5. Data Retention &amp; Automated Cleanup</h3>
+<ul class="list-bulleted text-sm d-flex flex-col gap-xs pl-3">
+<li><strong>Guest User Sessions:</strong> Unauthenticated analyses linked to temporary session cookies (<code>cm_sid</code>) are automatically purged after <strong>30 days</strong>.</li>
+<li><strong>Registered Student Accounts:</strong> Data remains stored until you trigger the "Delete my account and data" command or request administrative erasure.</li>
+</ul>
+</div>
+
+<div>
+<h3 class="text-md text-primary font-serif mb-1">6. Student Rights under DPDP Act 2023</h3>
+<p>You have full, unhindered agency over your personal data:</p>
+<ul class="list-bulleted text-sm d-flex flex-col gap-xs pl-3">
+<li><strong>Right to Access &amp; Portability:</strong> Obtain a structured JSON copy of all stored records via <a href="#/settings" class="link-subtle">Settings → Export JSON</a> (calls <code>/api/profile/export</code>).</li>
+<li><strong>Right to Correction:</strong> Update your student profile, degree, and verified skill roster at any time.</li>
+<li><strong>Right to Erasure (Right to be Forgotten):</strong> Permanently delete all resumes, analysis runs, interview transcripts, and accounts via <a href="#/settings" class="link-subtle">Settings → Purge Data</a> (calls <code>/api/profile/delete</code>).</li>
+<li><strong>Right to Grievance Redressal:</strong> Submit grievances directly to our appointed Grievance Officer.</li>
+<li><strong>Right to Nominate:</strong> Nominate another individual to exercise data rights in the event of death or incapacity.</li>
+</ul>
+</div>
+
+<div>
+<h3 class="text-md text-primary font-serif mb-1">7. Protection of Minors (DPDP Act Section 9)</h3>
+<p>CareerMatch AI is designed for college students and adults aged 18 and older. Users under 18 years of age must obtain verifiable parental or legal guardian consent before using the platform. We do not track, profile, or deliver targeted advertisements to minors.</p>
+</div>
+
+<div>
+<h3 class="text-md text-primary font-serif mb-1">8. Sub-processors &amp; Cross-Border Transfers</h3>
+<p>We work with trusted cloud infrastructure providers bound by strict data protection agreements:</p>
+<ul class="list-bulleted text-sm d-flex flex-col gap-xs pl-3">
+<li><strong>Render Services Inc. (USA/EU):</strong> Containerized web hosting and API routing under TLS 1.3 encryption.</li>
+<li><strong>Neon Tech Inc. (AWS us-east):</strong> Serverless PostgreSQL relational database storage with encrypted storage volumes.</li>
+<li><strong>Google LLC (USA):</strong> Gemini API semantic intelligence processing with zero persistent training retention.</li>
+<li><strong>GitHub Inc. (USA):</strong> Public developer API consumption for portfolio verification.</li>
+</ul>
+</div>
+
+<div>
+<h3 class="text-md text-primary font-serif mb-1">9. Technical Security Safeguards</h3>
+<p>Security measures include end-to-end TLS 1.3 transport encryption, salted bcrypt password hashes, HttpOnly cryptographically signed SameSite=Lax session cookies, strict owner-scoped query filtering, and automated rate limiting on costly API endpoints.</p>
+</div>
+
+<div class="card bg-sunken p-3 border-subtle">
+<h3 class="text-sm text-primary font-serif mb-1">10. Grievance Officer &amp; Redressal Mechanism</h3>
+<p class="text-xs text-secondary mb-2">In compliance with Section 19 of the DPDP Act 2023 and Rule 5(9) of the IT SPDI Rules, 2011, inquiries and redressal requests may be directed to:</p>
+<div class="text-xs font-mono text-primary d-flex flex-col gap-xxs">
+<span>Name: [PLACEHOLDER: Mr. Vikramaditya Sen, Grievance Officer]</span>
+<span>Designation: Data Protection &amp; Grievance Lead, CareerMatch AI</span>
+<span>Address: [PLACEHOLDER: Tech Innovation Park, Sector 62, Noida, Uttar Pradesh 201309, India]</span>
+<span>Email: [PLACEHOLDER: grievance-officer@careermatch.ai]</span>
+<span>Redressal SLA: Acknowledgement within 48 hours; resolution within 30 days.</span>
+</div>
+</div>
 </div>
 </div>
 </section>
@@ -1764,12 +2014,84 @@
                VIEW: TERMS OF SERVICE (#/terms)
                ================================================================== -->
 <section class="view-panel" hidden="" id="view-terms">
-<div class="card glass-panel measure-prose max-w-narrow mx-auto p-clamp-hero">
-<h1 class="font-serif text-2xl text-primary">Terms of Service</h1>
-<span class="font-mono text-xs text-tertiary">Effective Date: November 2026</span>
-<div class="mt-2 text-sm lh-relaxed text-secondary d-flex flex-col gap-md">
-<p>CareerMatch AI provides algorithmic benchmarks and career planning intelligence for educational and preparation purposes.</p>
-<p>All placement readiness scores and salary benchmarks are calculated from public job feeds and curated Indian tech role matrices. Scores represent advisory guidelines and do not constitute an explicit job guarantee.</p>
+<div class="card glass-panel measure-prose max-w-prose mx-auto p-clamp-hero">
+<div class="d-flex flex-between align-center mb-3">
+<div>
+<h1 class="font-serif text-2xl text-primary">Terms of Service &amp; Usage Agreement</h1>
+<span class="font-mono text-xs text-tertiary">Version 4.0.0 · Effective Date: November 2026</span>
+</div>
+<a href="#/landing" class="btn btn-secondary btn-sm">Back to Home</a>
+</div>
+
+<!-- Plain Language Summary Box -->
+<div class="card bg-sunken p-3 mb-4 border-subtle">
+<strong class="text-xs font-mono uppercase text-accent tracking-wider d-block mb-1">Plain Language Summary</strong>
+<p class="text-xs text-secondary lh-relaxed mb-0">
+CareerMatch AI is an educational career readiness benchmark tool for engineering students. 
+Our scores, ATS ratings, and interview simulations are automated guidelines to assist your preparation. 
+They are not job guarantees, placement contracts, or salary commitments. You retain 100% intellectual property rights over your resume. 
+We aggregate public job listings for convenience, but we are not an employer or staffing agency.
+</p>
+</div>
+
+<div class="text-sm lh-relaxed text-secondary d-flex flex-col gap-lg">
+<div>
+<h3 class="text-md text-primary font-serif mb-1">1. Acceptance of Terms</h3>
+<p>By accessing or using CareerMatch AI ("the Platform"), you agree to be bound by these Terms of Service and our Privacy Policy. If you do not agree to these terms, you must refrain from using the platform.</p>
+</div>
+
+<div>
+<h3 class="text-md text-primary font-serif mb-1">2. Eligibility &amp; Permitted Use</h3>
+<p>You must be at least 18 years of age or possess valid consent from a parent or legal guardian. The platform is licensed exclusively for your personal, non-commercial career development, interview preparation, and placement planning.</p>
+</div>
+
+<div>
+<h3 class="text-md text-primary font-serif mb-1">3. Intellectual Property &amp; User Content License</h3>
+<ul class="list-bulleted text-sm d-flex flex-col gap-xs pl-3">
+<li><strong>Your Content:</strong> You retain complete ownership and copyright in your uploaded resumes, project descriptions, and interview responses.</li>
+<li><strong>Limited License:</strong> You grant CareerMatch AI a non-exclusive, royalty-free, limited license solely to parse, analyze, evaluate, and display career readiness metrics to you. We do not license or sell your content to third parties.</li>
+<li><strong>Platform IP:</strong> The CareerMatch AI logo, interface designs, scoring algorithms, and Devanagari typography systems are protected under intellectual property laws.</li>
+</ul>
+</div>
+
+<div>
+<h3 class="text-md text-primary font-serif mb-1">4. AI Career Readiness &amp; Placement Disclaimers</h3>
+<div class="card bg-sunken p-3 border-subtle mb-2">
+<strong class="text-xs text-primary font-mono d-block mb-1">IMPORTANT ADVISORY DISCLAIMER</strong>
+<p class="text-xs text-secondary mb-0">
+CareerMatch AI is an educational diagnostic platform, NOT an employment agency, headhunting service, or placement consultancy. 
+Placement Readiness Index (PRI) scores, ATS match percentages, salary estimates (in INR / LPA), and interview grades are algorithmic heuristics generated by machine learning models. 
+<strong>Under no circumstances do these scores represent a guarantee of employment, job offer, campus placement, or specific salary tier.</strong> 
+Hiring outcomes depend entirely on individual employer standards and independent recruitment processes.
+</p>
+</div>
+</div>
+
+<div>
+<h3 class="text-md text-primary font-serif mb-1">5. Third-Party Job Listings</h3>
+<p>Job listings in the Live Jobs module are aggregated from third-party public developer APIs and job boards (e.g., Remotive, Arbeitnow, Adzuna). CareerMatch AI does not verify employer legitimacy, interview candidates, or guarantee job openings. Always verify prospective employers independently before providing sensitive documentation.</p>
+</div>
+
+<div>
+<h3 class="text-md text-primary font-serif mb-1">6. Acceptable Use &amp; Prohibitions</h3>
+<p>You agree not to:</p>
+<ul class="list-bulleted text-sm d-flex flex-col gap-xs pl-3">
+<li>Upload files containing malicious macros, viruses, or base64 exploit payloads.</li>
+<li>Attempt to circumvent owner-scoped authorization checks or query other users' data.</li>
+<li>Scrape, crawl, or deploy automated bots against the platform's API endpoints.</li>
+<li>Share credentials or abuse free-tier AI token quotas with automated request scripts.</li>
+</ul>
+</div>
+
+<div>
+<h3 class="text-md text-primary font-serif mb-1">7. Limitation of Liability</h3>
+<p>To the maximum extent permitted by Indian law, CareerMatch AI, its developers, and affiliates shall not be liable for any indirect, incidental, or consequential damages resulting from lost employment opportunities, inaccurate third-party job listings, or service interruptions.</p>
+</div>
+
+<div>
+<h3 class="text-md text-primary font-serif mb-1">8. Governing Law &amp; Dispute Resolution</h3>
+<p>These terms shall be governed by and construed in accordance with the laws of the Republic of India. Any legal action or proceeding arising under these Terms shall be instituted exclusively in the competent courts located in [PLACEHOLDER: New Delhi / Bengaluru, India].</p>
+</div>
 </div>
 </div>
 </section>
@@ -1777,12 +2099,111 @@
                VIEW: COOKIE & STORAGE POLICY (#/cookies)
                ================================================================== -->
 <section class="view-panel" hidden="" id="view-cookies">
-<div class="card glass-panel measure-prose max-w-narrow mx-auto p-clamp-hero">
+<div class="card glass-panel measure-prose max-w-prose mx-auto p-clamp-hero">
+<div class="d-flex flex-between align-center mb-3">
+<div>
 <h1 class="font-serif text-2xl text-primary">Cookie &amp; Storage Policy</h1>
-<span class="font-mono text-xs text-tertiary">Zero Third-Party Tracking</span>
-<div class="mt-2 text-sm lh-relaxed text-secondary d-flex flex-col gap-md">
-<p>CareerMatch AI does not use third-party analytics cookies, cross-site trackers, or advertising beacons.</p>
-<p>We strictly utilize browser <code>localStorage</code> and <code>IndexedDB</code> for essential application state: your theme preference, active authentication JWT, and locally cached career roadmaps.</p>
+<span class="font-mono text-xs text-tertiary">Transparent Local State · Zero Advertising Trackers</span>
+</div>
+<a href="#/settings" class="btn btn-secondary btn-sm">Settings</a>
+</div>
+
+<!-- Plain Language Summary Box -->
+<div class="card bg-sunken p-3 mb-4 border-subtle">
+<strong class="text-xs font-mono uppercase text-accent tracking-wider d-block mb-1">Plain Language Summary</strong>
+<p class="text-xs text-secondary lh-relaxed mb-0">
+CareerMatch AI operates without cross-site tracking pixels, third-party analytics cookies, or advertising beacons. 
+We use only strictly necessary HTTP cookies (to isolate your guest session securely) and standard browser <code>localStorage</code> 
+(to remember your theme, language choice, and study tasks). You can clear this storage at any time with one click.
+</p>
+</div>
+
+<div class="text-sm lh-relaxed text-secondary d-flex flex-col gap-lg">
+<div>
+<h3 class="text-md text-primary font-serif mb-1">1. Itemized Storage Audit</h3>
+<p class="mb-2">The table below details every cookie and browser storage key utilized by the CareerMatch AI web application:</p>
+
+<div class="table-container mb-2">
+<table class="table-compact text-xs w-full">
+<thead>
+<tr>
+<th>Key Name</th>
+<th>Type</th>
+<th>Category</th>
+<th>Lifespan</th>
+<th>Exact Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cm_sid</code></td>
+<td>Cookie (HttpOnly, Secure, SameSite=Lax)</td>
+<td>Strictly Necessary</td>
+<td>30 Days</td>
+<td>Cryptographically signed guest session identifier ensuring your analyses remain strictly private and isolated.</td>
+</tr>
+<tr>
+<td><code>cm_jwt_token</code></td>
+<td>localStorage</td>
+<td>Strictly Necessary</td>
+<td>7 Days / Logout</td>
+<td>Cryptographic bearer token used to authenticate API requests for signed-in students.</td>
+</tr>
+<tr>
+<td><code>cm_theme</code></td>
+<td>localStorage</td>
+<td>Preference</td>
+<td>Persistent</td>
+<td>Stores your selected visual theme (<code>'light'</code>, <code>'dark'</code>, or <code>'system'</code>) to prevent theme flashing on load.</td>
+</tr>
+<tr>
+<td><code>cm_lang</code></td>
+<td>localStorage</td>
+<td>Preference</td>
+<td>Persistent</td>
+<td>Remembers your interface language selection (<code>'en'</code> or <code>'hi'</code>).</td>
+</tr>
+<tr>
+<td><code>cm_reduced_motion</code></td>
+<td>localStorage</td>
+<td>Accessibility</td>
+<td>Persistent</td>
+<td>Records whether animations and transitions should be suppressed for vestibular comfort.</td>
+</tr>
+<tr>
+<td><code>cm_storage_noticed</code></td>
+<td>localStorage</td>
+<td>Strictly Necessary</td>
+<td>Persistent</td>
+<td>Records dismissal of the storage notification banner.</td>
+</tr>
+<tr>
+<td><code>careermatch-cache-v*</code></td>
+<td>CacheStorage</td>
+<td>Performance</td>
+<td>Redeploy</td>
+<td>Service worker cache holding core offline app shells (HTML, CSS, JS, SVG assets).</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div>
+<h3 class="text-md text-primary font-serif mb-1">2. Zero Third-Party Advertising Policy</h3>
+<p>CareerMatch AI contains zero third-party advertising cookies, zero Meta/Facebook pixels, zero Google Ads remarketing tags, and zero data broker fingerprinting scripts. We do not participate in real-time bidding (RTB) advertising networks.</p>
+</div>
+
+<div>
+<h3 class="text-md text-primary font-serif mb-1">3. How to Clear Browser Storage</h3>
+<p>You can instantly wipe all local data directly within the application by navigating to <a href="#/settings" class="link-subtle">Settings → Purge Data</a>. Alternatively, you can clear data through your browser settings:</p>
+<ul class="list-bulleted text-sm d-flex flex-col gap-xs pl-3">
+<li><strong>Chrome:</strong> Settings → Privacy and security → Delete browsing data → Cookies and other site data.</li>
+<li><strong>Firefox:</strong> Settings → Privacy &amp; Security → Cookies and Site Data → Clear Data.</li>
+<li><strong>Safari:</strong> Settings → Safari → Advanced → Website Data → Remove All Website Data.</li>
+<li><strong>Edge:</strong> Settings → Privacy, search, and services → Clear browsing data.</li>
+</ul>
+</div>
 </div>
 </div>
 </section>
@@ -1905,6 +2326,17 @@
         }
       }, 3000);
     </script>
+  <!-- Storage & Essential Cookies Notice Banner (Non-intrusive) -->
+  <aside id="cmStorageNotice" class="storage-notice-banner" hidden="" role="region" aria-label="Storage and Essential Cookie Notice">
+    <div class="storage-notice-content">
+      <p class="text-xs text-secondary mb-0">
+        We use essential cookies and browser storage solely to manage your secure session and preferences. Zero tracking or advertising cookies.
+        <a href="#/cookies" class="link-subtle">Cookie Policy</a>
+      </p>
+      <button type="button" class="btn btn-secondary btn-sm" id="cmStorageNoticeDismissBtn">Got it</button>
+    </div>
+  </aside>
+
 <script>
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {

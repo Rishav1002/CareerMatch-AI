@@ -141,8 +141,8 @@ def extract_text_from_file_bytes(filename: str, file_bytes: bytes) -> str:
     if len(file_bytes) < 4:
         raise ValueError("Uploaded file is empty.")
 
-    if len(file_bytes) > 10 * 1024 * 1024:
-        raise ValueError("Uploaded file exceeds the 10 MB security limit.")
+    if len(file_bytes) > 5 * 1024 * 1024:
+        raise ValueError("Uploaded file exceeds maximum allowed size of 5 MB.")
 
     if file_bytes[:2] == b"MZ" or file_bytes[:4] == b"\x7fELF":
         raise ValueError("Executable binary files are not permitted.")
@@ -172,21 +172,30 @@ def _extract_pdf_bytes(file_bytes: bytes) -> str:
     if fitz is not None:
         try:
             doc = fitz.open(stream=file_bytes, filetype="pdf")
+            if len(doc) > 10:
+                doc.close()
+                raise ValueError("PDF exceeds the 10-page maximum limit. Please upload a standard 1-3 page resume.")
             pages = [page.get_text("text") or "" for page in doc]
             doc.close()
             joined = "\n".join(pages).strip()
             if len(joined) >= 20:
                 return joined
+        except ValueError:
+            raise
         except Exception as exc:
             logger.warning("PyMuPDF (fitz) extraction failed, trying pypdf: %s", exc)
 
     if PdfReader is not None:
         try:
             reader = PdfReader(io.BytesIO(file_bytes))
+            if len(reader.pages) > 10:
+                raise ValueError("PDF exceeds the 10-page maximum limit. Please upload a standard 1-3 page resume.")
             pages = [page.extract_text() or "" for page in reader.pages]
             joined = "\n".join(pages).strip()
             if len(joined) >= 20:
                 return joined
+        except ValueError:
+            raise
         except Exception as exc:
             logger.warning("pypdf extraction failed, trying fallback: %s", exc)
 

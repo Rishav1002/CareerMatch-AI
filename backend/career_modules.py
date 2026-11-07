@@ -647,8 +647,9 @@ def fetch_job_market_intelligence(body: Dict[str, Any]) -> Dict[str, Any]:
     location, experience, skill, and work mode, and calculates candidate resume match %.
     """
     resume_id = sanitize_short_field(body.get("resumeId", ""), 80)
-    resume = body.get("resume") or get_resume_by_id(resume_id) or SAMPLE_RESUMES[0]
-    candidate_skills = set(resume.get("technicalSkills", []))
+    resume = body.get("resume") or (get_resume_by_id(resume_id) if resume_id else None)
+    has_resume = bool(resume and resume.get("technicalSkills"))
+    candidate_skills = set(resume.get("technicalSkills", [])) if has_resume else set()
 
     role_filter = sanitize_short_field(body.get("roleFilter", ""), 100)
     location_filter = sanitize_short_field(body.get("locationFilter", ""), 100)
@@ -664,7 +665,7 @@ def fetch_job_market_intelligence(body: Dict[str, Any]) -> Dict[str, Any]:
         limit=15,
     )
     data_source_label = (
-        "Live Market Provider (Remotive / Arbeitnow / Adzuna) · Cached in Neon"
+        "Live Market Providers (Remotive / Arbeitnow / RemoteOK / The Muse / Himalayas / Adzuna) · Cached in Neon"
         if combined_raw and any("Live" in j.get("dataSource", "") for j in combined_raw)
         else "Verified Indian Tech Hub Benchmark Dataset"
     )
@@ -711,16 +712,22 @@ def fetch_job_market_intelligence(body: Dict[str, Any]) -> Dict[str, Any]:
             if not any(skill_filter.lower() == s.lower() for s in all_job_skills):
                 continue
 
-        matched = [s for s in req_skills if s in candidate_skills]
-        missing = [s for s in req_skills if s not in candidate_skills]
-        pref_matched = [s for s in pref_skills if s in candidate_skills]
-
-        mand_pct = (len(matched) / len(req_skills) * 100.0) if req_skills else 0.0
-        pref_pct = (len(pref_matched) / len(pref_skills) * 100.0) if pref_skills else 100.0
-        match_score = round(mand_pct * 0.8 + pref_pct * 0.2, 1)
+        if has_resume:
+            matched = [s for s in req_skills if s in candidate_skills]
+            missing = [s for s in req_skills if s not in candidate_skills]
+            pref_matched = [s for s in pref_skills if s in candidate_skills]
+            mand_pct = (len(matched) / len(req_skills) * 100.0) if req_skills else 0.0
+            pref_pct = (len(pref_matched) / len(pref_skills) * 100.0) if pref_skills else 100.0
+            match_score = round(mand_pct * 0.8 + pref_pct * 0.2, 1)
+        else:
+            matched = []
+            missing = []
+            pref_matched = []
+            match_score = None
 
         item = {
             **j,
+            "hasResumeComparison": has_resume,
             "matchScore": match_score,
             "matchedSkills": matched,
             "missingSkills": missing,
@@ -773,7 +780,7 @@ def fetch_job_market_intelligence(body: Dict[str, Any]) -> Dict[str, Any]:
     conn.commit()
     conn.close()
 
-    enriched_jobs.sort(key=lambda x: x["matchScore"], reverse=True)
+    enriched_jobs.sort(key=lambda x: (x["matchScore"] is not None, x["matchScore"] or 0.0), reverse=True)
 
     total_listings = max(1, len(combined_raw))
     trending_skills = [
@@ -959,9 +966,9 @@ def _build_tailored_interview_questions(
     ]
 
 
-def start_interview_session(body: Dict[str, Any]) -> Dict[str, Any]:
+def start_interview_session(body: Dict[str, Any], owner_id: str = "legacy_unowned") -> Dict[str, Any]:
     resume_id = sanitize_short_field(body.get("resumeId", ""), 80)
-    resume = body.get("resume") or get_resume_by_id(resume_id) or SAMPLE_RESUMES[0]
+    resume = body.get("resume") or (get_resume_by_id(resume_id, owner_id=owner_id) if resume_id else None) or {"id": "unattached", "technicalSkills": []}
     target_role = sanitize_short_field(body.get("targetRole", "Full Stack Developer"), 100)
     goal_company = sanitize_short_field(body.get("goalCompany", "Industry Tech Bar"), 100)
     interview_round = sanitize_short_field(body.get("interviewRound", "Technical"), 40)
@@ -976,11 +983,11 @@ def start_interview_session(body: Dict[str, Any]) -> Dict[str, Any]:
     cursor.execute(
         """
         INSERT INTO interview_sessions (
-            id, resume_id, target_role, goal_company, interview_round,
+            id, owner_id, user_id, resume_id, target_role, goal_company, interview_round,
             difficulty, status, total_questions, answered_count, started_at
-        ) VALUES (?, ?, ?, ?, ?, ?, 'in_progress', ?, 0, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'in_progress', ?, 0, ?)
         """,
-        (session_id, resume["id"], target_role, goal_company, interview_round, difficulty, len(questions), now_iso),
+        (session_id, owner_id, owner_id, resume.get("id", "unattached"), target_role, goal_company, interview_round, difficulty, len(questions), now_iso),
     )
 
     for q in questions:
@@ -1010,7 +1017,7 @@ def start_interview_session(body: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def submit_interview_answer(body: Dict[str, Any]) -> Dict[str, Any]:
+def submit_interview_answer(body: Dict[str, Any], owner_id: str = "legacy_unowned") -> Dict[str, Any]:
     session_id = sanitize_short_field(body.get("sessionId", ""), 80)
     question_index = int(body.get("questionIndex", 1))
     answer_text = sanitize_plain_text(body.get("answerText", ""), 8000)
@@ -1024,7 +1031,7 @@ def submit_interview_answer(body: Dict[str, Any]) -> Dict[str, Any]:
 
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM interview_sessions WHERE id = ?", (session_id,))
+    cursor.execute("SELECT * FROM interview_sessions WHERE id = ? AND owner_id = ?", (session_id, owner_id))
     sess = cursor.fetchone()
     if not sess:
         conn.close()
@@ -1267,16 +1274,21 @@ Score each dimension from 0 to 100 honestly. If the answer is very brief or vagu
     }
 
 
-def get_interview_history(resume_id: Optional[str] = None) -> Dict[str, Any]:
+def get_interview_history(resume_id: Optional[str] = None, owner_id: Optional[str] = None) -> Dict[str, Any]:
+    if not owner_id or owner_id == "legacy_unowned":
+        return {"history": []}
     conn = get_connection()
     cursor = conn.cursor()
     if resume_id:
         cursor.execute(
-            "SELECT * FROM interview_sessions WHERE resume_id = ? ORDER BY started_at DESC LIMIT 15",
-            (resume_id,),
+            "SELECT * FROM interview_sessions WHERE owner_id = ? AND resume_id = ? ORDER BY started_at DESC LIMIT 15",
+            (owner_id, resume_id),
         )
     else:
-        cursor.execute("SELECT * FROM interview_sessions ORDER BY started_at DESC LIMIT 15")
+        cursor.execute(
+            "SELECT * FROM interview_sessions WHERE owner_id = ? ORDER BY started_at DESC LIMIT 15",
+            (owner_id,),
+        )
     rows = cursor.fetchall()
 
     sessions: List[Dict[str, Any]] = []
@@ -1342,14 +1354,16 @@ WEAK_PHRASES = [
 ]
 
 
-def evaluate_ats_resume(body: Dict[str, Any]) -> Dict[str, Any]:
+def evaluate_ats_resume(body: Dict[str, Any], owner_id: str = "legacy_unowned") -> Dict[str, Any]:
     """
     Module 3: ATS Resume Simulator.
     Evaluates resume vs target role / JD with explainable ATS score, section audit,
     formatting/readability checks, truthful before/after bullet rewrites, and downloadable template.
     """
     resume_id = sanitize_short_field(body.get("resumeId", ""), 80)
-    resume = body.get("resume") or get_resume_by_id(resume_id) or SAMPLE_RESUMES[0]
+    resume = body.get("resume") or (get_resume_by_id(resume_id, owner_id=owner_id) if resume_id else None)
+    if not resume or not resume.get("rawText"):
+        raise ValueError("No resume found. Please upload or parse a resume first.")
     target_role = sanitize_short_field(body.get("targetRole", "Full Stack Developer"), 100)
     goal_company = sanitize_short_field(body.get("goalCompany", ""), 100)
     custom_jd = sanitize_plain_text(body.get("customJdText", ""), 20000)
@@ -1595,7 +1609,7 @@ GITHUB_LANG_TO_SKILL: Dict[str, List[str]] = {
 }
 
 
-def analyze_github_portfolio(body: Dict[str, Any]) -> Dict[str, Any]:
+def analyze_github_portfolio(body: Dict[str, Any], owner_id: str = "legacy_unowned") -> Dict[str, Any]:
     """
     Module 4: GitHub Skill Verification & Portfolio Analyzer.
     Fetches public repos from GitHub REST API, verifies resume skill claims
@@ -1611,9 +1625,9 @@ def analyze_github_portfolio(body: Dict[str, Any]) -> Dict[str, Any]:
         }
 
     resume_id = sanitize_short_field(body.get("resumeId", ""), 80)
-    resume = body.get("resume") or get_resume_by_id(resume_id) or SAMPLE_RESUMES[0]
+    resume = body.get("resume") or (get_resume_by_id(resume_id, owner_id=owner_id) if resume_id else None)
     target_role = sanitize_short_field(body.get("targetRole", "Full Stack Developer"), 100)
-    resume_skills = list(resume.get("technicalSkills", []))
+    resume_skills = list(resume.get("technicalSkills", [])) if resume else []
 
     headers = {
         "Accept": "application/vnd.github+json",
@@ -1786,13 +1800,15 @@ def analyze_github_portfolio(body: Dict[str, Any]) -> Dict[str, Any]:
     cursor.execute(
         """
         INSERT INTO github_profiles (
-            resume_id, github_username, data_source, public_repos_count, followers_count,
+            owner_id, user_id, resume_id, github_username, data_source, public_repos_count, followers_count,
             portfolio_strength_score, verified_skills_json, unverified_resume_skills_json,
             top_languages_json, repositories_json, readme_quality_report_json, recommended_projects_json, analyzed_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
-            resume["id"],
+            owner_id,
+            owner_id,
+            (resume.get("id", "unattached") if resume else "unattached"),
             username,
             data_source,
             int((user_data or {}).get("public_repos") or len(repositories)),
@@ -1908,23 +1924,23 @@ STAGE_QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
 }
 
 
-def get_adaptive_roadmap(body: Dict[str, Any]) -> Dict[str, Any]:
+def get_adaptive_roadmap(body: Dict[str, Any], owner_id: str = "legacy_unowned") -> Dict[str, Any]:
     """
     Module 5: Adaptive AI Learning Roadmap.
     Creates or retrieves a persistent, task-driven roadmap with daily/weekly tasks,
     stage quizzes, skill-wise progress charts, and adaptive remediation tasks.
     """
     resume_id = sanitize_short_field(body.get("resumeId", ""), 80)
-    resume = body.get("resume") or get_resume_by_id(resume_id) or SAMPLE_RESUMES[0]
+    resume = body.get("resume") or (get_resume_by_id(resume_id, owner_id=owner_id) if resume_id else None) or {"id": "default", "technicalSkills": []}
     target_role = sanitize_short_field(body.get("targetRole", "Full Stack Developer"), 100)
     weekly_hours = int(body.get("weeklyHoursGoal", 10))
     force_regenerate = bool(body.get("regenerate", False))
 
-    roadmap_id = f"rm-{resume['id']}-{re.sub(r'[^a-z0-9]+', '-', target_role.lower()).strip('-')}"
+    roadmap_id = f"rm-{owner_id[:8]}-{resume['id']}-{re.sub(r'[^a-z0-9]+', '-', target_role.lower()).strip('-')}"
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM learning_roadmaps WHERE id = ?", (roadmap_id,))
+    cursor.execute("SELECT * FROM learning_roadmaps WHERE id = ? AND owner_id = ?", (roadmap_id, owner_id))
     existing_rm = cursor.fetchone()
 
     if existing_rm and not force_regenerate:
@@ -2019,13 +2035,15 @@ def get_adaptive_roadmap(body: Dict[str, Any]) -> Dict[str, Any]:
     cursor.execute(
         """
         INSERT OR REPLACE INTO learning_roadmaps (
-            id, resume_id, target_role, overall_progress_pct, weekly_hours_goal,
+            id, owner_id, user_id, resume_id, target_role, overall_progress_pct, weekly_hours_goal,
             stages_json, quiz_history_json, adaptive_notes_json, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, '[]', '[]', ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, '[]', '[]', ?)
         """,
         (
             roadmap_id,
-            resume["id"],
+            owner_id,
+            owner_id,
+            (resume.get("id", "default") if resume else "default"),
             target_role,
             round((1 / max(1, len(tasks_to_insert))) * 100, 1),
             weekly_hours,
@@ -2055,14 +2073,21 @@ def get_adaptive_roadmap(body: Dict[str, Any]) -> Dict[str, Any]:
     return _format_adaptive_roadmap_response(rm_row, task_rows)
 
 
-def toggle_learning_task(body: Dict[str, Any]) -> Dict[str, Any]:
+def toggle_learning_task(body: Dict[str, Any], owner_id: str = "legacy_unowned") -> Dict[str, Any]:
     task_id = sanitize_short_field(body.get("taskId", ""), 100)
     completed = 1 if body.get("completed") else 0
     now_iso = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
 
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT roadmap_id FROM learning_tasks WHERE id = ?", (task_id,))
+    cursor.execute(
+        """
+        SELECT t.roadmap_id FROM learning_tasks t
+        JOIN learning_roadmaps r ON r.id = t.roadmap_id
+        WHERE t.id = ? AND r.owner_id = ?
+        """,
+        (task_id, owner_id),
+    )
     row = cursor.fetchone()
     if not row:
         conn.close()
@@ -2091,7 +2116,7 @@ def toggle_learning_task(body: Dict[str, Any]) -> Dict[str, Any]:
     return _format_adaptive_roadmap_response(rm_row, task_rows)
 
 
-def submit_roadmap_stage_quiz(body: Dict[str, Any]) -> Dict[str, Any]:
+def submit_roadmap_stage_quiz(body: Dict[str, Any], owner_id: str = "legacy_unowned") -> Dict[str, Any]:
     """
     Evaluate a stage quiz in Module 5. If score < 80%, automatically inject an
     adaptive remediation task into the student's roadmap for weak areas.
@@ -2102,7 +2127,7 @@ def submit_roadmap_stage_quiz(body: Dict[str, Any]) -> Dict[str, Any]:
 
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM learning_roadmaps WHERE id = ?", (roadmap_id,))
+    cursor.execute("SELECT * FROM learning_roadmaps WHERE id = ? AND owner_id = ?", (roadmap_id, owner_id))
     rm_row = cursor.fetchone()
     if not rm_row:
         conn.close()
@@ -2210,7 +2235,22 @@ def submit_roadmap_stage_quiz(body: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _format_adaptive_roadmap_response(rm_row: Any, task_rows: List[Any]) -> Dict[str, Any]:
-    stages = json.loads(rm_row["stages_json"] or "[]")
+    raw_stages = json.loads(rm_row["stages_json"] or "[]")
+    # Bug 14b / Bug 8: Never leak correctIndex or explanation to the client before submission
+    stages = []
+    for st in raw_stages:
+        s_copy = dict(st)
+        if "quizQuestions" in s_copy and isinstance(s_copy["quizQuestions"], list):
+            clean_q_list = []
+            for q in s_copy["quizQuestions"]:
+                clean_q_list.append({
+                    "id": q.get("id"),
+                    "question": q.get("question"),
+                    "options": q.get("options", []),
+                })
+            s_copy["quizQuestions"] = clean_q_list
+        stages.append(s_copy)
+
     tasks = [
         {
             "id": r["id"],
@@ -2280,6 +2320,11 @@ ASSESSMENT_TOPICS_BANK: Dict[str, Dict[str, Any]] = {
                 "options": ["O(n)", "O(log n)", "O(1)", "O(n log n)"],
                 "correctIndex": 2,
                 "explanation": "Python dictionaries are implemented as hash tables, providing O(1) average-case lookup.",
+                "hints": [
+                    "Tier 1: Think about the underlying data structure used by Python for hash lookups.",
+                    "Tier 2: The hash table calculates a hash code and indexes a contiguous array directly.",
+                    "Tier 3: In average conditions without hash collisions, hash table indexing takes constant time O(1).",
+                ],
             },
             {
                 "id": "py-2",
@@ -2288,6 +2333,11 @@ ASSESSMENT_TOPICS_BANK: Dict[str, Dict[str, Any]] = {
                 "options": ["`[x * 2 for x in range(1000)]`", "`(x * 2 for x in range(1000))`", "`{x * 2 for x in range(1000)}`", "`list(range(1000))`"],
                 "correctIndex": 1,
                 "explanation": "Parentheses `(expr for x in iterable)` create a lazy generator expression.",
+                "hints": [
+                    "Tier 1: Look at the enclosure syntax: square brackets create lists, curly braces create dicts or sets.",
+                    "Tier 2: Generator expressions use parentheses `(...)` instead of square brackets.",
+                    "Tier 3: Parentheses without a function call create a lazy generator object that yields elements on demand.",
+                ],
             },
             {
                 "id": "py-3",
@@ -2296,6 +2346,11 @@ ASSESSMENT_TOPICS_BANK: Dict[str, Dict[str, Any]] = {
                 "options": ["`__init__` and `__del__`", "`__enter__` and `__exit__`", "`__iter__` and `__next__`", "`__open__` and `__close__`"],
                 "correctIndex": 1,
                 "explanation": "The context manager protocol relies on `__enter__` and `__exit__` to guarantee deterministic cleanup.",
+                "hints": [
+                    "Tier 1: Context managers are designed for entering a runtime scope and exiting it safely.",
+                    "Tier 2: Look for the methods that run upon entering the `with` block and exiting it.",
+                    "Tier 3: The context manager protocol explicitly requires `__enter__` and `__exit__`.",
+                ],
             },
             {
                 "id": "py-4",
@@ -2304,6 +2359,11 @@ ASSESSMENT_TOPICS_BANK: Dict[str, Dict[str, Any]] = {
                 "options": ["`threading`", "`asyncio`", "`multiprocessing`", "`queue`"],
                 "correctIndex": 2,
                 "explanation": "`multiprocessing` spawns separate Python interpreter processes, each with its own GIL.",
+                "hints": [
+                    "Tier 1: CPython's GIL restricts pure multi-threading to one core at a time for bytecode execution.",
+                    "Tier 2: To bypass the GIL, you need separate operating system processes rather than threads in the same process.",
+                    "Tier 3: The `multiprocessing` module creates separate OS processes with independent GILs.",
+                ],
             },
         ],
         "codingChallenge": {
@@ -2327,6 +2387,11 @@ ASSESSMENT_TOPICS_BANK: Dict[str, Dict[str, Any]] = {
                 "options": ["INNER JOIN", "LEFT OUTER JOIN", "CROSS JOIN", "RIGHT INNER JOIN"],
                 "correctIndex": 1,
                 "explanation": "`LEFT OUTER JOIN` preserves all rows from the left table regardless of whether a match exists on the right.",
+                "hints": [
+                    "Tier 1: Consider which table's rows you want to preserve completely.",
+                    "Tier 2: A LEFT JOIN preserves every row from the table preceding the JOIN keyword.",
+                    "Tier 3: LEFT OUTER JOIN returns all rows from the left table, with NULLs for unmatched right-table rows.",
+                ],
             },
             {
                 "id": "sql-2",
@@ -2335,6 +2400,11 @@ ASSESSMENT_TOPICS_BANK: Dict[str, Dict[str, Any]] = {
                 "options": ["`RANK()`", "`DENSE_RANK()`", "`ROW_NUMBER()`", "`NTILE(1)`"],
                 "correctIndex": 2,
                 "explanation": "`ROW_NUMBER()` always produces unique sequential integers without ties.",
+                "hints": [
+                    "Tier 1: RANK() and DENSE_RANK() handle ties by giving equal rank numbers.",
+                    "Tier 2: Look for a function whose name specifically suggests numbering individual rows uniquely.",
+                    "Tier 3: `ROW_NUMBER()` assigns sequential integers 1, 2, 3... without gaps or duplicate values.",
+                ],
             },
             {
                 "id": "sql-3",
@@ -2343,6 +2413,11 @@ ASSESSMENT_TOPICS_BANK: Dict[str, Dict[str, Any]] = {
                 "options": ["`WHERE salary > 90000`", "`WHERE department_id = 4 AND salary > 90000`", "`WHERE LOWER(department_id) = '4'`", "`WHERE salary BETWEEN 50000 AND 80000`"],
                 "correctIndex": 1,
                 "explanation": "Composite B-Tree indexes follow the leftmost-prefix rule (`department_id` first, then `salary`).",
+                "hints": [
+                    "Tier 1: Composite B-Tree indexes require predicates to follow a specific prefix order.",
+                    "Tier 2: The leftmost prefix rule states that an index on (A, B) can only be used if A is queried.",
+                    "Tier 3: A query filtering on `department_id = ... AND salary > ...` uses the leftmost column first.",
+                ],
             },
             {
                 "id": "sql-4",
@@ -2351,6 +2426,11 @@ ASSESSMENT_TOPICS_BANK: Dict[str, Dict[str, Any]] = {
                 "options": ["They always return the same value", "`COUNT(*)` counts all rows including NULLs, while `COUNT(column_name)` counts only non-NULL values in that column", "`COUNT(column_name)` is faster than `COUNT(*)` on unindexed text", "`COUNT(*)` ignores duplicate rows"],
                 "correctIndex": 1,
                 "explanation": "`COUNT(col)` ignores NULL values in `col`, whereas `COUNT(*)` counts total rows.",
+                "hints": [
+                    "Tier 1: Aggregate functions like COUNT, AVG, and SUM treat NULL values in a special way.",
+                    "Tier 2: Most aggregate functions skip NULLs entirely, while COUNT(*) counts all rows.",
+                    "Tier 3: COUNT(column) counts non-NULL values, whereas COUNT(*) counts total rows including NULLs.",
+                ],
             },
         ],
         "codingChallenge": {
@@ -2373,6 +2453,11 @@ ASSESSMENT_TOPICS_BANK: Dict[str, Dict[str, Any]] = {
                 "options": ["Nested loops", "Two-pointer inward scan (`left = 0`, `right = n - 1`)", "Hash map frequency table", "Bubble sort"],
                 "correctIndex": 1,
                 "explanation": "On a sorted array, advancing `left` when the sum is too small and decrementing `right` when too large runs in O(n) time and O(1) space.",
+                "hints": [
+                    "Tier 1: Notice that the input array is already sorted in ascending order.",
+                    "Tier 2: You can initialize pointers at the two extreme ends of the array.",
+                    "Tier 3: The two-pointer scan compares array[left] + array[right] against T and moves inward in O(1) space.",
+                ],
             },
             {
                 "id": "dsa-2",
@@ -2381,6 +2466,11 @@ ASSESSMENT_TOPICS_BANK: Dict[str, Dict[str, Any]] = {
                 "options": ["Pre-order", "In-order (Left, Root, Right)", "Post-order", "Level-order BFS"],
                 "correctIndex": 1,
                 "explanation": "In-order traversal visits all smaller keys in the left subtree, then the root, then larger keys in the right subtree.",
+                "hints": [
+                    "Tier 1: In a BST, all keys in the left subtree are smaller than the root, and keys in the right subtree are larger.",
+                    "Tier 2: To output smallest to largest, you must traverse Left, then Root, then Right.",
+                    "Tier 3: `In-order` traversal always yields BST keys in sorted numerical order.",
+                ],
             },
             {
                 "id": "dsa-3",
@@ -2389,6 +2479,11 @@ ASSESSMENT_TOPICS_BANK: Dict[str, Dict[str, Any]] = {
                 "options": ["O(N log K)", "O(N^2)", "O(K log N)", "O(1)"],
                 "correctIndex": 0,
                 "explanation": "Maintaining a min-heap of size K across N elements performs at most N heap operations of cost O(log K).",
+                "hints": [
+                    "Tier 1: The heap only holds K elements at any given time.",
+                    "Tier 2: Each insertion or eviction in a heap of size K costs O(log K) comparisons.",
+                    "Tier 3: Iterating over all N elements with heap operations of size K gives O(N log K) overall.",
+                ],
             },
             {
                 "id": "dsa-4",
@@ -2397,6 +2492,11 @@ ASSESSMENT_TOPICS_BANK: Dict[str, Dict[str, Any]] = {
                 "options": ["Greedy choice and bipartite graph", "Overlapping subproblems and optimal substructure", "Sorted input and constant memory", "Divide and conquer without shared state"],
                 "correctIndex": 1,
                 "explanation": "Dynamic programming caches solutions to overlapping subproblems that combine via optimal substructure.",
+                "hints": [
+                    "Tier 1: Think about why recursion without memoization repeats identical calculations.",
+                    "Tier 2: DP requires recurring smaller sub-calculations and building the global solution from optimal sub-solutions.",
+                    "Tier 3: The canonical dual criteria are 'Overlapping Subproblems' and 'Optimal Substructure'.",
+                ],
             },
         ],
         "codingChallenge": {
@@ -2414,7 +2514,7 @@ ASSESSMENT_TOPICS_BANK: Dict[str, Dict[str, Any]] = {
 }
 
 
-def generate_skill_assessment(body: Dict[str, Any]) -> Dict[str, Any]:
+def generate_skill_assessment(body: Dict[str, Any], owner_id: str = "legacy_unowned") -> Dict[str, Any]:
     """
     Module 6: AI Skill Assessment Lab — Generate assessment session.
     Supports Python, Java, JavaScript, SQL, DSA, Aptitude, Technical Fundamentals.
@@ -2440,6 +2540,11 @@ def generate_skill_assessment(body: Dict[str, Any]) -> Dict[str, Any]:
                     ],
                     "correctIndex": 1,
                     "explanation": f"Production {topic} systems rely on bounded timeouts, validation, and deterministic cleanup.",
+                    "hints": [
+                        f"Tier 1: Consider resilience patterns that prevent {topic} servers from crashing under unexpected load.",
+                        f"Tier 2: Avoid ignoring errors or leaving file/socket descriptors open.",
+                        f"Tier 3: Standard production hygiene requires deterministic resource cleanup, timeouts, and structured error handling.",
+                    ],
                 },
                 {
                     "id": f"{topic.lower()[:3]}-2",
@@ -2453,6 +2558,11 @@ def generate_skill_assessment(body: Dict[str, Any]) -> Dict[str, Any]:
                     ],
                     "correctIndex": 0,
                     "explanation": "Algorithmic complexity reduction (O(n^2) -> O(n)) has the highest leverage on throughput.",
+                    "hints": [
+                        f"Tier 1: Look at the Big-O difference between searching arrays vs hash sets.",
+                        f"Tier 2: Linear scans O(n) inside a loop create quadratic bottlenecks O(n^2).",
+                        f"Tier 3: Replacing O(n) scans with O(1) hash lookups gives orders-of-magnitude speedup.",
+                    ],
                 },
                 {
                     "id": f"{topic.lower()[:3]}-3",
@@ -2466,6 +2576,11 @@ def generate_skill_assessment(body: Dict[str, Any]) -> Dict[str, Any]:
                     ],
                     "correctIndex": 1,
                     "explanation": "Boundary value analysis catches off-by-one errors, null dereferences, and empty-collection crashes.",
+                    "hints": [
+                        f"Tier 1: Think about inputs that commonly cause null pointer or index out-of-range exceptions.",
+                        f"Tier 2: Happy path alone fails to verify edge cases and boundary limits.",
+                        f"Tier 3: Thorough unit tests must assert empty inputs, nulls, singletons, and upper bounds.",
+                    ],
                 },
                 {
                     "id": f"{topic.lower()[:3]}-4",
@@ -2479,6 +2594,11 @@ def generate_skill_assessment(body: Dict[str, Any]) -> Dict[str, Any]:
                     ],
                     "correctIndex": 0,
                     "explanation": "Unsynchronized concurrent mutation of shared state leads to lost updates and corrupted state.",
+                    "hints": [
+                        f"Tier 1: Think about two independent threads reading and writing the same memory address.",
+                        f"Tier 2: Without locks, mutexes, or atomic primitives, execution order is unpredictable.",
+                        f"Tier 3: A race condition occurs when concurrent tasks access and mutate shared state without synchronization.",
+                    ],
                 },
             ],
             "codingChallenge": {
@@ -2501,11 +2621,13 @@ def generate_skill_assessment(body: Dict[str, Any]) -> Dict[str, Any]:
     cursor.execute(
         """
         INSERT INTO assessment_sessions (
-            id, resume_id, topic, difficulty, questions_json, coding_challenge_json, status, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, 'generated', ?)
+            id, owner_id, user_id, resume_id, topic, difficulty, questions_json, coding_challenge_json, status, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'generated', ?)
         """,
         (
             session_id,
+            owner_id,
+            owner_id,
             resume_id,
             topic,
             difficulty,
@@ -2613,23 +2735,110 @@ def _evaluate_code_safely_without_exec(
     }
 
 
-def submit_skill_assessment(body: Dict[str, Any]) -> Dict[str, Any]:
+def get_assessment_hint(body: Dict[str, Any], owner_id: str = "legacy_unowned") -> Dict[str, Any]:
+    """
+    On-Demand Tiered Hint Fetcher.
+    Tier 1 (Nudge): -25% question score penalty.
+    Tier 2 (Concept): -50% question score penalty.
+    Tier 3 (Near-Answer): -75% question score penalty.
+    Strictly scopes to session owner and persists used tier server-side.
+    """
+    session_id = sanitize_short_field(body.get("sessionId", ""), 80)
+    q_idx = int(body.get("questionIndex", 0))
+    tier = int(body.get("tier", 1))
+    if tier not in (1, 2, 3):
+        tier = 1
+
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM assessment_sessions WHERE id = ? AND owner_id = ?", (session_id, owner_id))
+    sess = cursor.fetchone()
+    if not sess:
+        conn.close()
+        raise ValueError("Assessment session not found.")
+
+    if sess["status"] == "completed":
+        conn.close()
+        raise ValueError("Assessment session has already been completed.")
+
+    questions = json.loads(sess["questions_json"] or "[]")
+    if q_idx < 0 or q_idx >= len(questions):
+        conn.close()
+        raise ValueError("Invalid question index.")
+
+    target_q = questions[q_idx]
+    hints = target_q.get("hints", [])
+    if not hints:
+        hints = [
+            f"Nudge: Re-read the technical constraints of {sess['topic']}.",
+            f"Concept: Focus on standard production paradigms and eliminate obviously flawed choices.",
+            f"Guidance: Review the canonical documentation for {target_q.get('subtopic', sess['topic'])}.",
+        ]
+
+    hint_text = hints[min(tier - 1, len(hints) - 1)]
+
+    # Record hint usage in session
+    hints_used: Dict[str, int] = {}
+    if "hints_used_json" in sess.keys() and sess["hints_used_json"]:
+        try:
+            hints_used = json.loads(sess["hints_used_json"])
+        except Exception:
+            hints_used = {}
+
+    prev_tier = hints_used.get(str(q_idx), 0)
+    hints_used[str(q_idx)] = max(prev_tier, tier)
+
+    try:
+        cursor.execute(
+            "UPDATE assessment_sessions SET hints_used_json = ? WHERE id = ?",
+            (json.dumps(hints_used), session_id),
+        )
+        conn.commit()
+    except Exception as exc:
+        print(f"Warning updating hints_used_json: {exc}")
+    finally:
+        conn.close()
+
+    penalty_pct = tier * 25
+    return {
+        "sessionId": session_id,
+        "questionIndex": q_idx,
+        "tier": tier,
+        "hint": hint_text,
+        "penaltyPct": penalty_pct,
+    }
+
+
+def submit_skill_assessment(body: Dict[str, Any], owner_id: str = "legacy_unowned") -> Dict[str, Any]:
     session_id = sanitize_short_field(body.get("sessionId", ""), 80)
     mcq_answers = body.get("mcqAnswers", [])
     code_submission = sanitize_plain_text(body.get("codeSubmission", ""), 15000)
 
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM assessment_sessions WHERE id = ?", (session_id,))
+    cursor.execute("SELECT * FROM assessment_sessions WHERE id = ? AND owner_id = ?", (session_id, owner_id))
     sess = cursor.fetchone()
     if not sess:
         conn.close()
         raise ValueError("Assessment session not found.")
 
+    if sess["status"] == "completed":
+        conn.close()
+        raise ValueError("Assessment session has already been submitted and completed.")
+
     questions = json.loads(sess["questions_json"] or "[]")
     challenge = json.loads(sess["coding_challenge_json"] or "{}")
 
+    # Read used hints
+    hints_used: Dict[str, int] = {}
+    if "hints_used_json" in sess.keys() and sess["hints_used_json"]:
+        try:
+            hints_used = json.loads(sess["hints_used_json"])
+        except Exception:
+            hints_used = {}
+
     correct_cnt = 0
+    earned_points = 0.0
     question_reviews: List[Dict[str, Any]] = []
     weak_subtopics: List[str] = []
 
@@ -2637,8 +2846,13 @@ def submit_skill_assessment(body: Dict[str, Any]) -> Dict[str, Any]:
         selected = int(mcq_answers[idx]) if idx < len(mcq_answers) and mcq_answers[idx] is not None else -1
         correct_idx = int(q.get("correctIndex", 0))
         is_ok = selected == correct_idx
+        used_tier = hints_used.get(str(idx), 0)
+
         if is_ok:
             correct_cnt += 1
+            # Apply tiered score penalty for used hints
+            penalty_multiplier = max(0.25, 1.0 - (used_tier * 0.25))
+            earned_points += penalty_multiplier
         else:
             weak_subtopics.append(q.get("subtopic", sess["topic"]))
 
@@ -2651,12 +2865,14 @@ def submit_skill_assessment(body: Dict[str, Any]) -> Dict[str, Any]:
                 "selectedOption": opts[selected] if 0 <= selected < len(opts) else "No Answer",
                 "correctOption": opts[correct_idx] if 0 <= correct_idx < len(opts) else "",
                 "isCorrect": is_ok,
+                "usedHintTier": used_tier,
+                "scoreEarned": round(max(0.25, 1.0 - (used_tier * 0.25)) * 100) if is_ok else 0,
                 "explanation": q.get("explanation", ""),
             }
         )
 
     total_q = max(1, len(questions))
-    mcq_score = round((correct_cnt / total_q) * 100.0, 1)
+    mcq_score = round((earned_points / total_q) * 100.0, 1)
     coding_review = _evaluate_code_safely_without_exec(code_submission, sess["topic"], challenge)
     coding_score = float(coding_review["score"])
 
@@ -2670,13 +2886,15 @@ def submit_skill_assessment(body: Dict[str, Any]) -> Dict[str, Any]:
     cursor.execute(
         """
         INSERT INTO assessment_results (
-            session_id, resume_id, topic, difficulty, overall_score, mcq_score,
+            session_id, owner_id, user_id, resume_id, topic, difficulty, overall_score, mcq_score,
             coding_score, correct_count, total_questions, evaluation_mode,
             question_reviews_json, coding_review_json, weak_subtopics_json, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             session_id,
+            owner_id,
+            owner_id,
             sess["resume_id"],
             sess["topic"],
             sess["difficulty"],
@@ -2708,20 +2926,23 @@ def submit_skill_assessment(body: Dict[str, Any]) -> Dict[str, Any]:
         "questionReviews": question_reviews,
         "codingReview": coding_review,
         "weakSubtopics": weak_subtopics,
+        "hintsUsed": hints_used,
         "completedAt": now_iso,
     }
 
 
-def get_assessment_history(resume_id: Optional[str] = None) -> Dict[str, Any]:
+def get_assessment_history(resume_id: Optional[str] = None, owner_id: Optional[str] = None) -> Dict[str, Any]:
+    if not owner_id or owner_id == "legacy_unowned":
+        return {"results": []}
     conn = get_connection()
     cursor = conn.cursor()
     if resume_id:
         cursor.execute(
-            "SELECT * FROM assessment_results WHERE resume_id = ? ORDER BY id DESC LIMIT 15",
-            (resume_id,),
+            "SELECT * FROM assessment_results WHERE owner_id = ? AND resume_id = ? ORDER BY id DESC LIMIT 15",
+            (owner_id, resume_id),
         )
     else:
-        cursor.execute("SELECT * FROM assessment_results ORDER BY id DESC LIMIT 15")
+        cursor.execute("SELECT * FROM assessment_results WHERE owner_id = ? ORDER BY id DESC LIMIT 15", (owner_id,))
     rows = cursor.fetchall()
     conn.close()
 
@@ -2857,14 +3078,14 @@ CAREER_SALARY_BENCHMARKS: Dict[str, Dict[str, Any]] = {
 }
 
 
-def compare_career_paths(body: Dict[str, Any]) -> Dict[str, Any]:
+def compare_career_paths(body: Dict[str, Any], owner_id: str = "legacy_unowned") -> Dict[str, Any]:
     """
     Module 7: Career Path & Salary Intelligence.
     Compares multiple roles against the student's current resume, calculates a
     Role-to-Role Skill Bridge, and provides cited salary benchmarks.
     """
     resume_id = sanitize_short_field(body.get("resumeId", ""), 80)
-    resume = body.get("resume") or get_resume_by_id(resume_id) or SAMPLE_RESUMES[0]
+    resume = body.get("resume") or (get_resume_by_id(resume_id, owner_id=owner_id) if resume_id else None) or {"technicalSkills": []}
     primary_role = sanitize_short_field(body.get("primaryRole", "Full Stack Developer"), 100)
     secondary_role = sanitize_short_field(body.get("secondaryRole", "Data Engineer"), 100)
 
@@ -2923,7 +3144,7 @@ def compare_career_paths(body: Dict[str, Any]) -> Dict[str, Any]:
 # MODULE 8: PLACEMENT READINESS INDEX (PRI)
 # ============================================================================
 
-def compute_placement_readiness_index(body: Dict[str, Any]) -> Dict[str, Any]:
+def compute_placement_readiness_index(body: Dict[str, Any], owner_id: str = "legacy_unowned") -> Dict[str, Any]:
     """
     Module 8: Placement Readiness Index (PRI).
     Computes an explainable, configurable 0–100 score combining all 6 pillars:
@@ -2935,7 +3156,7 @@ def compute_placement_readiness_index(body: Dict[str, Any]) -> Dict[str, Any]:
     - Job-market alignment: 10%
     """
     resume_id = sanitize_short_field(body.get("resumeId", ""), 80)
-    resume = body.get("resume") or get_resume_by_id(resume_id) or SAMPLE_RESUMES[0]
+    resume = body.get("resume") or (get_resume_by_id(resume_id, owner_id=owner_id) if resume_id else None) or {"id": "default", "technicalSkills": []}
     target_role = sanitize_short_field(body.get("targetRole", "Full Stack Developer"), 100)
     custom_weights = body.get("weights") or DEFAULT_PRI_WEIGHTS
 
@@ -2953,16 +3174,30 @@ def compute_placement_readiness_index(body: Dict[str, Any]) -> Dict[str, Any]:
     technical_score = float(match_res["overallScore"])
 
     # 2. Resume Quality (ATS Simulator Score)
-    ats_eval = evaluate_ats_resume({"resume": resume, "targetRole": target_role})
-    resume_quality_score = float(ats_eval["atsScore"])
+    ats_eval: Optional[Dict[str, Any]] = None
+    if resume and (resume.get("rawText") or resume.get("technicalSkills")):
+        try:
+            ats_eval = evaluate_ats_resume({"resume": resume, "targetRole": target_role}, owner_id=owner_id)
+            resume_quality_score = float(ats_eval.get("atsScore", 0.0))
+        except Exception:
+            resume_quality_score = 0.0
+    else:
+        resume_quality_score = 0.0
+
+    if ats_eval:
+        res_status = f"Verified ({len(ats_eval.get('matchedKeywords', []))} keywords, {len(ats_eval.get('formattingChecks', []))} format checks)"
+        res_verified = True
+    else:
+        res_status = "No Resume Parsed (Upload resume to score ATS quality)"
+        res_verified = False
 
     conn = get_connection()
     cursor = conn.cursor()
 
     # 3. Interview Performance (from completed sessions in DB, or transparent baseline)
     cursor.execute(
-        "SELECT overall_score, answered_count FROM interview_sessions WHERE resume_id = ? AND answered_count > 0 ORDER BY started_at DESC LIMIT 5",
-        (resume["id"],),
+        "SELECT overall_score, answered_count FROM interview_sessions WHERE owner_id = ? AND resume_id = ? AND answered_count > 0 ORDER BY started_at DESC LIMIT 5",
+        (owner_id, resume.get("id", "default")),
     )
     int_rows = cursor.fetchall()
     if int_rows:
@@ -2976,8 +3211,8 @@ def compute_placement_readiness_index(body: Dict[str, Any]) -> Dict[str, Any]:
 
     # 4. Practical Portfolio Evidence (from GitHub analyzer + resume projects)
     cursor.execute(
-        "SELECT portfolio_strength_score, github_username FROM github_profiles WHERE resume_id = ? ORDER BY id DESC LIMIT 1",
-        (resume["id"],),
+        "SELECT portfolio_strength_score, github_username FROM github_profiles WHERE owner_id = ? AND resume_id = ? ORDER BY id DESC LIMIT 1",
+        (owner_id, resume.get("id", "default")),
     )
     gh_row = cursor.fetchone()
     if gh_row:
@@ -2991,8 +3226,8 @@ def compute_placement_readiness_index(body: Dict[str, Any]) -> Dict[str, Any]:
 
     # 5. Assessment Performance (from Skill Assessment Lab results)
     cursor.execute(
-        "SELECT overall_score, topic FROM assessment_results WHERE resume_id = ? ORDER BY id DESC LIMIT 5",
-        (resume["id"],),
+        "SELECT overall_score, topic FROM assessment_results WHERE owner_id = ? AND resume_id = ? ORDER BY id DESC LIMIT 5",
+        (owner_id, resume.get("id", "default")),
     )
     asmt_rows = cursor.fetchall()
     if asmt_rows:
@@ -3046,8 +3281,8 @@ def compute_placement_readiness_index(body: Dict[str, Any]) -> Dict[str, Any]:
             "weightPct": round((w_res / total_w) * 100, 1),
             "rawScore": resume_quality_score,
             "weightedPoints": round((resume_quality_score * w_res) / total_w, 1),
-            "status": f"Verified ({len(ats_eval['matchedKeywords'])} keywords, {len(ats_eval['formattingChecks'])} format checks)",
-            "isVerified": True,
+            "status": res_status,
+            "isVerified": res_verified,
         },
         {
             "key": "interviewPerformance",
@@ -3140,15 +3375,17 @@ def compute_placement_readiness_index(body: Dict[str, Any]) -> Dict[str, Any]:
     cursor.execute(
         """
         INSERT INTO placement_readiness_reports (
-            resume_id, target_role, pri_score, readiness_tier,
+            owner_id, user_id, resume_id, target_role, pri_score, readiness_tier,
             technical_score, resume_quality_score, interview_score,
             portfolio_score, assessment_score, market_alignment_score,
             weights_json, category_breakdown_json, strengths_json,
             weaknesses_json, next_actions_json, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
-            resume["id"],
+            owner_id,
+            owner_id,
+            resume.get("id", "default"),
             target_role,
             pri_score,
             readiness_tier,
@@ -3169,14 +3406,14 @@ def compute_placement_readiness_index(body: Dict[str, Any]) -> Dict[str, Any]:
     conn.commit()
 
     cursor.execute(
-        "SELECT pri_score, target_role, created_at FROM placement_readiness_reports WHERE resume_id = ? ORDER BY id DESC LIMIT 8",
-        (resume["id"],),
+        "SELECT pri_score, target_role, created_at FROM placement_readiness_reports WHERE owner_id = ? AND resume_id = ? ORDER BY id DESC LIMIT 8",
+        (owner_id, resume.get("id", "default")),
     )
     hist_rows = cursor.fetchall()
     conn.close()
 
     return {
-        "resumeId": resume["id"],
+        "resumeId": resume.get("id", "default"),
         "candidateName": resume.get("contact", {}).get("name", "Candidate"),
         "targetRole": target_role,
         "priScore": pri_score,

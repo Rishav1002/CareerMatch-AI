@@ -14,50 +14,19 @@ export class ApiError extends Error {
   }
 }
 
-function showWakeUpBanner(message = "Server is waking up (Render free tier / database compute)... Please wait a moment.") {
-  let banner = document.getElementById("serverWakeBanner");
-  if (!banner) {
-    banner = document.createElement("div");
-    banner.id = "serverWakeBanner";
-    banner.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 10000;
-      background: var(--brand-accent, #2563eb);
-      color: #ffffff;
-      padding: 8px 16px;
-      font-size: 0.8125rem;
-      font-weight: 500;
-      text-align: center;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      animation: slideDown 0.25s ease-out;
-    `;
-    banner.innerHTML = `
-      <span class="spinner" style="display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;"></span>
-      <span class="wake-text">${message}</span>
-    `;
-    document.body.prepend(banner);
-  } else {
-    banner.style.display = "flex";
-  }
-}
-
-function hideWakeUpBanner() {
-  const banner = document.getElementById("serverWakeBanner");
-  if (banner) {
-    banner.style.display = "none";
-  }
-}
-
 export function renderInlineError(containerEl, message, retryFn) {
   if (!containerEl) return;
   const safeMsg = typeof message === "string" ? message : (message?.detail || message?.message || "Failed to load data.");
+  containerEl.innerHTML = `
+    <div class="card p-3 text-center bg-sunken border-subtle">
+      <p class="text-sm text-secondary mb-2">${escapeHtml(safeMsg)}</p>
+      ${retryFn ? `<button type="button" class="btn btn-secondary btn-sm" id="inlineRetryBtn">Retry</button>` : ""}
+    </div>
+  `;
+  if (retryFn) {
+    containerEl.querySelector("#inlineRetryBtn")?.addEventListener("click", () => retryFn());
+  }
+}
   const cleanText = String(safeMsg)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -123,17 +92,10 @@ async function request(path, options = {}, maxRetries = 2) {
   }
 
   let attempt = 0;
-  let wakeTimer = null;
 
   while (attempt <= maxRetries) {
     try {
-      // If request takes longer than 2.5s, surface gentle wake up banner
-      wakeTimer = setTimeout(() => {
-        showWakeUpBanner();
-      }, 2500);
-
-      const response = await fetch(path, { ...options, headers });
-      clearTimeout(wakeTimer);
+      const response = await fetch(path, { credentials: "same-origin", ...options, headers });
 
       let data = null;
       const contentType = response.headers.get("content-type") || "";
@@ -150,37 +112,30 @@ async function request(path, options = {}, maxRetries = 2) {
           store.set("currentUser", null);
         }
 
-        // Retry on cold-start gateway errors (502/503/504)
+        // Silent retry on cold-start gateway errors (502/503/504)
         if (RETRYABLE_STATUSES.has(response.status) && attempt < maxRetries) {
-          showWakeUpBanner();
           attempt++;
           await new Promise((r) => setTimeout(r, attempt * 1200));
           continue;
         }
 
-        hideWakeUpBanner();
         const errMsg = (data && (data.detail || data.message || data.error)) || `Request failed with status ${response.status}`;
         throw new ApiError(errMsg, response.status, data);
       }
 
-      hideWakeUpBanner();
       return data;
     } catch (err) {
-      if (wakeTimer) clearTimeout(wakeTimer);
-
       if (err instanceof ApiError) {
         throw err;
       }
 
-      // Retry network failures (sleep / spin-up)
+      // Silent retry on transient network disconnects
       if (attempt < maxRetries) {
-        showWakeUpBanner();
         attempt++;
         await new Promise((r) => setTimeout(r, attempt * 1200));
         continue;
       }
 
-      hideWakeUpBanner();
       if (!navigator.onLine) {
         throw new ApiError("You appear to be offline. Please check your network connection.", 0);
       }
@@ -201,6 +156,8 @@ export const api = {
   profile: {
     get: () => request("/api/profile", { method: "GET" }),
     update: (data) => request("/api/profile", { method: "PUT", body: data }),
+    export: () => request("/api/profile/export", { method: "GET" }),
+    delete: () => request("/api/profile/delete", { method: "DELETE" }),
   },
   dashboard: {
     get: () => request("/api/dashboard", { method: "GET" }),
@@ -250,6 +207,7 @@ export const api = {
   assessment: {
     generate: (payload) => request("/api/assessment/generate", { method: "POST", body: payload }),
     submit: (payload) => request("/api/assessment/submit", { method: "POST", body: payload }),
+    hint: (payload) => request("/api/assessment/hint", { method: "POST", body: payload }),
     history: () => request("/api/assessment/history", { method: "GET" }),
   },
 

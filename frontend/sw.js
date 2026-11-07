@@ -41,6 +41,7 @@ const PRECACHE_ASSETS = [
   "/frontend/js/components/notifications.js",
   "/frontend/js/components/tracker.js",
   "/frontend/js/components/planner.js",
+  "/frontend/js/components/roadmapDiagram.js",
   "/frontend/js/components/historyDiff.js",
   "/frontend/js/components/shareScorecard.js",
   "/frontend/js/components/scrollReveal.js",

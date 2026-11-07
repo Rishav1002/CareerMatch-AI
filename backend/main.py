@@ -1,6 +1,6 @@
 """
 Backend Server for CareerMatch AI.
-Provides REST APIs for:
+FastAPI Application providing REST APIs with strict owner-based data isolation:
 - Existing Core Features:
   1. AI-powered resume parsing (PDF via PyMuPDF + pypdf, DOCX via python-docx, TXT)
   2. Student skill assessment & semantic skill-gap analysis
@@ -21,15 +21,21 @@ Provides REST APIs for:
 """
 
 import base64
+import hashlib
+import hmac
 import json
 import mimetypes
 import os
 import subprocess
 import traceback
+import uuid
 from datetime import datetime
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from typing import Any, Dict, List, Optional
-from urllib.parse import parse_qs, urlparse
+from typing import Any, Dict, List, Optional, Tuple
+
+from fastapi import Depends, FastAPI, File, HTTPException, Request, Response, UploadFile  # type: ignore
+from fastapi.middleware.cors import CORSMiddleware  # type: ignore
+from fastapi.responses import FileResponse, JSONResponse  # type: ignore
+from fastapi.staticfiles import StaticFiles  # type: ignore
 
 from backend.ai_service import enrich_resume_profile_with_gemini, generate_career_intelligence
 from backend.career_modules import (
@@ -42,9 +48,11 @@ from backend.career_modules import (
     fetch_job_market_intelligence,
     generate_skill_assessment,
     get_adaptive_roadmap,
+    get_assessment_hint,
     get_assessment_history,
     get_interview_history,
     get_student_profile,
+    import_student_profile,
     login_demo_user,
     login_user,
     register_user,
@@ -56,14 +64,24 @@ from backend.career_modules import (
     toggle_learning_task,
     update_student_profile,
 )
-from backend.config import PORT as DEFAULT_PORT, ROOT_DIR
-from backend.roles_catalog import get_roles_catalog, get_roles_by_category
+from backend.config import (
+    APP_ENV,
+    CORS_ORIGINS,
+    GUEST_DATA_TTL_DAYS,
+    HEALTH_KEY,
+    JWT_SECRET,
+    PORT as DEFAULT_PORT,
+    ROOT_DIR,
+)
 from backend.database import (
     check_and_increment_ai_usage,
-    get_ai_usage,
-    get_connection,
+    claim_guest_data,
     delete_analysis_record,
+    delete_owner_records,
+    export_owner_records,
+    get_ai_usage,
     get_analysis_by_id,
+    get_connection,
     get_dashboard_metrics,
     get_resume_by_id,
     get_roadmap_progress,
@@ -82,18 +100,20 @@ from backend.matching_engine import (
     match_resume_to_job,
     resolve_job_profile,
 )
+from backend.rate_limiter import rate_limiter
 from backend.resume_parser import (
     extract_text_from_file_bytes,
     parse_resume_text_to_profile,
     sanitize_plain_text,
     sanitize_short_field,
 )
+from backend.roles_catalog import get_roles_by_category, get_roles_catalog
 
 FRONTEND_DIR = os.path.join(ROOT_DIR, "frontend")
 
 
 def seed_initial_sqlite_data() -> None:
-    """Initialize relational tables and purge legacy demo rows."""
+    """Initialize relational tables and purge legacy unowned rows."""
     init_db()
     seed_demo_user_and_profile()
 
@@ -103,23 +123,83 @@ seed_initial_sqlite_data()
 
 
 # ============================================================================
-# CORE CONTROLLER LOGIC (Shared by FastAPI routes & Fallback Runner)
+# SECURITY & OWNERSHIP HELPERS
 # ============================================================================
 
-def get_build_sha() -> str:
-    for var in ("RENDER_GIT_COMMIT", "GIT_COMMIT", "COMMIT_SHA", "GITHUB_SHA"):
-        val = os.getenv(var)
-        if val:
-            return val[:8]
-    try:
-        res = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], stderr=subprocess.DEVNULL)
-        return res.decode("utf-8").strip()
-    except Exception:
-        pass
-    return "1baf0b6"
+def _sign_cookie_val(val: str) -> str:
+    sig = hmac.new(JWT_SECRET.encode("utf-8"), val.encode("utf-8"), hashlib.sha256).hexdigest()
+    return f"{val}.{sig}"
 
 
-def handle_health_check() -> tuple[Dict[str, Any], int]:
+def _verify_cookie_val(raw: Optional[str]) -> Optional[str]:
+    if not raw or "." not in raw:
+        return None
+    val, sig = raw.rsplit(".", 1)
+    expected_sig = hmac.new(JWT_SECRET.encode("utf-8"), val.encode("utf-8"), hashlib.sha256).hexdigest()
+    if hmac.compare_digest(sig, expected_sig):
+        return val
+    return None
+
+
+async def get_owner(request: Request) -> Tuple[str, bool]:
+    """
+    FastAPI dependency returning (owner_id, is_authenticated).
+    - Authenticated: extracted and verified from JWT token
+    - Guest: verified signed cm_sid cookie or newly generated guest session
+    Never trusts client-supplied user ID in queries, headers, or body.
+    """
+    # 1. Check verified JWT from Authorization header or cookie
+    auth_header = request.headers.get("Authorization")
+    token = None
+    if auth_header and auth_header.strip():
+        raw = auth_header.strip()
+        if raw.lower().startswith("bearer "):
+            token = raw[7:].strip()
+        else:
+            token = raw
+    elif request.cookies.get("cm_jwt_token"):
+        token = request.cookies.get("cm_jwt_token")
+
+    if token:
+        try:
+            claims = decode_jwt_token(token)
+            if claims and claims.get("sub"):
+                return str(claims["sub"]), True
+        except Exception:
+            pass
+
+    # 2. Check guest session from request.state (set by middleware)
+    guest_id = getattr(request.state, "guest_id", None)
+    if not guest_id:
+        raw_cookie = request.cookies.get("cm_sid")
+        verified = _verify_cookie_val(raw_cookie)
+        guest_id = verified or f"guest_{uuid.uuid4().hex}"
+        request.state.guest_id = guest_id
+
+    return guest_id, False
+
+
+def _extract_user_id_from_auth_header(auth_header: Optional[str]) -> Optional[str]:
+    if not auth_header or not auth_header.strip():
+        return None
+    raw = auth_header.strip()
+    if raw.lower().startswith("bearer "):
+        token = raw[7:].strip()
+    else:
+        token = raw
+    if not token:
+        raise PermissionError("Invalid or expired authentication token.")
+    claims = decode_jwt_token(token)
+    if claims and claims.get("sub"):
+        return str(claims["sub"])
+    raise PermissionError("Invalid or expired authentication token.")
+
+
+# ============================================================================
+# CORE CONTROLLER LOGIC
+# ============================================================================
+
+def handle_health_check(request_key: Optional[str] = None) -> tuple[Dict[str, Any], int]:
     db_ok = False
     engine = "sqlite"
     try:
@@ -132,23 +212,32 @@ def handle_health_check() -> tuple[Dict[str, Any], int]:
         conn.close()
     except Exception:
         db_ok = False
+
     status_code = 200 if db_ok else 503
+
+    # Bug 3: Public response is sanitized to prevent infrastructure information disclosure
+    # Detailed diagnostics only served when authorized with confidential X-Health-Key
+    is_authorized = bool(
+        HEALTH_KEY and request_key and hmac.compare_digest(str(request_key).strip(), str(HEALTH_KEY).strip())
+    )
+    if not is_authorized:
+        return {"status": "ok" if db_ok else "unavailable"}, status_code
+
     return {
-        "status": "healthy" if db_ok else "unhealthy",
+        "status": "ok" if db_ok else "unavailable",
         "database": "connected" if db_ok else "disconnected",
         "engine": engine,
-        "version": "1.0.0",
-        "build_sha": get_build_sha(),
+        "version": "4.0.0",
         "timestamp": datetime.utcnow().isoformat() + "Z",
     }, status_code
 
 
-def handle_ask_ai_payload(body: Dict[str, Any], user_id: str, is_auth: bool) -> tuple[Dict[str, Any], int]:
+def handle_ask_ai_payload(body: Dict[str, Any], owner_id: str, is_auth: bool) -> tuple[Dict[str, Any], int]:
     question = sanitize_plain_text(body.get("question", ""), 1000).strip()
     if not question:
         return {"detail": "Question text is required."}, 400
 
-    allowed, remaining, limit, reset_at = check_and_increment_ai_usage(user_id, is_auth)
+    allowed, remaining, limit, reset_at = check_and_increment_ai_usage(owner_id, is_auth)
     if not allowed:
         return {
             "detail": f"Daily AI query limit reached ({limit}/{limit}). Limit resets at midnight UTC.",
@@ -190,12 +279,13 @@ def handle_ask_ai_payload(body: Dict[str, Any], user_id: str, is_auth: bool) -> 
         "resetAt": reset_at,
     }, 200
 
-def handle_bootstrap(user_id: Optional[str] = None) -> Dict[str, Any]:
+
+def handle_bootstrap(user_id: Optional[str] = None, owner_id: Optional[str] = None) -> Dict[str, Any]:
     student_profile = get_student_profile(user_id) if user_id else None
     active_resume_id = student_profile.get("activeResumeId") if student_profile else None
 
     return {
-        "dashboard": get_dashboard_metrics(active_resume_id),
+        "dashboard": get_dashboard_metrics(active_resume_id, owner_id=owner_id),
         "roles": get_roles_catalog(),
         "defaultWeights": DEFAULT_WEIGHTS,
         "defaultPriWeights": DEFAULT_PRI_WEIGHTS,
@@ -203,7 +293,7 @@ def handle_bootstrap(user_id: Optional[str] = None) -> Dict[str, Any]:
     }
 
 
-def handle_parse_resume_payload(body: Dict[str, Any]) -> Dict[str, Any]:
+def handle_parse_resume_payload(body: Dict[str, Any], owner_id: str = "legacy_unowned") -> Dict[str, Any]:
     filename = sanitize_short_field(body.get("filename", "Uploaded_Resume.txt"), 120)
     base64_data = body.get("base64Data", "")
     pasted_text = body.get("pastedText", "")
@@ -223,30 +313,33 @@ def handle_parse_resume_payload(body: Dict[str, Any]) -> Dict[str, Any]:
     profile = parse_resume_text_to_profile(extracted_text, filename)
     profile = enrich_resume_profile_with_gemini(extracted_text, profile)
     if not dont_save:
-        save_resume(profile)
+        save_resume(profile, owner_id=owner_id)
     return {
         "resume": profile,
         "source": profile.get("extractionSource", "template"),
         "saved": not dont_save,
-        "dashboard": get_dashboard_metrics(profile["id"] if not dont_save else None),
+        "dashboard": get_dashboard_metrics(profile["id"] if not dont_save else None, owner_id=owner_id),
     }
 
 
-def handle_analyze_payload(body: Dict[str, Any]) -> Dict[str, Any]:
+def handle_analyze_payload(body: Dict[str, Any], owner_id: str = "legacy_unowned") -> Dict[str, Any]:
     resume = body.get("resume")
     resume_id = body.get("resumeId")
     dont_save = bool(body.get("dontSave", False))
 
     if not resume and resume_id:
-        resume = get_resume_by_id(str(resume_id))
+        resume = get_resume_by_id(str(resume_id), owner_id=owner_id)
 
     if not resume or not isinstance(resume, dict):
         raise ValueError("Candidate resume profile is required for analysis.")
 
     if not dont_save:
-        save_resume(resume)
+        save_resume(resume, owner_id=owner_id)
 
-    role_title = sanitize_short_field(body.get("roleTitle", "Full Stack Developer"), 100)
+    raw_role = body.get("roleTitle")
+    if not raw_role or not str(raw_role).strip() or str(raw_role).strip() == "Select role...":
+        raise ValueError("Target role is required for career match analysis.")
+    role_title = sanitize_short_field(str(raw_role).strip(), 100)
     goal_company = sanitize_short_field(body.get("goalCompany", ""), 100)
     custom_jd = sanitize_plain_text(body.get("customJdText", ""), 20000)
     job_url = sanitize_short_field(body.get("jobUrl", ""), 300)
@@ -259,134 +352,87 @@ def handle_analyze_payload(body: Dict[str, Any]) -> Dict[str, Any]:
     skill_gaps = build_skill_gaps(match_result, active_job["title"])
     roadmap_nodes = build_roadmap_tree_nodes(match_result, skill_gaps)
 
-    role_comparisons: List[Dict[str, Any]] = []
-    for tpl in ROLE_TEMPLATES:
-        r_match = match_resume_to_job(resume, tpl, weights)
-        role_comparisons.append(
-            {
-                "id": tpl["id"],
-                "title": tpl["title"],
-                "overallScore": r_match["overallScore"],
-                "mandatorySatisfiedPct": r_match["mandatorySatisfiedPct"],
-                "missingCount": len(r_match["missingSkills"]) + len(r_match["partialSkills"]),
-            }
-        )
-
     intelligence = generate_career_intelligence(
         resume=resume,
         target_role=active_job["title"],
-        goal_company=active_job["companyName"],
+        goal_company=active_job.get("companyName") or active_job.get("company", ""),
         missing_skills=[g["skillName"] for g in skill_gaps],
         custom_focus=custom_focus,
     )
 
-    ats_report = evaluate_ats_resume(
-        {
-            "resume": resume,
-            "targetRole": active_job["title"],
-            "goalCompany": active_job["companyName"],
-            "customJdText": custom_jd,
-        }
-    )
+    ats_eval = evaluate_ats_resume({"resume": resume, "targetRole": active_job["title"]})
+    ats_score = float(ats_eval.get("atsScore", 0.0))
 
-    analysis_id = None
+    analysis_id = 0
     if persist_record:
         analysis_id = save_analysis_record(
             resume_id=resume["id"],
-            candidate_name=resume["contact"]["name"],
+            candidate_name=resume.get("contact", {}).get("name", "Candidate"),
             target_role=active_job["title"],
-            goal_company=active_job["companyName"],
+            goal_company=active_job.get("companyName") or active_job.get("company", ""),
             match_result=match_result,
             skill_gaps=skill_gaps,
-            roadmap=intelligence["stages"],
-            advisor=intelligence["advisor"],
-            projects=intelligence["projects"],
-            improvements=intelligence["improvements"],
-            ats_score=float(ats_report.get("atsScore", 0.0)),
-            ats_report=ats_report,
+            roadmap=intelligence.get("stages", roadmap_nodes),
+            advisor=intelligence.get("advisor", {}),
+            projects=intelligence.get("projects", []),
+            improvements=intelligence.get("improvements", {}),
+            ats_score=ats_score,
+            ats_report=ats_eval,
+            owner_id=owner_id,
         )
-
-    completed_nodes = get_roadmap_progress(resume["id"], active_job["title"]) if not dont_save else {}
 
     return {
         "analysisId": analysis_id,
-        "saved": not dont_save,
-        "source": intelligence.get("source", "template"),
-        "aiError": intelligence.get("aiError"),
         "resume": resume,
-        "activeJob": active_job,
-        "matchResult": match_result,
+        "job": active_job,
+        "match": match_result,
         "skillGaps": skill_gaps,
-        "roadmapNodes": roadmap_nodes,
-        "completedNodes": completed_nodes,
-        "stages": intelligence["stages"],
-        "advisor": intelligence["advisor"],
-        "projects": intelligence["projects"],
-        "improvements": intelligence["improvements"],
-        "atsReport": ats_report,
-        "roleComparisons": role_comparisons,
-        "dashboard": get_dashboard_metrics(resume["id"] if not dont_save else None),
+        "roadmap": intelligence.get("stages", roadmap_nodes),
+        "advisor": intelligence.get("advisor", {}),
+        "projects": intelligence.get("projects", []),
+        "improvements": intelligence.get("improvements", {}),
+        "ats": ats_eval,
+        "dashboard": get_dashboard_metrics(resume["id"], owner_id=owner_id),
     }
 
 
-def handle_load_history_record(analysis_id: int) -> Dict[str, Any]:
-    """Reload a saved analysis record from SQLite by its ID."""
-    record = get_analysis_by_id(analysis_id)
+def handle_load_history_record(analysis_id: int, owner_id: str) -> Dict[str, Any]:
+    record = get_analysis_by_id(analysis_id, owner_id=owner_id)
     if not record:
-        raise ValueError("Saved analysis record not found in database.")
-
-    resume = get_resume_by_id(record["resumeId"]) or SAMPLE_RESUMES[0]
-    active_job = resolve_job_profile(record["targetRole"], record["goalCompany"])
-    match_result = match_resume_to_job(resume, active_job, DEFAULT_WEIGHTS)
-    skill_gaps = record["skillGaps"] or build_skill_gaps(match_result, active_job["title"])
-    roadmap_nodes = build_roadmap_tree_nodes(match_result, skill_gaps)
-    completed_nodes = get_roadmap_progress(resume["id"], active_job["title"])
-
-    role_comparisons: List[Dict[str, Any]] = []
-    for tpl in ROLE_TEMPLATES:
-        r_match = match_resume_to_job(resume, tpl, DEFAULT_WEIGHTS)
-        role_comparisons.append(
-            {
-                "id": tpl["id"],
-                "title": tpl["title"],
-                "overallScore": r_match["overallScore"],
-                "mandatorySatisfiedPct": r_match["mandatorySatisfiedPct"],
-                "missingCount": len(r_match["missingSkills"]) + len(r_match["partialSkills"]),
-            }
-        )
-
+        raise ValueError("Analysis record not found.")
     return {
-        "analysisId": record["id"],
-        "source": "sqlite_history",
-        "aiError": None,
-        "resume": resume,
-        "activeJob": active_job,
-        "matchResult": match_result,
-        "skillGaps": skill_gaps,
-        "roadmapNodes": roadmap_nodes,
-        "completedNodes": completed_nodes,
-        "stages": record["stages"],
+        "id": record["id"],
+        "resumeId": record["resumeId"],
+        "candidateName": record["candidateName"],
+        "targetRole": record["targetRole"],
+        "goalCompany": record["goalCompany"],
+        "overallScore": record["overallScore"],
+        "mandatoryMetPct": record["mandatoryMetPct"],
+        "preferredMetPct": record["preferredMetPct"],
+        "matchedSkills": record["matchedSkills"],
+        "partialSkills": record["partialSkills"],
+        "missingSkills": record["missingSkills"],
+        "skillGaps": record["skillGaps"],
+        "roadmap": record["stages"],
         "advisor": record["advisor"],
         "projects": record["projects"],
         "improvements": record["improvements"],
-        "roleComparisons": role_comparisons,
-        "dashboard": get_dashboard_metrics(resume["id"]),
+        "createdAt": record["createdAt"],
     }
 
 
-def handle_update_roadmap_progress_payload(body: Dict[str, Any]) -> Dict[str, Any]:
-    """Save roadmap node completion checkboxes to SQLite."""
+def handle_update_roadmap_progress_payload(body: Dict[str, Any], owner_id: str = "legacy_unowned") -> Dict[str, Any]:
     resume_id = sanitize_short_field(body.get("resumeId", ""), 80)
     target_role = sanitize_short_field(body.get("targetRole", ""), 100)
     completed = body.get("completedNodes", {})
     if not resume_id or not target_role or not isinstance(completed, dict):
         raise ValueError("resumeId, targetRole, and completedNodes dict are required.")
     clean_map = {sanitize_short_field(k, 80): bool(v) for k, v in list(completed.items())[:100]}
-    saved = save_roadmap_progress(resume_id, target_role, clean_map)
+    saved = save_roadmap_progress(resume_id, target_role, clean_map, owner_id=owner_id)
     return {"completedNodes": saved}
 
 
-def handle_update_skills_payload(body: Dict[str, Any]) -> Dict[str, Any]:
+def handle_update_skills_payload(body: Dict[str, Any], owner_id: str = "legacy_unowned") -> Dict[str, Any]:
     resume_id = sanitize_short_field(body.get("resumeId", ""), 80)
     raw_skills = body.get("skills", [])
     if not isinstance(raw_skills, list):
@@ -398,647 +444,617 @@ def handle_update_skills_payload(body: Dict[str, Any]) -> Dict[str, Any]:
         if cs and cs not in clean_skills:
             clean_skills.append(cs)
 
-    updated = update_resume_skills(resume_id, clean_skills)
+    updated = update_resume_skills(resume_id, clean_skills, owner_id=owner_id)
     if not updated:
         raise ValueError("Resume profile not found in database.")
     return {"resume": updated}
 
 
-def _extract_user_id_from_auth_header(auth_header: Optional[str]) -> Optional[str]:
-    if not auth_header or not auth_header.strip():
-        return None
-    raw = auth_header.strip()
-    if raw.lower().startswith("bearer "):
-        token = raw[7:].strip()
-    else:
-        token = raw
-    if not token:
-        raise PermissionError("Invalid or expired authentication token.")
-    claims = decode_jwt_token(token)
-    if claims and claims.get("sub"):
-        return str(claims["sub"])
-    raise PermissionError("Invalid or expired authentication token.")
-
-
 # ============================================================================
 # FASTAPI APPLICATION DEFINITION
 # ============================================================================
-try:
-    from fastapi import FastAPI, File, HTTPException, Request, UploadFile  # type: ignore
-    from fastapi.middleware.cors import CORSMiddleware  # type: ignore
-    from fastapi.responses import FileResponse, JSONResponse  # type: ignore
-    from fastapi.staticfiles import StaticFiles  # type: ignore
 
-    app = FastAPI(
-        title="CareerMatch AI API",
-        description="Unified AI Career Intelligence, Skill Development & Placement Readiness Platform",
-        version="1.0.0",
+app = FastAPI(
+    title="CareerMatch AI API",
+    description="Unified AI Career Intelligence, Skill Development & Placement Readiness Platform",
+    version="4.0.0",
+)
+
+# Parse CORS origins from environment
+if CORS_ORIGINS:
+    allowed_origins = [o.strip() for o in CORS_ORIGINS.split(",") if o.strip()]
+elif APP_ENV == "production":
+    allowed_origins = []  # Strict same-origin in production
+else:
+    allowed_origins = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+    ]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"],
+    allow_headers=["*"],
+)
+
+
+@app.middleware("http")
+async def session_and_security_middleware(request: Request, call_next: Any) -> Any:
+    # 1. Resolve or establish guest identity
+    raw_cookie = request.cookies.get("cm_sid")
+    verified_guest = _verify_cookie_val(raw_cookie)
+    need_new_cookie = False
+
+    if verified_guest:
+        request.state.guest_id = verified_guest
+    else:
+        new_guest_id = f"guest_{uuid.uuid4().hex}"
+        request.state.guest_id = new_guest_id
+        need_new_cookie = True
+
+    # 2. Process request
+    response = await call_next(request)
+
+    # 3. Attach signed cm_sid cookie if new or missing
+    if need_new_cookie:
+        is_secure = request.url.scheme == "https" or APP_ENV == "production"
+        signed_val = _sign_cookie_val(request.state.guest_id)
+        response.set_cookie(
+            key="cm_sid",
+            value=signed_val,
+            httponly=True,
+            samesite="lax",
+            secure=is_secure,
+            max_age=GUEST_DATA_TTL_DAYS * 86400,
+            path="/",
+        )
+
+    # 4. Enforce strict production security headers and strip server fingerprints
+    if "Server" in response.headers:
+        del response.headers["Server"]
+    if "X-Powered-By" in response.headers:
+        del response.headers["X-Powered-By"]
+
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "SAMEORIGIN"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self'; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com data:; "
+        "img-src 'self' data: https:; "
+        "connect-src 'self' https:; "
+        "frame-ancestors 'none';"
     )
 
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+    if request.url.scheme == "https" or APP_ENV == "production":
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
 
-    @app.middleware("http")
-    async def security_headers_middleware(request: Request, call_next: Any) -> Any:
-        if request.url.path.startswith("/api/"):
-            auth_hdr = request.headers.get("Authorization")
-            if auth_hdr and auth_hdr.strip():
-                try:
-                    _extract_user_id_from_auth_header(auth_hdr)
-                except PermissionError as exc:
-                    return JSONResponse({"detail": str(exc)}, status_code=401)
-        response = await call_next(request)
-        response.headers["X-Content-Type-Options"] = "nosniff"
-        response.headers["X-Frame-Options"] = "SAMEORIGIN"
-        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        if request.url.path.startswith("/api/"):
-            response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, private"
-        return response
+    if request.url.path.startswith("/api/"):
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, private"
 
-    @app.get("/api/health")
-    @app.head("/api/health")
-    async def api_health() -> Any:
-        res, code = handle_health_check()
-        return JSONResponse(res, status_code=code)
-
-    @app.get("/api/roles")
-    async def api_roles() -> Dict[str, Any]:
-        return {"roles": get_roles_catalog(), "categories": get_roles_by_category()}
-
-    @app.get("/api/ai/usage")
-    async def api_ai_usage(request: Request) -> Dict[str, Any]:
-        uid = None
-        auth_hdr = request.headers.get("Authorization")
-        if auth_hdr:
-            try:
-                uid = _extract_user_id_from_auth_header(auth_hdr)
-            except Exception:
-                uid = None
-        return get_ai_usage(uid or "guest", bool(uid))
-
-    @app.post("/api/ai/ask")
-    async def api_ai_ask(request: Request) -> Any:
-        uid = None
-        auth_hdr = request.headers.get("Authorization")
-        if auth_hdr:
-            try:
-                uid = _extract_user_id_from_auth_header(auth_hdr)
-            except Exception:
-                uid = None
-        try:
-            body = await request.json()
-        except Exception:
-            body = {}
-        res, code = handle_ask_ai_payload(body, uid or "guest", bool(uid))
-        return JSONResponse(res, status_code=code)
-
-    @app.get("/api/bootstrap")
-    async def api_bootstrap(request: Request) -> Dict[str, Any]:
-        try:
-            uid = _extract_user_id_from_auth_header(request.headers.get("Authorization"))
-            return handle_bootstrap(uid)
-        except PermissionError as exc:
-            raise HTTPException(status_code=401, detail=str(exc))
-
-    @app.get("/api/dashboard")
-    async def api_dashboard(resumeId: Optional[str] = None) -> Dict[str, Any]:
-        return get_dashboard_metrics(resumeId)
-
-    @app.post("/api/resume/parse")
-    async def api_parse_resume(request: Request) -> Dict[str, Any]:
-        try:
-            body = await request.json()
-            return handle_parse_resume_payload(body)
-        except ValueError as exc:
-            raise HTTPException(status_code=400, detail=str(exc))
-        except Exception as exc:
-            raise HTTPException(status_code=500, detail=f"Failed to parse resume: {exc}")
-
-    @app.post("/api/resume/upload")
-    async def api_upload_multipart(file: UploadFile = File(...)) -> Dict[str, Any]:
-        try:
-            file_bytes = await file.read()
-            text = extract_text_from_file_bytes(file.filename or "resume.pdf", file_bytes)
-            profile = parse_resume_text_to_profile(text, file.filename or "resume.pdf")
-            save_resume(profile)
-            return {"resume": profile, "dashboard": get_dashboard_metrics(profile["id"])}
-        except ValueError as exc:
-            raise HTTPException(status_code=400, detail=str(exc))
-
-    @app.post("/api/analyze")
-    async def api_analyze(request: Request) -> Dict[str, Any]:
-        try:
-            body = await request.json()
-            return handle_analyze_payload(body)
-        except ValueError as exc:
-            raise HTTPException(status_code=400, detail=str(exc))
-        except Exception as exc:
-            raise HTTPException(status_code=500, detail=f"Analysis failed: {exc}")
-
-    @app.put("/api/resume/skills")
-    async def api_update_skills(request: Request) -> Dict[str, Any]:
-        try:
-            body = await request.json()
-            return handle_update_skills_payload(body)
-        except ValueError as exc:
-            raise HTTPException(status_code=400, detail=str(exc))
-
-    @app.put("/api/roadmap/progress")
-    async def api_update_roadmap_progress(request: Request) -> Dict[str, Any]:
-        try:
-            body = await request.json()
-            return handle_update_roadmap_progress_payload(body)
-        except ValueError as exc:
-            raise HTTPException(status_code=400, detail=str(exc))
-
-    @app.get("/api/history/{analysis_id}")
-    async def api_get_history(analysis_id: int) -> Dict[str, Any]:
-        try:
-            return handle_load_history_record(analysis_id)
-        except ValueError as exc:
-            raise HTTPException(status_code=404, detail=str(exc))
-
-    @app.delete("/api/history/{analysis_id}")
-    async def api_delete_history(analysis_id: int) -> Dict[str, Any]:
-        existing = get_analysis_by_id(analysis_id)
-        res_id = existing["resumeId"] if existing else None
-        delete_analysis_record(analysis_id)
-        return {"dashboard": get_dashboard_metrics(res_id)}
-
-    # ---- CareerMatch AI Endpoints ----
-
-    @app.post("/api/auth/register")
-    async def api_auth_register(request: Request) -> Dict[str, Any]:
-        try:
-            body = await request.json()
-            return register_user(body)
-        except ValueError as exc:
-            raise HTTPException(status_code=400, detail=str(exc))
-
-    @app.post("/api/auth/login")
-    async def api_auth_login(request: Request) -> Dict[str, Any]:
-        try:
-            client_ip = request.client.host if request.client else "unknown"
-            body = await request.json()
-            return login_user(body, client_ip=client_ip)
-        except PermissionError as exc:
-            raise HTTPException(status_code=429, detail=str(exc))
-        except ValueError as exc:
-            raise HTTPException(status_code=401, detail=str(exc))
-
-    @app.post("/api/profile/import")
-    async def api_profile_import(request: Request) -> Dict[str, Any]:
-        try:
-            auth_hdr = request.headers.get("Authorization")
-            if not auth_hdr:
-                raise HTTPException(status_code=401, detail="Authentication required.")
-            uid = _extract_user_id_from_auth_header(auth_hdr)
-            body = await request.json()
-            return import_student_profile(uid, body)
-        except PermissionError as exc:
-            raise HTTPException(status_code=401, detail=str(exc))
-        except ValueError as exc:
-            raise HTTPException(status_code=400, detail=str(exc))
-
-    @app.get("/api/profile")
-    async def api_get_profile(request: Request) -> Dict[str, Any]:
-        try:
-            uid = _extract_user_id_from_auth_header(request.headers.get("Authorization"))
-            return {"profile": get_student_profile(uid) if uid else None}
-        except PermissionError as exc:
-            raise HTTPException(status_code=401, detail=str(exc))
-
-    @app.put("/api/profile")
-    async def api_update_profile(request: Request) -> Dict[str, Any]:
-        try:
-            uid = _extract_user_id_from_auth_header(request.headers.get("Authorization"))
-            body = await request.json()
-            return {"profile": update_student_profile(body, uid or "guest")}
-        except PermissionError as exc:
-            raise HTTPException(status_code=401, detail=str(exc))
-        except ValueError as exc:
-            raise HTTPException(status_code=400, detail=str(exc))
-
-    @app.post("/api/jobs/market")
-    async def api_jobs_market(request: Request) -> Dict[str, Any]:
-        try:
-            body = await request.json()
-            return fetch_job_market_intelligence(body)
-        except Exception as exc:
-            raise HTTPException(status_code=400, detail=str(exc))
-
-    @app.post("/api/interview/start")
-    async def api_interview_start(request: Request) -> Dict[str, Any]:
-        try:
-            body = await request.json()
-            return start_interview_session(body)
-        except Exception as exc:
-            raise HTTPException(status_code=400, detail=str(exc))
-
-    @app.post("/api/interview/answer")
-    async def api_interview_answer(request: Request) -> Dict[str, Any]:
-        try:
-            body = await request.json()
-            return submit_interview_answer(body)
-        except ValueError as exc:
-            raise HTTPException(status_code=400, detail=str(exc))
-
-    @app.get("/api/interview/history")
-    async def api_interview_history(resumeId: Optional[str] = None) -> Dict[str, Any]:
-        return get_interview_history(resumeId)
-
-    @app.post("/api/ats/evaluate")
-    async def api_ats_evaluate(request: Request) -> Dict[str, Any]:
-        try:
-            body = await request.json()
-            return evaluate_ats_resume(body)
-        except Exception as exc:
-            raise HTTPException(status_code=400, detail=str(exc))
-
-    @app.post("/api/github/analyze")
-    async def api_github_analyze(request: Request) -> Dict[str, Any]:
-        try:
-            body = await request.json()
-            result = analyze_github_portfolio(body)
-            if result.get("error"):
-                raise HTTPException(status_code=400, detail=result["error"])
-            return result
-        except HTTPException:
-            raise
-        except Exception as exc:
-            raise HTTPException(status_code=400, detail=str(exc))
-
-    @app.post("/api/roadmap/adaptive")
-    async def api_roadmap_adaptive(request: Request) -> Dict[str, Any]:
-        try:
-            body = await request.json()
-            return get_adaptive_roadmap(body)
-        except Exception as exc:
-            raise HTTPException(status_code=400, detail=str(exc))
-
-    @app.post("/api/roadmap/task")
-    async def api_roadmap_task(request: Request) -> Dict[str, Any]:
-        try:
-            body = await request.json()
-            return toggle_learning_task(body)
-        except ValueError as exc:
-            raise HTTPException(status_code=400, detail=str(exc))
-
-    @app.post("/api/roadmap/quiz")
-    async def api_roadmap_quiz(request: Request) -> Dict[str, Any]:
-        try:
-            body = await request.json()
-            return submit_roadmap_stage_quiz(body)
-        except ValueError as exc:
-            raise HTTPException(status_code=400, detail=str(exc))
-
-    @app.post("/api/assessment/generate")
-    async def api_assessment_generate(request: Request) -> Dict[str, Any]:
-        try:
-            body = await request.json()
-            return generate_skill_assessment(body)
-        except Exception as exc:
-            raise HTTPException(status_code=400, detail=str(exc))
-
-    @app.post("/api/assessment/submit")
-    async def api_assessment_submit(request: Request) -> Dict[str, Any]:
-        try:
-            body = await request.json()
-            return submit_skill_assessment(body)
-        except ValueError as exc:
-            raise HTTPException(status_code=400, detail=str(exc))
-
-    @app.get("/api/assessment/history")
-    async def api_assessment_history(resumeId: Optional[str] = None) -> Dict[str, Any]:
-        return get_assessment_history(resumeId)
-
-    @app.post("/api/career/compare")
-    async def api_career_compare(request: Request) -> Dict[str, Any]:
-        try:
-            body = await request.json()
-            return compare_career_paths(body)
-        except Exception as exc:
-            raise HTTPException(status_code=400, detail=str(exc))
-
-    @app.post("/api/readiness/index")
-    async def api_readiness_index(request: Request) -> Dict[str, Any]:
-        try:
-            body = await request.json()
-            return compute_placement_readiness_index(body)
-        except Exception as exc:
-            raise HTTPException(status_code=400, detail=str(exc))
-
-    # Mount static frontend assets
-    if os.path.isdir(FRONTEND_DIR):
-        app.mount("/frontend", StaticFiles(directory=FRONTEND_DIR), name="frontend")
-        css_dir = os.path.join(FRONTEND_DIR, "css")
-        js_dir = os.path.join(FRONTEND_DIR, "js")
-        assets_dir = os.path.join(FRONTEND_DIR, "assets")
-        if os.path.isdir(css_dir):
-            app.mount("/css", StaticFiles(directory=css_dir), name="css")
-        if os.path.isdir(js_dir):
-            app.mount("/js", StaticFiles(directory=js_dir), name="js")
-        if os.path.isdir(assets_dir):
-            app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
-
-    @app.get("/")
-    @app.head("/")
-    @app.get("/index.html")
-    @app.head("/index.html")
-    async def serve_index() -> Any:
-        frontend_html = os.path.join(FRONTEND_DIR, "index.html")
-        if os.path.isfile(frontend_html):
-            return FileResponse(frontend_html)
-        return FileResponse(os.path.join(ROOT_DIR, "index.html"))
-
-    @app.get("/favicon.ico")
-    @app.head("/favicon.ico")
-    async def serve_favicon() -> Any:
-        fav_path = os.path.join(FRONTEND_DIR, "assets", "favicon.svg")
-        if os.path.isfile(fav_path):
-            return FileResponse(fav_path, media_type="image/svg+xml")
-        from fastapi.responses import Response
-        return Response(status_code=204)
-
-except ImportError:
-    app = None
+    return response
 
 
 # ============================================================================
-# BUILT-IN PYTHON SERVER RUNNER (Fallback HTTP Server)
+# API ROUTE DEFINITIONS
 # ============================================================================
 
-class CareerMatchHTTPHandler(BaseHTTPRequestHandler):
-    def log_message(self, format: str, *args: Any) -> None:
-        return
+@app.get("/api/health")
+@app.head("/api/health")
+async def api_health(request: Request) -> Any:
+    key = request.headers.get("X-Health-Key")
+    res, code = handle_health_check(key)
+    return JSONResponse(res, status_code=code)
 
-    def _send_json(self, payload: Any, status: int = 200) -> None:
-        raw = json.dumps(payload).encode("utf-8")
-        self.send_response(status)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Content-Length", str(len(raw)))
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
-        self.send_header("X-Content-Type-Options", "nosniff")
-        self.send_header("X-Frame-Options", "SAMEORIGIN")
-        self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, private")
-        self.end_headers()
-        self.wfile.write(raw)
 
-    def _read_json_body(self) -> Dict[str, Any]:
-        length = int(self.headers.get("Content-Length", "0"))
-        if length <= 0:
-            return {}
-        raw = self.rfile.read(length).decode("utf-8", errors="ignore")
-        return json.loads(raw) if raw else {}
+@app.get("/api/roles")
+async def api_roles() -> Dict[str, Any]:
+    return {"roles": get_roles_catalog(), "categories": get_roles_by_category()}
 
-    def do_OPTIONS(self) -> None:
-        self._send_json({"ok": True}, 200)
 
-    def do_HEAD(self) -> None:
-        self.do_GET()
+@app.get("/api/bootstrap")
+async def api_bootstrap(owner_info: Tuple[str, bool] = Depends(get_owner)) -> Dict[str, Any]:
+    owner_id, is_auth = owner_info
+    user_id = owner_id if is_auth else None
+    return handle_bootstrap(user_id=user_id, owner_id=owner_id)
 
-    def do_GET(self) -> None:
-        parsed = urlparse(self.path)
-        path = parsed.path
-        qs = parse_qs(parsed.query)
 
-        if path.startswith("/api/"):
-            auth_hdr = self.headers.get("Authorization")
-            if auth_hdr and auth_hdr.strip():
-                try:
-                    _extract_user_id_from_auth_header(auth_hdr)
-                except PermissionError as exc:
-                    self._send_json({"detail": str(exc)}, 401)
-                    return
+@app.get("/api/dashboard")
+async def api_dashboard(
+    resumeId: Optional[str] = None,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    owner_id, _ = owner_info
+    return get_dashboard_metrics(resumeId, owner_id=owner_id)
 
-        if path == "/api/health":
-            res, code = handle_health_check()
-            self._send_json(res, code)
-            return
-        if path == "/api/roles":
-            self._send_json({"roles": get_roles_catalog(), "categories": get_roles_by_category()})
-            return
-        if path == "/api/ai/usage":
-            uid = None
-            auth_hdr = self.headers.get("Authorization")
-            if auth_hdr:
-                try:
-                    uid = _extract_user_id_from_auth_header(auth_hdr)
-                except Exception:
-                    uid = None
-            self._send_json(get_ai_usage(uid or "guest", bool(uid)))
-            return
-        if path == "/api/bootstrap":
-            try:
-                uid = _extract_user_id_from_auth_header(self.headers.get("Authorization"))
-                self._send_json(handle_bootstrap(uid))
-            except PermissionError as exc:
-                self._send_json({"detail": str(exc)}, 401)
-            return
-        if path == "/api/dashboard":
-            res_id = (qs.get("resumeId") or [None])[0]
-            self._send_json(get_dashboard_metrics(res_id))
-            return
-        if path == "/api/profile":
-            try:
-                uid = _extract_user_id_from_auth_header(self.headers.get("Authorization"))
-                self._send_json({"profile": get_student_profile(uid) if uid else None})
-            except PermissionError as exc:
-                self._send_json({"detail": str(exc)}, 401)
-            return
-        if path == "/api/interview/history":
-            res_id = (qs.get("resumeId") or [None])[0]
-            self._send_json(get_interview_history(res_id))
-            return
-        if path == "/api/assessment/history":
-            res_id = (qs.get("resumeId") or [None])[0]
-            self._send_json(get_assessment_history(res_id))
-            return
-        if path.startswith("/api/history/"):
-            try:
-                part = path.split("/api/history/", 1)[1]
-                analysis_id = int(part)
-                self._send_json(handle_load_history_record(analysis_id))
-            except Exception as exc:
-                self._send_json({"detail": str(exc)}, 404)
-            return
 
-        if path in ("/", "/index.html"):
-            target = os.path.join(FRONTEND_DIR, "index.html")
-            if not os.path.isfile(target):
-                target = os.path.join(ROOT_DIR, "index.html")
-            self._serve_file(target)
-            return
+@app.post("/api/resume/parse")
+async def api_parse_resume(
+    request: Request,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    owner_id, _ = owner_info
+    allowed, retry = rate_limiter.is_allowed(f"parse_{owner_id}", max_requests=15, window_seconds=60)
+    if not allowed:
+        raise HTTPException(status_code=429, detail=f"Resume parse rate limit reached. Please wait {retry}s.")
 
-        rel_path = path.lstrip("/")
-        candidate_paths = [
-            os.path.join(ROOT_DIR, rel_path),
-            os.path.join(FRONTEND_DIR, rel_path),
-        ]
-        for cpath in candidate_paths:
-            real_c = os.path.realpath(cpath)
-            if real_c.startswith(ROOT_DIR) and os.path.isfile(real_c):
-                self._serve_file(real_c)
-                return
+    try:
+        body = await request.json()
+        return handle_parse_resume_payload(body, owner_id=owner_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to parse resume: {exc}")
 
-        self._send_json({"detail": "Not found"}, 404)
 
-    def do_POST(self) -> None:
-        parsed = urlparse(self.path)
-        path = parsed.path
-        try:
-            if path.startswith("/api/"):
-                auth_hdr = self.headers.get("Authorization")
-                if auth_hdr and auth_hdr.strip():
-                    _extract_user_id_from_auth_header(auth_hdr)
-                body = self._read_json_body()
-            if path == "/api/resume/parse":
-                self._send_json(handle_parse_resume_payload(body))
-                return
-            if path == "/api/analyze":
-                self._send_json(handle_analyze_payload(body))
-                return
-            if path == "/api/ai/ask":
-                uid = None
-                auth_hdr = self.headers.get("Authorization")
-                if auth_hdr:
-                    try:
-                        uid = _extract_user_id_from_auth_header(auth_hdr)
-                    except Exception:
-                        uid = None
-                body = self._read_json_body()
-                res, code = handle_ask_ai_payload(body, uid or "guest", bool(uid))
-                self._send_json(res, code)
-                return
-            if path == "/api/auth/register":
-                self._send_json(register_user(body))
-                return
-            if path == "/api/auth/login":
-                self._send_json(login_user(body, client_ip=self.client_address[0] if hasattr(self, "client_address") else "unknown"))
-                return
-            if path == "/api/profile/import":
-                uid = _extract_user_id_from_auth_header(auth_hdr)
-                self._send_json(import_student_profile(uid, body))
-                return
-            if path == "/api/jobs/market":
-                self._send_json(fetch_job_market_intelligence(body))
-                return
-            if path == "/api/interview/start":
-                self._send_json(start_interview_session(body))
-                return
-            if path == "/api/interview/answer":
-                self._send_json(submit_interview_answer(body))
-                return
-            if path == "/api/ats/evaluate":
-                self._send_json(evaluate_ats_resume(body))
-                return
-            if path == "/api/github/analyze":
-                self._send_json(analyze_github_portfolio(body))
-                return
-            if path == "/api/roadmap/adaptive":
-                self._send_json(get_adaptive_roadmap(body))
-                return
-            if path == "/api/roadmap/task":
-                self._send_json(toggle_learning_task(body))
-                return
-            if path == "/api/roadmap/quiz":
-                self._send_json(submit_roadmap_stage_quiz(body))
-                return
-            if path == "/api/assessment/generate":
-                self._send_json(generate_skill_assessment(body))
-                return
-            if path == "/api/assessment/submit":
-                self._send_json(submit_skill_assessment(body))
-                return
-            if path == "/api/career/compare":
-                self._send_json(compare_career_paths(body))
-                return
-            if path == "/api/readiness/index":
-                self._send_json(compute_placement_readiness_index(body))
-                return
-            self._send_json({"detail": "Endpoint not found"}, 404)
-        except PermissionError as exc:
-            self._send_json({"detail": str(exc)}, 401)
-        except ValueError as exc:
-            self._send_json({"detail": str(exc)}, 400)
-        except Exception as exc:
-            traceback.print_exc()
-            self._send_json({"detail": f"Server error: {exc}"}, 500)
+@app.post("/api/resume/upload")
+async def api_upload_multipart(
+    file: UploadFile = File(...),
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    owner_id, _ = owner_info
+    allowed, retry = rate_limiter.is_allowed(f"upload_{owner_id}", max_requests=10, window_seconds=60)
+    if not allowed:
+        raise HTTPException(status_code=429, detail=f"Upload rate limit reached. Please wait {retry}s.")
 
-    def do_PUT(self) -> None:
-        parsed = urlparse(self.path)
-        try:
-            uid = _extract_user_id_from_auth_header(self.headers.get("Authorization"))
-            body = self._read_json_body()
-            if parsed.path == "/api/resume/skills":
-                self._send_json(handle_update_skills_payload(body))
-                return
-            if parsed.path == "/api/roadmap/progress":
-                self._send_json(handle_update_roadmap_progress_payload(body))
-                return
-            if parsed.path == "/api/profile":
-                self._send_json({"profile": update_student_profile(body, uid or "guest")})
-                return
-            self._send_json({"detail": "Not found"}, 404)
-        except PermissionError as exc:
-            self._send_json({"detail": str(exc)}, 401)
-        except ValueError as exc:
-            self._send_json({"detail": str(exc)}, 400)
+    try:
+        file_bytes = await file.read()
+        if len(file_bytes) > 5 * 1024 * 1024:
+            raise ValueError("Uploaded file exceeds maximum allowed size of 5 MB.")
+        safe_filename = os.path.basename(file.filename or "resume.pdf")
+        text = extract_text_from_file_bytes(safe_filename, file_bytes)
+        profile = parse_resume_text_to_profile(text, safe_filename)
+        save_resume(profile, owner_id=owner_id)
+        return {"resume": profile, "dashboard": get_dashboard_metrics(profile["id"], owner_id=owner_id)}
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
-    def do_DELETE(self) -> None:
-        parsed = urlparse(self.path)
-        if parsed.path.startswith("/api/history/"):
-            try:
-                part = parsed.path.split("/api/history/", 1)[1]
-                analysis_id = int(part)
-                existing = get_analysis_by_id(analysis_id)
-                res_id = existing["resumeId"] if existing else None
-                delete_analysis_record(analysis_id)
-                self._send_json({"dashboard": get_dashboard_metrics(res_id)})
-            except Exception as exc:
-                self._send_json({"detail": str(exc)}, 400)
-            return
-        self._send_json({"detail": "Not found"}, 404)
 
-    def _serve_file(self, filepath: str) -> None:
-        try:
-            with open(filepath, "rb") as f:
-                data = f.read()
-            ctype, _ = mimetypes.guess_type(filepath)
-            self.send_response(200)
-            self.send_header("Content-Type", ctype or "text/html; charset=utf-8")
-            self.send_header("Content-Length", str(len(data)))
-            self.send_header("X-Content-Type-Options", "nosniff")
-            self.send_header("X-Frame-Options", "SAMEORIGIN")
-            self.send_header("Referrer-Policy", "strict-origin-when-cross-origin")
-            self.end_headers()
-            self.wfile.write(data)
-        except Exception:
-            self._send_json({"detail": "File not found"}, 404)
+@app.post("/api/analyze")
+async def api_analyze(
+    request: Request,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    owner_id, _ = owner_info
+    allowed, retry = rate_limiter.is_allowed(f"analyze_{owner_id}", max_requests=10, window_seconds=60)
+    if not allowed:
+        raise HTTPException(status_code=429, detail=f"Analysis rate limit reached. Please wait {retry}s.")
+
+    try:
+        body = await request.json()
+        return handle_analyze_payload(body, owner_id=owner_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Analysis failed: {exc}")
+
+
+@app.put("/api/resume/skills")
+async def api_update_skills(
+    request: Request,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    owner_id, _ = owner_info
+    try:
+        body = await request.json()
+        return handle_update_skills_payload(body, owner_id=owner_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.put("/api/roadmap/progress")
+async def api_update_roadmap_progress(
+    request: Request,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    owner_id, _ = owner_info
+    try:
+        body = await request.json()
+        return handle_update_roadmap_progress_payload(body, owner_id=owner_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.get("/api/history/{analysis_id}")
+async def api_get_history(
+    analysis_id: int,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    owner_id, _ = owner_info
+    try:
+        return handle_load_history_record(analysis_id, owner_id=owner_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+
+
+@app.delete("/api/history/{analysis_id}")
+async def api_delete_history(
+    analysis_id: int,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    owner_id, _ = owner_info
+    existing = get_analysis_by_id(analysis_id, owner_id=owner_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Analysis record not found.")
+    res_id = existing.get("resumeId")
+    delete_analysis_record(analysis_id, owner_id=owner_id)
+    return {"dashboard": get_dashboard_metrics(res_id, owner_id=owner_id)}
+
+
+# ---- CareerMatch AI Authentication & Modules ----
+
+@app.post("/api/auth/register")
+async def api_auth_register(request: Request) -> Dict[str, Any]:
+    client_ip = request.client.host if request.client and request.client.host else "unknown"
+    allowed, retry = rate_limiter.is_allowed(f"auth_reg_{client_ip}", max_requests=5, window_seconds=3600)
+    if not allowed:
+        raise HTTPException(status_code=429, detail="Too many registration attempts. Please try again later.")
+
+    try:
+        body = await request.json()
+        return register_user(body)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/api/auth/login")
+async def api_auth_login(
+    request: Request,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    client_ip = request.client.host if request.client and request.client.host else "unknown"
+    allowed, retry = rate_limiter.is_allowed(f"auth_login_{client_ip}", max_requests=5, window_seconds=60)
+    if not allowed:
+        raise HTTPException(status_code=429, detail=f"Too many login attempts. Please try again in {retry} seconds.")
+
+    try:
+        body = await request.json()
+        login_res = login_user(body, client_ip=client_ip)
+        # Attach current browser's guest data to the user account on sign-in
+        guest_id, _ = owner_info
+        if guest_id and guest_id.startswith("guest_"):
+            user_id = login_res.get("user", {}).get("id")
+            if user_id:
+                claim_guest_data(guest_id, user_id)
+        return login_res
+    except PermissionError as exc:
+        raise HTTPException(status_code=429, detail=str(exc))
+    except ValueError as exc:
+        raise HTTPException(status_code=401, detail=str(exc))
+
+
+@app.post("/api/profile/import")
+async def api_profile_import(
+    request: Request,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    owner_id, is_auth = owner_info
+    if not is_auth:
+        raise HTTPException(status_code=401, detail="Authentication required.")
+    try:
+        body = await request.json()
+        return import_student_profile(owner_id, body)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.get("/api/profile")
+async def api_get_profile(owner_info: Tuple[str, bool] = Depends(get_owner)) -> Dict[str, Any]:
+    owner_id, is_auth = owner_info
+    return {"profile": get_student_profile(owner_id) if is_auth else None}
+
+
+@app.put("/api/profile")
+async def api_update_profile(
+    request: Request,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    owner_id, is_auth = owner_info
+    try:
+        body = await request.json()
+        return {"profile": update_student_profile(body, owner_id if is_auth else "guest")}
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.get("/api/profile/export")
+async def api_profile_export(
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Response:
+    """Export complete user data payload for data portability under DPDP Act & GDPR."""
+    owner_id, is_auth = owner_info
+    data = export_owner_records(owner_id, is_authenticated=is_auth)
+    content = json.dumps(data, indent=2, ensure_ascii=False)
+    timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    filename = f"careermatch_data_export_{timestamp}.json"
+    return Response(
+        content=content,
+        media_type="application/json",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "Cache-Control": "no-store, no-cache, must-revalidate",
+        },
+    )
+
+
+@app.delete("/api/profile/delete")
+async def api_profile_delete(
+    response: Response,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    """Permanently delete all user records from database (Right to Erasure)."""
+    owner_id, is_auth = owner_info
+    result = delete_owner_records(owner_id, is_authenticated=is_auth)
+    response.delete_cookie(key="cm_sid", path="/")
+    return result
+
+
+@app.post("/api/auth/logout")
+async def api_auth_logout(response: Response) -> Dict[str, Any]:
+    """Clear session cookies and authenticate status."""
+    response.delete_cookie(key="cm_sid", path="/")
+    return {"status": "ok", "message": "Signed out successfully."}
+
+
+@app.post("/api/jobs/market")
+async def api_jobs_market(request: Request) -> Dict[str, Any]:
+    try:
+        body = await request.json()
+        return fetch_job_market_intelligence(body)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/api/interview/start")
+async def api_interview_start(
+    request: Request,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    owner_id, _ = owner_info
+    try:
+        body = await request.json()
+        return start_interview_session(body, owner_id=owner_id)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/api/interview/answer")
+async def api_interview_answer(
+    request: Request,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    owner_id, _ = owner_info
+    try:
+        body = await request.json()
+        return submit_interview_answer(body, owner_id=owner_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.get("/api/interview/history")
+async def api_interview_history(
+    resumeId: Optional[str] = None,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    owner_id, _ = owner_info
+    return get_interview_history(resumeId, owner_id=owner_id)
+
+
+@app.post("/api/ats/evaluate")
+async def api_ats_evaluate(
+    request: Request,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    owner_id, _ = owner_info
+    try:
+        body = await request.json()
+        return evaluate_ats_resume(body, owner_id=owner_id)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/api/github/analyze")
+async def api_github_analyze(
+    request: Request,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    owner_id, _ = owner_info
+    try:
+        body = await request.json()
+        result = analyze_github_portfolio(body, owner_id=owner_id)
+        if result.get("error"):
+            raise HTTPException(status_code=400, detail=result["error"])
+        return result
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/api/roadmap/adaptive")
+async def api_roadmap_adaptive(
+    request: Request,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    owner_id, _ = owner_info
+    try:
+        body = await request.json()
+        return get_adaptive_roadmap(body, owner_id=owner_id)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/api/roadmap/task")
+async def api_roadmap_task(
+    request: Request,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    owner_id, _ = owner_info
+    try:
+        body = await request.json()
+        return toggle_learning_task(body, owner_id=owner_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+
+
+@app.post("/api/roadmap/quiz")
+async def api_roadmap_quiz(
+    request: Request,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    owner_id, _ = owner_info
+    try:
+        body = await request.json()
+        return submit_roadmap_stage_quiz(body, owner_id=owner_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+
+
+@app.post("/api/assessment/generate")
+async def api_assessment_generate(
+    request: Request,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    owner_id, _ = owner_info
+    try:
+        body = await request.json()
+        return generate_skill_assessment(body, owner_id=owner_id)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/api/assessment/submit")
+async def api_assessment_submit(
+    request: Request,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    owner_id, _ = owner_info
+    try:
+        body = await request.json()
+        return submit_skill_assessment(body, owner_id=owner_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/api/assessment/hint")
+async def api_assessment_hint(
+    request: Request,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    """Provide on-demand tiered hint with score penalty."""
+    owner_id, _ = owner_info
+    try:
+        body = await request.json()
+        return get_assessment_hint(body, owner_id=owner_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.get("/api/assessment/history")
+async def api_assessment_history(
+    resumeId: Optional[str] = None,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    owner_id, _ = owner_info
+    return get_assessment_history(resumeId, owner_id=owner_id)
+
+
+@app.post("/api/career/compare")
+async def api_career_compare(
+    request: Request,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    owner_id, _ = owner_info
+    try:
+        body = await request.json()
+        return compare_career_paths(body, owner_id=owner_id)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/api/readiness/index")
+async def api_readiness_index(
+    request: Request,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    owner_id, _ = owner_info
+    try:
+        body = await request.json()
+        return compute_placement_readiness_index(body, owner_id=owner_id)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.get("/api/ai/usage")
+async def api_ai_usage(owner_info: Tuple[str, bool] = Depends(get_owner)) -> Dict[str, Any]:
+    owner_id, is_auth = owner_info
+    return get_ai_usage(owner_id, is_auth)
+
+
+@app.post("/api/ai/ask")
+async def api_ai_ask(
+    request: Request,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Any:
+    owner_id, is_auth = owner_info
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    res, code = handle_ask_ai_payload(body, owner_id, is_auth)
+    return JSONResponse(res, status_code=code)
+
+
+# Mount static frontend assets
+if os.path.isdir(FRONTEND_DIR):
+    app.mount("/frontend", StaticFiles(directory=FRONTEND_DIR), name="frontend")
+    css_dir = os.path.join(FRONTEND_DIR, "css")
+    js_dir = os.path.join(FRONTEND_DIR, "js")
+    assets_dir = os.path.join(FRONTEND_DIR, "assets")
+    if os.path.isdir(css_dir):
+        app.mount("/css", StaticFiles(directory=css_dir), name="css")
+    if os.path.isdir(js_dir):
+        app.mount("/js", StaticFiles(directory=js_dir), name="js")
+    if os.path.isdir(assets_dir):
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+
+@app.get("/")
+@app.head("/")
+@app.get("/index.html")
+@app.head("/index.html")
+async def serve_index() -> Any:
+    frontend_html = os.path.join(FRONTEND_DIR, "index.html")
+    if os.path.isfile(frontend_html):
+        return FileResponse(frontend_html)
+    return FileResponse(os.path.join(ROOT_DIR, "index.html"))
+
+
+@app.get("/favicon.ico")
+@app.head("/favicon.ico")
+async def serve_favicon() -> Any:
+    fav_path = os.path.join(FRONTEND_DIR, "assets", "favicon.svg")
+    if os.path.isfile(fav_path):
+        return FileResponse(fav_path, media_type="image/svg+xml")
+    return Response(status_code=204)
 
 
 def run_server() -> None:
     port = int(os.environ.get("PORT", str(DEFAULT_PORT)))
     host = os.environ.get("HOST", "0.0.0.0" if "PORT" in os.environ else "127.0.0.1")
-    try:
-        import uvicorn  # type: ignore
-        if app is not None:
-            print(f"Starting CareerMatch AI (FastAPI/Uvicorn) on http://{host}:{port}")
-            uvicorn.run("backend.main:app", host=host, port=port, log_level="info")
-            return
-    except ImportError:
-        pass
+    import uvicorn  # type: ignore
 
-    print(f"Starting CareerMatch AI Server on http://{host}:{port}")
-    server = ThreadingHTTPServer((host, port), CareerMatchHTTPHandler)
-    server.serve_forever()
+    print(f"Starting CareerMatch AI (FastAPI/Uvicorn) on http://{host}:{port}")
+    uvicorn.run("backend.main:app", host=host, port=port, log_level="info")
 
 
 if __name__ == "__main__":

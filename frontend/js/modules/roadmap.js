@@ -7,6 +7,7 @@
 import { api } from "../api.js";
 import { store } from "../store.js";
 import { escapeHtml } from "../formatters.js";
+import { roadmapDiagram } from "../components/roadmapDiagram.js";
 
 export class RoadmapModule {
   constructor() {
@@ -77,23 +78,17 @@ export class RoadmapModule {
   }
 
   renderEmptyState() {
-    const emptyContainer = document.getElementById("roadmapEmptyState");
-    const contentContainer = document.getElementById("roadmapContentContainer");
-    if (emptyContainer) emptyContainer.hidden = false;
-    if (contentContainer) contentContainer.hidden = true;
+    roadmapDiagram.mount("roadmapDiagramViewport");
+    roadmapDiagram.renderEmptyState();
+    const tasksEl = document.getElementById("adapTasksContainer");
+    if (tasksEl) {
+      tasksEl.innerHTML = `<div class="p-2 text-center text-sm text-tertiary">No milestone tasks found. Run match analysis to generate weekly tasks.</div>`;
+    }
   }
 
   renderError(msg) {
-    const container = document.getElementById("roadmapTasksContainer");
-    if (container) {
-      container.innerHTML = `
-        <div class="card error-card" style="padding:1.5rem;text-align:center;">
-          <p style="color:var(--score-low);">Unable to load roadmap: ${escapeHtml(msg)}</p>
-          <button type="button" class="btn btn-secondary btn-sm" id="roadmapRetryBtn">Retry</button>
-        </div>
-      `;
-      document.getElementById("roadmapRetryBtn")?.addEventListener("click", () => this.load(true));
-    }
+    roadmapDiagram.mount("roadmapDiagramViewport");
+    roadmapDiagram.renderError(msg);
   }
 
   render(data) {
@@ -102,10 +97,9 @@ export class RoadmapModule {
       return;
     }
 
-    const emptyContainer = document.getElementById("roadmapEmptyState");
-    const contentContainer = document.getElementById("roadmapContentContainer");
-    if (emptyContainer) emptyContainer.hidden = true;
-    if (contentContainer) contentContainer.hidden = false;
+    // Render interactive diagram progression tree (Bug 8)
+    roadmapDiagram.mount("roadmapDiagramViewport");
+    roadmapDiagram.render(data);
 
     // Progress badge
     const badge = document.getElementById("adapProgressBadge");

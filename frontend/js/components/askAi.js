@@ -28,6 +28,24 @@ class AskAiAdvisor {
   }
 
   _injectDOM() {
+    // 1. Inject 3D Floating Action Button (Bug 7)
+    if (!document.getElementById("askAiFab")) {
+      const fab = document.createElement("button");
+      fab.id = "askAiFab";
+      fab.className = "ask-ai-fab";
+      fab.type = "button";
+      fab.setAttribute("aria-label", "Ask Career Advisor AI (Ctrl+J)");
+      fab.title = "Ask AI (Ctrl+J)";
+      fab.innerHTML = `
+        <svg fill="none" height="22" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="22" aria-hidden="true">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+        </svg>
+        <span class="ask-ai-fab-badge" id="askAiFabUsageBadge">5</span>
+      `;
+      fab.addEventListener("click", () => this.toggle());
+      document.body.appendChild(fab);
+    }
+
     if (document.getElementById("askAiDrawerBackdrop")) return;
 
     this.backdrop = document.createElement("div");
@@ -158,10 +176,17 @@ class AskAiAdvisor {
     });
   }
 
+  toggle() {
+    if (this.isOpen) this.close();
+    else this.open();
+  }
+
   open() {
     this.isOpen = true;
     this.backdrop.style.display = "flex";
     this.backdrop.setAttribute("aria-hidden", "false");
+    const fab = document.getElementById("askAiFab");
+    if (fab) fab.style.opacity = "0";
     setTimeout(() => {
       this.input?.focus();
     }, 80);
@@ -172,6 +197,11 @@ class AskAiAdvisor {
     this.isOpen = false;
     this.backdrop.style.display = "none";
     this.backdrop.setAttribute("aria-hidden", "true");
+    const fab = document.getElementById("askAiFab");
+    if (fab) {
+      fab.style.opacity = "1";
+      fab.focus();
+    }
   }
 
   async refreshUsage() {
@@ -199,6 +229,10 @@ class AskAiAdvisor {
     const topMeter = document.getElementById("askAiUsageMeter");
     if (topMeter) {
       topMeter.textContent = text;
+    }
+    const fabBadge = document.getElementById("askAiFabUsageBadge");
+    if (fabBadge) {
+      fabBadge.textContent = String(this.remaining);
     }
     const notice = document.getElementById("askAiResetNotice");
     if (notice && this.remaining === 0) {

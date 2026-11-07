@@ -1,13 +1,23 @@
 /**
  * CareerMatch AI: Analyzer Feature Module
  * Single authoritative controller for #view-analyzer.
- * Manages file drag & drop, text paste, role selection, validation, and full analysis dispatch.
- * Exports init(), load(), render().
+ * Manages synchronous file chooser, drag & drop, text paste, role selection,
+ * client-side file validation (size <= 5MB, type, empty check), and manual "Run Match Analysis".
+ * 
+ * Complies with Bug 1 (accessible synchronous file picker) and Bug 6 (upload does NOT auto-analyze).
  */
 
 import { api } from "../api.js";
 import { store } from "../store.js";
 import { escapeHtml } from "../formatters.js";
+
+function formatBytes(bytes) {
+  if (!bytes || bytes <= 0) return "0 B";
+  const k = 1024;
+  const sizes = ["B", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
+}
 
 export class AnalyzerModule {
   constructor() {
@@ -19,12 +29,33 @@ export class AnalyzerModule {
     if (this.initialized) return;
     this.initialized = true;
 
-    // File input & dropzone
     const fileInput = document.getElementById("resumeFileInput");
-    const dropzone = document.getElementById("resumeDropzone");
+    const dropzone = document.getElementById("uploadDropZone") || document.getElementById("resumeDropzone");
+    const chooseBtn = document.getElementById("chooseFileBtn");
+    const removeBtn = document.getElementById("removeFileBtn");
+
+    // Bug 1: Synchronous user-gesture file picker trigger
+    if (chooseBtn && fileInput) {
+      chooseBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        fileInput.click();
+      });
+    }
 
     if (dropzone && fileInput) {
-      dropzone.addEventListener("click", () => fileInput.click());
+      dropzone.addEventListener("click", (e) => {
+        // Do not double-trigger if clicking the choose button or remove action
+        if (e.target.closest("#chooseFileBtn") || e.target.closest("#removeFileBtn")) return;
+        fileInput.click();
+      });
+
+      dropzone.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          fileInput.click();
+        }
+      });
 
       dropzone.addEventListener("dragover", (e) => {
         e.preventDefault();
@@ -42,7 +73,9 @@ export class AnalyzerModule {
           this.handleFileUpload(e.dataTransfer.files[0]);
         }
       });
+    }
 
+    if (fileInput) {
       fileInput.addEventListener("change", (e) => {
         if (e.target.files?.length) {
           this.handleFileUpload(e.target.files[0]);
@@ -50,15 +83,23 @@ export class AnalyzerModule {
       });
     }
 
+    if (removeBtn) {
+      removeBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.clearResume();
+      });
+    }
+
     // Pasted text parse button
-    const parsePasteBtn = document.getElementById("parsePastedResumeBtn");
+    const parsePasteBtn = document.getElementById("parseTextBtn") || document.getElementById("parsePastedResumeBtn");
     if (parsePasteBtn) {
       parsePasteBtn.addEventListener("click", () => this.handlePastedText());
     }
 
     // Role selector change
     const roleSelect = document.getElementById("targetRoleSelect");
-    const customRoleContainer = document.getElementById("customRoleGroup");
+    const customRoleContainer = document.getElementById("customRoleInputContainer") || document.getElementById("customRoleGroup");
     const customRoleInput = document.getElementById("customRoleInput");
 
     if (roleSelect) {
@@ -68,22 +109,24 @@ export class AnalyzerModule {
           if (customRoleContainer) customRoleContainer.classList.remove("hidden");
           if (customRoleInput) {
             customRoleInput.focus();
-            store.set("targetRole", customRoleInput.value.trim() || "Software Engineer");
+            store.set("targetRole", customRoleInput.value.trim() || "");
           }
         } else {
           if (customRoleContainer) customRoleContainer.classList.add("hidden");
           store.set("targetRole", val);
         }
+        this.updateRunButtonState();
       });
     }
 
     if (customRoleInput) {
       customRoleInput.addEventListener("input", (e) => {
-        store.set("targetRole", e.target.value.trim() || "Software Engineer");
+        store.set("targetRole", e.target.value.trim());
+        this.updateRunButtonState();
       });
     }
 
-    // Run Analysis Button
+    // Run Match Analysis Button (Bug 6: only explicit user click triggers match analysis)
     const runBtn = document.getElementById("runAnalysisBtn");
     if (runBtn) {
       runBtn.addEventListener("click", (e) => {
@@ -103,7 +146,10 @@ export class AnalyzerModule {
     // Subscribe to store changes
     store.subscribe("activeResume", (resume) => {
       this.render(resume);
+      this.updateRunButtonState();
     });
+
+    this.updateRunButtonState();
   }
 
   load() {
@@ -111,31 +157,91 @@ export class AnalyzerModule {
     if (resume) {
       this.render(resume);
     }
+    this.updateRunButtonState();
+  }
+
+  updateRunButtonState() {
+    const runBtn = document.getElementById("runAnalysisBtn");
+    if (!runBtn) return;
+
+    const hasResume = Boolean(store.get("activeResume"));
+    const roleSelect = document.getElementById("targetRoleSelect");
+    const customRoleInput = document.getElementById("customRoleInput");
+
+    let hasRole = false;
+    if (roleSelect) {
+      if (roleSelect.value === "Other") {
+        hasRole = Boolean(customRoleInput?.value.trim().length >= 2);
+      } else {
+        hasRole = Boolean(roleSelect.value && roleSelect.value !== "Select role...");
+      }
+    }
+
+    runBtn.disabled = !(hasResume && hasRole && !this.inFlight);
+  }
+
+  clearResume() {
+    const fileInput = document.getElementById("resumeFileInput");
+    if (fileInput) fileInput.value = "";
+
+    const banner = document.getElementById("selectedFileBanner");
+    if (banner) banner.classList.add("hidden");
+
+    const statusEl = document.getElementById("uploadStatusText");
+    if (statusEl) statusEl.textContent = "";
+
+    const metaBox = document.getElementById("parsedResumeMeta");
+    if (metaBox) metaBox.classList.add("hidden");
+
+    const pastedInput = document.getElementById("pastedResumeInput");
+    if (pastedInput) pastedInput.value = "";
+
+    store.set("activeResume", null);
+    this.hideError();
+    this.updateRunButtonState();
   }
 
   render(resume = null) {
     const currentResume = resume || store.get("activeResume");
-    if (!currentResume) return;
+    const metaBox = document.getElementById("parsedResumeMeta");
+
+    if (!currentResume) {
+      if (metaBox) metaBox.classList.add("hidden");
+      return;
+    }
+
+    if (metaBox) metaBox.classList.remove("hidden");
 
     const nameEl = document.getElementById("parsedCandidateName");
-    if (nameEl) nameEl.textContent = currentResume.contact?.name || "Candidate Profile";
+    if (nameEl) {
+      nameEl.textContent = currentResume.contact?.name || "Parsed Candidate Profile";
+    }
 
     const degreeEl = document.getElementById("parsedResumeDegree");
     const edu = currentResume.education?.[0];
     const degreeText = edu
       ? `${edu.degree || "Degree"} · ${edu.institution || "Institution"}`
-      : currentResume.summary || "Resume Profile";
+      : currentResume.summary || "Technical Profile";
     if (degreeEl) degreeEl.textContent = degreeText;
 
-    const container = document.getElementById("parsedSkillsPreview");
+    const badgeCountEl = document.getElementById("parsedSkillsCountBadge");
+    const skills = currentResume.technicalSkills || currentResume.skills || [];
+    if (badgeCountEl) {
+      badgeCountEl.textContent = `${skills.length} Skills Detected`;
+    }
+
+    const container = document.getElementById("parsedSkillBadges") || document.getElementById("parsedSkillsPreview");
     if (container) {
-      const skills = currentResume.technicalSkills || [];
       if (skills.length === 0) {
-        container.innerHTML = `<span style="color:var(--text-tertiary);font-size:0.8rem;">No technical skills detected yet.</span>`;
+        container.innerHTML = `<span class="text-tertiary text-xs">No technical skills detected yet.</span>`;
       } else {
         container.innerHTML = skills
-          .map((s) => `<span class="tag tag-match">${escapeHtml(s)}</span>`)
+          .slice(0, 15)
+          .map((s) => `<span class="score-pill score-pill-green">${escapeHtml(s)}</span>`)
           .join("");
+        if (skills.length > 15) {
+          container.innerHTML += `<span class="score-pill score-pill-neutral">+${skills.length - 15} more</span>`;
+        }
       }
     }
   }
@@ -143,18 +249,33 @@ export class AnalyzerModule {
   async handleFileUpload(file) {
     if (!file) return;
 
-    // Client-side validation: file type & size
+    // Client-side validation: empty file check
+    if (file.size === 0) {
+      this.showError("The selected file is empty (0 bytes). Please choose a valid resume file.");
+      return;
+    }
+
+    // Client-side validation: file type & size (5 MB limit)
     const validExtensions = [".pdf", ".docx", ".txt"];
-    const ext = "." + file.name.split(".").pop().toLowerCase();
+    const ext = "." + (file.name.split(".").pop() || "").toLowerCase();
     if (!validExtensions.includes(ext)) {
       this.showError(`Invalid file format "${ext}". Please upload a PDF, DOCX, or plain text (.txt) file.`);
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      this.showError("File size exceeds 10 MB limit. Please upload a smaller document.");
+    const MAX_BYTES = 5 * 1024 * 1024;
+    if (file.size > MAX_BYTES) {
+      this.showError(`File size (${formatBytes(file.size)}) exceeds the 5 MB limit. Please upload a smaller document.`);
       return;
     }
+
+    // Show file details banner
+    const selectedBanner = document.getElementById("selectedFileBanner");
+    const nameEl = document.getElementById("selectedFileName");
+    const sizeEl = document.getElementById("selectedFileSize");
+    if (nameEl) nameEl.textContent = file.name;
+    if (sizeEl) sizeEl.textContent = formatBytes(file.size);
+    if (selectedBanner) selectedBanner.classList.remove("hidden");
 
     const statusEl = document.getElementById("uploadStatusText");
     if (statusEl) statusEl.textContent = `Parsing ${file.name}...`;
@@ -162,29 +283,26 @@ export class AnalyzerModule {
 
     try {
       const base64Data = await this._readFileAsDataURL(file);
-      const token = store.get("token");
-      const headers = { "Content-Type": "application/json" };
-      if (token) headers["Authorization"] = `Bearer ${token}`;
+      const dontSave = Boolean(store.get("dontSaveResume"));
 
-      const res = await fetch("/api/resume/parse", {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          filename: file.name,
-          base64Data,
-          dontSave: Boolean(store.get("dontSaveResume")),
-        }),
+      const data = await api.post("/api/resume/parse", {
+        filename: file.name,
+        base64Data,
+        dontSave,
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "Failed to parse file.");
+      if (!data || !data.resume) {
+        throw new Error("Server returned empty parse result.");
+      }
 
       store.set("activeResume", data.resume);
-      if (statusEl) statusEl.textContent = `Parsed: ${file.name}`;
+      if (statusEl) statusEl.textContent = `Parsed successfully: ${file.name}`;
       this.render(data.resume);
+      this.updateRunButtonState();
+      // Bug 6 verification: Do NOT call runAnalysis here!
     } catch (err) {
-      if (statusEl) statusEl.textContent = "Click to upload or drag & drop (PDF, DOCX, TXT)";
-      this.showError(err.message);
+      if (statusEl) statusEl.textContent = "Upload failed. Please try again.";
+      this.showError(err.message || "Failed to parse resume document.");
     }
   }
 
@@ -197,28 +315,29 @@ export class AnalyzerModule {
     }
     this.hideError();
 
-    try {
-      const token = store.get("token");
-      const headers = { "Content-Type": "application/json" };
-      if (token) headers["Authorization"] = `Bearer ${token}`;
+    const statusEl = document.getElementById("uploadStatusText");
+    if (statusEl) statusEl.textContent = "Parsing pasted text...";
 
-      const res = await fetch("/api/resume/parse", {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          filename: "Pasted_Resume.txt",
-          pastedText: raw,
-          dontSave: Boolean(store.get("dontSaveResume")),
-        }),
+    try {
+      const dontSave = Boolean(store.get("dontSaveResume"));
+      const data = await api.post("/api/resume/parse", {
+        filename: "Pasted_Resume.txt",
+        pastedText: raw,
+        dontSave,
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "Failed to parse pasted text.");
+      if (!data || !data.resume) {
+        throw new Error("Server returned empty parse result.");
+      }
 
       store.set("activeResume", data.resume);
+      if (statusEl) statusEl.textContent = "Parsed pasted text successfully.";
       this.render(data.resume);
+      this.updateRunButtonState();
+      // Bug 6 verification: Do NOT call runAnalysis here!
     } catch (err) {
-      this.showError(err.message);
+      if (statusEl) statusEl.textContent = "";
+      this.showError(err.message || "Failed to parse pasted resume text.");
     }
   }
 
@@ -231,43 +350,46 @@ export class AnalyzerModule {
     }
 
     const roleSelect = document.getElementById("targetRoleSelect");
-    let targetRole = roleSelect?.value || store.get("targetRole") || "Full Stack Developer";
+    let targetRole = roleSelect?.value || store.get("targetRole") || "";
     if (targetRole === "Other") {
       const customInput = document.getElementById("customRoleInput");
-      targetRole = customInput?.value.trim() || "Software Engineer";
+      targetRole = customInput?.value.trim() || "";
+    }
+
+    if (!targetRole || targetRole === "Select role...") {
+      this.showError("Please select or enter your Target Role to benchmark your resume.");
+      return;
     }
 
     const goalCompany = document.getElementById("goalCompanyInput")?.value.trim() || "";
     const customJd = document.getElementById("customJdInput")?.value.trim() || "";
+    const dontSave = Boolean(store.get("dontSaveResume"));
 
     const runBtn = document.getElementById("runAnalysisBtn");
-    const originalText = runBtn ? runBtn.textContent : "Analyze Resume";
+    const progressBox = document.getElementById("analysisProgressBox");
+    const originalText = runBtn ? runBtn.textContent : "Run Match Analysis";
+
     if (runBtn) {
       runBtn.disabled = true;
-      runBtn.textContent = "Generating career report...";
+      runBtn.textContent = "Evaluating match report...";
     }
+    if (progressBox) progressBox.classList.remove("hidden");
+
     this.inFlight = true;
     this.hideError();
 
     try {
-      const token = store.get("token");
-      const headers = { "Content-Type": "application/json" };
-      if (token) headers["Authorization"] = `Bearer ${token}`;
-
-      const res = await fetch("/api/analyze", {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          resume,
-          roleTitle: targetRole,
-          goalCompany,
-          customJdText: customJd,
-          dontSave: Boolean(store.get("dontSaveResume")),
-        }),
+      const data = await api.post("/api/analyze", {
+        resume,
+        roleTitle: targetRole,
+        goalCompany,
+        customJdText: customJd,
+        dontSave,
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "Analysis generation failed.");
+      if (!data || !data.matchResult) {
+        throw new Error("Analysis generation failed or returned invalid format.");
+      }
 
       store.set("analysisResult", data);
       store.set("targetRole", targetRole);
@@ -277,13 +399,14 @@ export class AnalyzerModule {
         window.location.hash = "#/report";
       }
     } catch (err) {
-      this.showError(err.message);
+      this.showError(err.message || "Match analysis generation failed.");
     } finally {
       this.inFlight = false;
       if (runBtn) {
-        runBtn.disabled = false;
         runBtn.textContent = originalText;
       }
+      if (progressBox) progressBox.classList.add("hidden");
+      this.updateRunButtonState();
     }
   }
 
@@ -293,7 +416,7 @@ export class AnalyzerModule {
       banner.textContent = msg;
       banner.classList.remove("hidden");
     } else {
-      alert(msg);
+      console.warn("Analyzer error:", msg);
     }
   }
 

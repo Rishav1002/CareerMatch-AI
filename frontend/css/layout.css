@@ -340,13 +340,15 @@
 .app-rail {
   width: 250px;
   min-width: 250px;
-  background-color: var(--bg-card);
-  border-right: 1px solid var(--border-subtle);
+  background-color: var(--bg-overlay, var(--bg-card));
+  backdrop-filter: var(--overlay-backdrop);
+  -webkit-backdrop-filter: var(--overlay-backdrop);
+  border-right: 1px solid var(--overlay-border, var(--border-subtle));
   display: flex;
   flex-direction: column;
   position: sticky;
   top: 0;
-  height: 100vh;
+  height: 100dvh;
   z-index: var(--z-sticky);
   transition: width var(--transition-normal), min-width var(--transition-normal), transform var(--transition-normal);
   overflow-y: auto;
@@ -375,6 +377,19 @@
   font-size: 1.15rem;
   font-weight: 600;
   letter-spacing: -0.01em;
+}
+
+.brand-logo {
+  width: 28px;
+  height: 28px;
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+  transition: transform var(--transition-fast);
+}
+
+.rail-brand:hover .brand-logo {
+  transform: rotate(15deg);
 }
 
 .brand-mark {
@@ -706,13 +721,15 @@
 .user-avatar-dropdown {
   position: absolute;
   top: calc(100% + 8px);
-  right: clamp(16px, 2vw, 32px);
-  width: 220px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
+  right: 0;
+  width: min(280px, calc(100vw - 32px));
+  background: var(--bg-overlay, var(--bg-card));
+  backdrop-filter: var(--overlay-backdrop);
+  -webkit-backdrop-filter: var(--overlay-backdrop);
+  border: 1px solid var(--overlay-border, var(--border-subtle));
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-overlay);
-  padding: 6px 0;
+  box-shadow: var(--overlay-shadow);
+  padding: 8px 0;
   display: none;
   flex-direction: column;
   z-index: var(--z-modal);
@@ -720,6 +737,29 @@
 
 .user-avatar-dropdown.open {
   display: flex;
+}
+
+@media (max-width: 600px) {
+  .user-avatar-dropdown {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100vw;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    border-bottom: none;
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.35);
+    padding: 16px 16px calc(24px + env(safe-area-inset-bottom, 0px));
+    transform: translateY(100%);
+    transition: transform var(--transition-normal);
+  }
+
+  .user-avatar-dropdown.open {
+    transform: translateY(0);
+    display: flex;
+  }
 }
 
 .avatar-menu-item {
@@ -876,21 +916,48 @@
 }
 
 /* ==========================================================================
-   MOBILE BOTTOM NAVIGATION & RAIL SLIDE-OUT (<768px)
+   RESPONSIVE RAIL & NAVIGATION BREAKPOINTS (Bugs 4, 5, 7)
    ========================================================================== */
 .rail-backdrop {
   display: none;
   position: fixed;
   inset: 0;
-  background: var(--overlay);
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   z-index: calc(var(--z-modal) - 1);
+}
+
+.rail-backdrop.open {
+  display: block;
 }
 
 .mobile-bottom-nav {
   display: none;
 }
 
-@media (max-width: 768px) {
+/* Auto-collapse rail to icon-only between 1024px and 1280px (Bug 4) */
+@media (min-width: 1024.1px) and (max-width: 1280px) {
+  .app-rail {
+    width: 68px;
+    min-width: 68px;
+  }
+  .app-rail .brand-titles,
+  .app-rail .rail-group-label,
+  .app-rail .rail-nav-link span {
+    display: none;
+  }
+  .app-rail .rail-brand {
+    justify-content: center;
+  }
+  .app-rail .rail-nav-link {
+    justify-content: center;
+    padding: 10px 0;
+  }
+}
+
+/* Collapse rail to off-canvas slide-out drawer on <= 1024px (Bug 4 & 5) */
+@media (max-width: 1024px) {
   .mobile-rail-trigger {
     display: flex;
   }
@@ -904,35 +971,39 @@
     top: 0;
     bottom: 0;
     left: 0;
-    width: 280px;
-    min-width: 280px;
+    width: min(300px, 85vw);
+    min-width: 260px;
     z-index: var(--z-modal);
     transform: translateX(-100%);
-    box-shadow: var(--shadow-overlay);
+    box-shadow: var(--overlay-shadow);
+    background-color: var(--bg-overlay);
+    backdrop-filter: var(--overlay-backdrop);
+    -webkit-backdrop-filter: var(--overlay-backdrop);
   }
 
   .app-rail.open {
     transform: translateX(0);
   }
+}
 
-  .rail-backdrop.open {
-    display: block;
-  }
-
+/* Mobile bottom nav and spacing on <= 768px (Bug 4 & 5) */
+@media (max-width: 768px) {
   .mobile-bottom-nav {
     display: flex;
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    height: 60px;
-    background-color: var(--bg-card);
-    border-top: 1px solid var(--border-subtle);
+    height: calc(60px + env(safe-area-inset-bottom, 0px));
+    background-color: var(--bg-overlay);
+    backdrop-filter: var(--overlay-backdrop);
+    -webkit-backdrop-filter: var(--overlay-backdrop);
+    border-top: 1px solid var(--overlay-border);
     z-index: var(--z-sticky);
     justify-content: space-around;
     align-items: center;
-    padding: 0 var(--space-1);
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+    padding: 0 var(--space-1) env(safe-area-inset-bottom, 0px);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
   }
 
   .mobile-nav-item {
@@ -964,17 +1035,19 @@
   }
 
   .app-content {
-    padding-bottom: 84px; /* Space for mobile bottom nav */
+    padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); /* Space for mobile bottom nav */
   }
 }
 
 /* ==========================================================================
-   ASK AI ADVISOR DRAWER STYLES
+   ASK AI ADVISOR DRAWER STYLES (Bug 5 & 7)
    ========================================================================== */
 .ask-ai-backdrop {
   position: fixed;
   inset: 0;
-  background: var(--overlay);
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   z-index: var(--z-modal);
   display: flex;
   justify-content: flex-end;
@@ -984,11 +1057,108 @@
 .ask-ai-drawer {
   width: clamp(320px, 90vw, 440px);
   height: 100%;
-  background: var(--bg-card);
+  background: var(--bg-overlay, var(--bg-card));
+  backdrop-filter: var(--overlay-backdrop);
+  -webkit-backdrop-filter: var(--overlay-backdrop);
   display: flex;
   flex-direction: column;
-  box-shadow: var(--shadow-popover);
-  border-left: 1px solid var(--border-subtle);
+  box-shadow: var(--overlay-shadow);
+  border-left: 1px solid var(--overlay-border);
+}
+
+/* 3D Floating Action Button for Ask AI (Bug 7) */
+.ask-ai-fab {
+  position: fixed;
+  bottom: clamp(24px, 4vw, 36px);
+  right: clamp(20px, 4vw, 36px);
+  width: 56px;
+  height: 56px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #F59E0B 0%, #EA580C 100%);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 10px 28px rgba(234, 88, 12, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  z-index: calc(var(--z-sticky) + 50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, opacity 0.2s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ask-ai-fab:hover {
+  transform: translateY(-3px) scale(1.04);
+  box-shadow: 0 14px 34px rgba(234, 88, 12, 0.48), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.ask-ai-fab:active {
+  transform: translateY(2px) scale(0.96);
+  box-shadow: 0 4px 12px rgba(234, 88, 12, 0.35), inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.ask-ai-fab-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #111827;
+  color: #FDE047;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  border: 1.5px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 768px) {
+  .ask-ai-fab {
+    bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+    right: 16px;
+  }
+}
+
+/* Topbar Theme Toggle Button in Ask AI Slot (Bug 7) */
+.topbar-theme-toggle-btn {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  min-height: 38px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.topbar-theme-toggle-btn:hover {
+  transform: rotate(20deg);
+  color: var(--brand-accent);
+  border-color: var(--border-subtle);
+}
+
+[data-theme="dark"] .theme-icon-sun {
+  display: none !important;
+}
+
+[data-theme="dark"] .theme-icon-moon {
+  display: block !important;
+}
+
+[data-theme="light"] .theme-icon-sun {
+  display: block !important;
+}
+
+[data-theme="light"] .theme-icon-moon {
+  display: none !important;
 }
 
 .ask-ai-header {

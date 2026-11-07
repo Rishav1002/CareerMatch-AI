@@ -112,17 +112,6 @@ function initApp() {
   // Mark boot complete for the watchdog safety net
   window.__cmBooted = true;
   window.dispatchEvent(new CustomEvent("careermatch:booted"));
-  console.info("CareerMatch AI: application successfully booted (__cmBooted = true).");
-
-  // Populate build SHA from health endpoint
-  try {
-    fetch("/api/health").then(r => r.json()).then(data => {
-      if (data && data.build_sha) {
-        const el = document.getElementById("appBuildSha");
-        if (el) el.textContent = data.build_sha;
-      }
-    }).catch(() => {});
-  } catch (e) {}
 }
 
 function attachShellListeners() {
@@ -200,65 +189,77 @@ function attachShellListeners() {
   }
 
   // Theme Toggle Buttons (guarded with bindOnce to prevent double-toggling)
+  bindOnce(document.getElementById("topbarThemeToggleBtn"), "click", toggleAppTheme);
   bindOnce(document.getElementById("themeToggleBtn"), "click", toggleAppTheme);
   bindOnce(document.getElementById("landingThemeToggleBtn"), "click", toggleAppTheme);
   bindOnce(document.getElementById("settingsThemeToggleBtn"), "click", toggleAppTheme);
 
+  // Language Segmented Control (EN/HI)
+  const langBtnEn = document.getElementById("langBtnEn");
+  const langBtnHi = document.getElementById("langBtnHi");
+
+  function syncLangButtons(lang) {
+    if (lang === "hi") {
+      langBtnHi?.classList.add("active");
+      langBtnEn?.classList.remove("active");
+    } else {
+      langBtnEn?.classList.add("active");
+      langBtnHi?.classList.remove("active");
+    }
+  }
+
+  langBtnEn?.addEventListener("click", () => {
+    setLanguage("en");
+    syncLangButtons("en");
+  });
+
+  langBtnHi?.addEventListener("click", () => {
+    setLanguage("hi");
+    syncLangButtons("hi");
+  });
+
+  syncLangButtons(store.get("lang") || "en");
+
   // Settings Actions: Export JSON
-  document.getElementById("settingsExportJsonBtn")?.addEventListener("click", () => {
-    const exportData = {
-      profile: store.get("profile"),
-      user: store.get("user"),
-      exportedAt: new Date().toISOString(),
-    };
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `careermatch-export-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    if (window.showToast) window.showToast("Exported workspace data as JSON");
+  document.getElementById("settingsExportJsonBtn")?.addEventListener("click", async () => {
+    try {
+      if (window.showToast) window.showToast("Preparing full data export...");
+      const res = await fetch("/api/profile/export", { credentials: "same-origin" });
+      if (!res.ok) throw new Error("Failed to export data from server");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `careermatch-export-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      if (window.showToast) window.showToast("Exported all personal data as JSON");
+    } catch (e) {
+      if (window.showToast) window.showToast("Export failed: " + e.message, "error");
+    }
   });
 
   // Settings Actions: Purge Data
-  document.getElementById("settingsPurgeDataBtn")?.addEventListener("click", () => {
-    if (confirm("Are you sure you want to purge all local workspace data? This cannot be undone.")) {
+  document.getElementById("settingsPurgeDataBtn")?.addEventListener("click", async () => {
+    const confirmed = confirm(
+      "Are you sure you want to permanently erase your account, resumes, analyses, and activity data?\n\nThis will purge all records from the server and reset local browser storage. This action cannot be undone."
+    );
+    if (!confirmed) return;
+
+    try {
+      await fetch("/api/profile/delete", { method: "DELETE", credentials: "same-origin" });
       try {
         localStorage.clear();
       } catch (e) {}
-      if (window.showToast) window.showToast("Local workspace data purged.");
-      setTimeout(() => window.location.reload(), 1000);
+      if (window.showToast) window.showToast("All personal data permanently erased.");
+      setTimeout(() => {
+        window.location.hash = "#/landing";
+        window.location.reload();
+      }, 1000);
+    } catch (e) {
+      if (window.showToast) window.showToast("Deletion failed: " + e.message, "error");
     }
   });
-
-  // Cold Start Detection for Render & Neon Server
-  const banner = document.getElementById("serverColdStartBanner");
-  const origFetch = window.fetch;
-  window.fetch = async function (...args) {
-    const urlStr = String(args[0] || "");
-    const isApi = urlStr.includes("/api/");
-    let timer = null;
-
-    if (isApi && banner) {
-      timer = setTimeout(() => {
-        banner.style.display = "flex";
-      }, 2500);
-    }
-
-    try {
-      const resp = await origFetch.apply(this, args);
-      if (timer) clearTimeout(timer);
-      if (banner) banner.style.display = "none";
-      return resp;
-    } catch (err) {
-      if (timer) clearTimeout(timer);
-      if (isApi && banner) {
-        banner.style.display = "flex";
-      }
-      throw err;
-    }
-  };
 
   // Language Switcher Toggle (EN/HI)
   const langBtn = document.getElementById("langToggleBtn");
@@ -269,6 +270,20 @@ function attachShellListeners() {
       setLanguage(next);
       langBtn.textContent = next === "en" ? "HI" : "EN";
     });
+  }
+
+  // Storage notice banner
+  const storageNoticeEl = document.getElementById("cmStorageNotice");
+  if (storageNoticeEl) {
+    if (!localStorage.getItem("cm_storage_noticed")) {
+      storageNoticeEl.hidden = false;
+      document.getElementById("cmStorageNoticeDismissBtn")?.addEventListener("click", () => {
+        try {
+          localStorage.setItem("cm_storage_noticed", "true");
+        } catch (e) {}
+        storageNoticeEl.hidden = true;
+      });
+    }
   }
 
   // Close on Escape

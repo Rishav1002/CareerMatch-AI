@@ -185,9 +185,41 @@ python scripts/audit_views_text.py
 ---
 
 ## Security & Compliance
-- **Security Headers**: Standard production middleware enforces `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy: strict-origin-when-cross-origin`, and `Permissions-Policy`.
-- **JWT Protection**: Production boot fails fast if `JWT_SECRET` is left as the default placeholder.
-- **Privacy Controls**: "Don't save my resume" toggle skips persistence of candidate CVs to the database.
+- **Owner-Based Isolation:** Every API endpoint verifies an `owner_id` derived either from an authenticated JWT or an HMAC-signed `cm_sid` cookie (`HttpOnly`, `SameSite=Lax`, `Secure`). Guest data and authenticated users are 100% hermetically isolated.
+- **DPDP Act 2023 & GDPR Compliance:** Supports immediate single-click data export (`GET /api/profile/export`) and permanent account/data erasure (`DELETE /api/profile/delete`) directly from Settings.
+- **Security Headers & Fingerprinting:** Middleware enforces `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy: strict-origin-when-cross-origin`, and `Permissions-Policy`. Server and X-Powered-By fingerprint headers are stripped.
+- **Sanitized Diagnostics:** `/api/health` returns only minimal `{"status":"ok"}` publicly; infrastructure details require secret `X-Health-Key`.
+- **JWT Protection:** Production boot (`APP_ENV=production`) fails fast if `JWT_SECRET` is left as default, missing, or shorter than 32 characters.
+- **Privacy Controls:** "Do not save my resume" toggle skips persistence of candidate CVs to the database (ephemeral RAM evaluation).
+
+---
+
+## Render Production Deployment Guide
+
+CareerMatch AI is optimized for deployment on **Render Web Services** backed by **Neon PostgreSQL**:
+
+### 1. Build & Start Commands
+- **Build Command:** `pip install -r requirements.txt`
+- **Start Command:** `uvicorn backend.main:app --host 0.0.0.0 --port $PORT`
+- **Python Version:** 3.12.8 (specified in `.python-version`)
+
+### 2. Environment Variables Checklist
+Configure these in the Render Dashboard (**Environment** tab):
+- `APP_ENV` = `production`
+- `DATABASE_URL` = `postgresql://<user>:<password>@<neon-host>/<dbname>?sslmode=require`
+- `JWT_SECRET` = `<Generate a secure random string of at least 32 characters>`
+- `GEMINI_API_KEY` = `<Google Gemini API key from AI Studio>`
+- `GEMINI_MODEL` = `gemini-2.5-flash`
+- `CORS_ORIGINS` = `https://your-app.onrender.com` (or leave blank for strict same-origin)
+- `HEALTH_KEY` = `<Generate a private token for inspecting /api/health>`
+- `GUEST_DATA_TTL_DAYS` = `30`
+- `GITHUB_TOKEN` = `<Optional personal access token>`
+
+### 3. Safe Neon Database Migrations
+Migrations run automatically, additively, and idempotently inside `init_db()` upon container startup:
+- All schema updates use `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` and `CREATE INDEX IF NOT EXISTS`.
+- **Zero data loss:** Startup code never drops, truncates, or bulk-deletes user records.
+- Stale guest records older than `GUEST_DATA_TTL_DAYS` (30 days) are automatically purged.
 
 ---
 
