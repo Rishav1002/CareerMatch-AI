@@ -10,7 +10,7 @@ import re
 import sys
 import urllib.error
 import urllib.request
-from bs4 import BeautifulSoup
+from html.parser import HTMLParser
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RESOURCES_PATH = os.path.join(ROOT_DIR, "backend", "resources.json")
@@ -29,23 +29,46 @@ KNOWN_ALIASES = {
 }
 
 
+class _IndexLinkParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.dom_ids: set[str] = set()
+        self.anchor_links: list[dict[str, str]] = []
+        self._current_link: dict[str, str] | None = None
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        attr_dict = {k: v or "" for k, v in attrs}
+        if "id" in attr_dict and attr_dict["id"]:
+            self.dom_ids.add(attr_dict["id"])
+        if tag.lower() == "a" and "href" in attr_dict:
+            self._current_link = {"href": attr_dict["href"], "text": ""}
+            self.anchor_links.append(self._current_link)
+
+    def handle_data(self, data: str) -> None:
+        if self._current_link is not None:
+            self._current_link["text"] += data
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag.lower() == "a":
+            self._current_link = None
+
+
 def check_html_links(html_path: str) -> int:
     if not os.path.exists(html_path):
         print(f"[ERROR] HTML file not found: {html_path}")
         return 1
 
     with open(html_path, "r", encoding="utf-8") as f:
-        soup = BeautifulSoup(f.read(), "html.parser")
+        content = f.read()
 
-    # Collect all existing element IDs in the document
-    all_dom_ids = set()
-    for el in soup.find_all(id=True):
-        all_dom_ids.add(el["id"])
+    parser = _IndexLinkParser()
+    parser.feed(content)
 
+    all_dom_ids = parser.dom_ids
     errors = 0
     total_checked = 0
 
-    for a in soup.find_all("a", href=True):
+    for a in parser.anchor_links:
         href = a["href"].strip()
         if not href.startswith("#"):
             continue
@@ -55,7 +78,7 @@ def check_html_links(html_path: str) -> int:
             # Route link: #/analyzer, #/dashboard, etc.
             route_part = href[2:].split("?")[0].split("/")[0].lower()
             if route_part not in KNOWN_ROUTES and route_part not in KNOWN_ALIASES:
-                print(f"[FAIL] Dead route link in index.html: href='{href}' (text: '{a.get_text(strip=True)}')")
+                print(f"[FAIL] Dead route link in index.html: href='{href}' (text: '{a['text'].strip()}')")
                 errors += 1
         else:
             # In-page anchor: #landingHowItWorks, #mainContent
