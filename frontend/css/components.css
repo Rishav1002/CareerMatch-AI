@@ -415,6 +415,19 @@
   background-color: var(--bg-raised);
 }
 
+.ledger-table-compact th {
+  padding: 8px 10px;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.ledger-table-compact td {
+  padding: 10px 10px;
+  font-size: 0.8125rem;
+  vertical-align: top;
+}
+
 /* Mobile responsive stacked table */
 @media (max-width: 768px) {
   .ledger-table-stacked thead {
