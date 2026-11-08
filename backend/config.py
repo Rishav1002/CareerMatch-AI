@@ -16,7 +16,7 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 APP_ENV: str = os.environ.get("APP_ENV", "development").strip().lower()
 
 GEMINI_API_KEY: str = os.environ.get("GEMINI_API_KEY", "").strip()
-GEMINI_MODEL: str = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash").strip() or "gemini-2.0-flash"
+GEMINI_MODEL: str = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash").strip() or "gemini-3.8-flash"
 DATABASE_PATH: str = os.environ.get("DATABASE_PATH", os.path.join(ROOT_DIR, "careermatch.db")).strip()
 DATABASE_URL: str = os.environ.get("DATABASE_URL", "").strip()
 
