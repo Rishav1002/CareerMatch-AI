@@ -8,5 +8,8 @@
     "test": "python scripts/run_tests.py",
     "build": "python3 -m py_compile app.py backend/__init__.py backend/config.py backend/database.py backend/resume_parser.py backend/matching_engine.py backend/ai_service.py backend/career_modules.py backend/main.py scripts/check_links.py tests/test_basic.py",
     "lint": "python3 -m py_compile app.py backend/__init__.py backend/config.py backend/database.py backend/resume_parser.py backend/matching_engine.py backend/ai_service.py backend/career_modules.py backend/main.py scripts/check_links.py tests/test_basic.py"
+  },
+  "devDependencies": {
+    "jsdom": "^26.0.0"
   }
 }

@@ -4,6 +4,7 @@
  */
 
 import { store } from "./store.js";
+import { escapeHtml } from "./formatters.js";
 
 export class ApiError extends Error {
   constructor(message, status = 500, detail = null) {
@@ -18,51 +19,16 @@ export function renderInlineError(containerEl, message, retryFn) {
   if (!containerEl) return;
   const safeMsg = typeof message === "string" ? message : (message?.detail || message?.message || "Failed to load data.");
   containerEl.innerHTML = `
-    <div class="card p-3 text-center bg-sunken border-subtle">
+    <div class="card p-3 text-center bg-sunken border-subtle" role="alert">
       <p class="text-sm text-secondary mb-2">${escapeHtml(safeMsg)}</p>
       ${retryFn ? `<button type="button" class="btn btn-secondary btn-sm" id="inlineRetryBtn">Retry</button>` : ""}
     </div>
   `;
   if (retryFn) {
-    containerEl.querySelector("#inlineRetryBtn")?.addEventListener("click", () => retryFn());
-  }
-}
-  const cleanText = String(safeMsg)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-
-  containerEl.innerHTML = `
-    <div class="inline-error-card" role="alert" style="background: var(--bg-card, #ffffff); border: 1px solid var(--border-subtle, #e2e8f0); border-left: 4px solid var(--score-low, #ef4444); border-radius: var(--radius-md, 8px); padding: clamp(12px, 2vw, 20px); margin: 12px 0;">
-      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
-        <div style="display: flex; gap: 12px; align-items: flex-start; flex: 1; min-width: 200px;">
-          <div style="color: var(--score-low, #ef4444); flex-shrink: 0; margin-top: 2px;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="8" x2="12" y2="12"></line>
-              <line x1="12" y1="16" x2="12.01" y2="16"></line>
-            </svg>
-          </div>
-          <div>
-            <h4 style="margin: 0 0 4px; font-size: 0.95rem; font-weight: 600; color: var(--text-primary);">Failed to load data</h4>
-            <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">${cleanText}</p>
-          </div>
-        </div>
-        ${retryFn ? `
-          <button type="button" class="btn btn-secondary btn-sm inline-error-retry-btn" style="flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
-            <span>Retry</span>
-          </button>
-        ` : ""}
-      </div>
-    </div>
-  `;
-
-  if (retryFn) {
-    const btn = containerEl.querySelector(".inline-error-retry-btn");
+    const btn = containerEl.querySelector("#inlineRetryBtn");
     if (btn) {
       btn.addEventListener("click", () => {
-        containerEl.innerHTML = `<div style="padding: 16px; text-align: center; color: var(--text-muted);"><span class="spinner" style="display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border-subtle); border-top-color: var(--brand-accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 8px;"></span> Loading...</div>`;
+        containerEl.innerHTML = `<div class="p-3 text-center text-muted"><span class="spinner" aria-hidden="true"></span> Loading...</div>`;
         retryFn();
       });
     }
