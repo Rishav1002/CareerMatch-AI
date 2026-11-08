@@ -4,17 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<script>
-      (function() {
-        try {
-          var saved = localStorage.getItem("cm_theme") || localStorage.getItem("theme");
-          var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-          var theme = saved ? saved : (prefersDark ? "dark" : "light");
-          document.documentElement.setAttribute("data-theme", theme);
-          document.documentElement.style.colorScheme = theme;
-        } catch (e) {}
-      })();
-    </script>
+<script src="/frontend/js/theme-init.js"></script>
 <title>CareerMatch AI — Explainable Career-Readiness Field Guide for Indian Engineers</title>
 <meta content="CareerMatch AI: An explainable career-readiness platform for Indian students and early-career engineers. Semantic resume parsing, evidence ledgers, adaptive roadmaps, ATS simulator, mock interview coach, and placement readiness index." name="description"/>
 <meta content="#B84D2B" name="theme-color"/>
@@ -75,7 +65,7 @@
 <!-- Boot Failure Safety Net Banner -->
 <div class="boot-failure-banner hidden" id="cmBootFailureBanner" role="alert">
 <span>Something failed to load.</span>
-<button class="btn btn-secondary btn-reload" onclick="window.location.reload()" type="button">Reload</button>
+<button class="btn btn-secondary btn-reload" type="button">Reload</button>
 </div>
 <a class="skip-link" href="#mainContent">Skip to main content</a>
 <div class="app-shell">
@@ -498,7 +488,7 @@
 <button class="tab-btn active flex-1 text-center" id="authSegmentLoginBtn" type="button">Log in</button>
 <button class="tab-btn flex-1 text-center" id="authSegmentSignupBtn" type="button">Sign up</button>
 </div>
-<form id="authPageForm" onsubmit="return false;">
+<form id="authPageForm" method="post" action="#">
 <div class="form-group hidden mb-15" id="authPageNameGroup">
 <label class="form-label" for="authPageNameInput">Name</label>
 <input autocomplete="name" class="form-input" id="authPageNameInput" placeholder="Your Name" type="text"/>
@@ -2277,7 +2267,7 @@ We use only strictly necessary HTTP cookies (to isolate your guest session secur
 <button class="tab-btn active" id="tabLoginBtn" type="button">Sign In</button>
 <button class="tab-btn" id="tabRegisterBtn" type="button">Register</button>
 </div>
-<form id="authModalForm" onsubmit="return false;">
+<form id="authModalForm" method="post" action="#">
 <div class="form-group hidden" id="authNameRow">
 <label class="form-label" for="authFullNameInput">Name</label>
 <input class="form-input" id="authFullNameInput" placeholder="e.g. Candidate Profile" type="text"/>
@@ -2317,15 +2307,7 @@ We use only strictly necessary HTTP cookies (to isolate your guest session secur
 <!-- Core Modular Application Entry -->
 <script src="/frontend/js/main.js" type="module"></script>
 <!-- Boot Watchdog Safety Net -->
-<script>
-      setTimeout(function() {
-        if (!window.__cmBooted) {
-          console.error("Boot Watchdog: CareerMatch AI failed to boot within 3 seconds.");
-          var banner = document.getElementById("cmBootFailureBanner");
-          if (banner) banner.style.display = "flex";
-        }
-      }, 3000);
-    </script>
+<script src="/frontend/js/boot-watchdog.js" defer></script>
   <!-- Storage & Essential Cookies Notice Banner (Non-intrusive) -->
   <aside id="cmStorageNotice" class="storage-notice-banner" hidden="" role="region" aria-label="Storage and Essential Cookie Notice">
     <div class="storage-notice-content">
@@ -2337,50 +2319,6 @@ We use only strictly necessary HTTP cookies (to isolate your guest session secur
     </div>
   </aside>
 
-<script>
-      if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-          // One-time cleanup of legacy shell caches
-          if (!localStorage.getItem("cm_sw_cleaned_v2")) {
-            if ("caches" in window) {
-              caches.keys().then((names) => {
-                names.forEach((name) => {
-                  if (name.includes("shell-v") || (name.includes("careermatch-shell-") && !name.includes("2026-11-04-v2.75"))) {
-                    caches.delete(name);
-                  }
-                });
-              });
-            }
-            localStorage.setItem("cm_sw_cleaned_v2", "true");
-          }
-
-          navigator.serviceWorker.register("/frontend/sw.js").then((reg) => {
-            reg.addEventListener("updatefound", () => {
-              const newWorker = reg.installing;
-              if (newWorker) {
-                newWorker.addEventListener("statechange", () => {
-                  if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-                    showUpdateToast(newWorker);
-                  }
-                });
-              }
-            });
-          }).catch(() => {});
-        });
-      }
-
-      function showUpdateToast(worker) {
-        if (document.getElementById("cmUpdateToast")) return;
-        const toast = document.createElement("div");
-        toast.id = "cmUpdateToast";
-        toast.className = "update-toast glass-panel";
-        toast.innerHTML = '<span>New version available.</span><button type="button" class="btn btn-primary" id="cmRefreshUpdateBtn" >Refresh</button>';
-        document.body.appendChild(toast);
-        document.getElementById("cmRefreshUpdateBtn")?.addEventListener("click", () => {
-          worker.postMessage({ type: "SKIP_WAITING" });
-          window.location.reload();
-        });
-      }
-    </script>
+<script src="/frontend/js/sw-register.js" defer></script>
 </body>
 </html>
