@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <script src="/frontend/js/theme-init.js"></script>
-<title>CareerMatch AI — Explainable Career-Readiness Field Guide for Indian Engineers</title>
+<title>CareerMatch AI</title>
 <meta content="CareerMatch AI: An explainable career-readiness platform for Indian students and early-career engineers. Semantic resume parsing, evidence ledgers, adaptive roadmaps, ATS simulator, mock interview coach, and placement readiness index." name="description"/>
 <meta content="#B84D2B" name="theme-color"/>
 <link href="/frontend/assets/favicon.svg" rel="icon" type="image/svg+xml"/>
@@ -572,7 +572,7 @@
                   </span>
 <h4 class="text-md">Practice Interview</h4>
 <p class="text-sm text-secondary m-0">
-                    Practice technical questions\.
+                    Practice Technical Questions.
                   </p>
 </div>
 <a class="btn btn-primary btn-sm items-start mt-15" href="#/interview">
@@ -1490,23 +1490,23 @@ Verified openings across Indian tech hubs and remote engineering teams
 <div class="d-flex flex-col gap-xs" id="jobsTrendingChart"></div>
 </div>
 <div class="card p-3 bg-sunken border-subtle">
-<div class="d-flex flex-between align-center mb-2">
-<h4 class="text-sm font-semibold m-0 text-primary">Hiring Company Benchmarks</h4>
-<span class="text-xs text-tertiary">Verified tech employers</span>
-</div>
-<div class="table-container border-none">
-<table class="table-compact text-xs w-full">
-<thead>
-<tr>
-<th>Company</th>
-<th>Role Title</th>
-<th>CTC Range (INR)</th>
-<th>Match</th>
-</tr>
-</thead>
-<tbody id="jobsCompanyMatrixBody"></tbody>
-</table>
-</div>
+  <div class="d-flex flex-between align-center mb-2">
+    <h4 class="text-sm font-semibold m-0 text-primary">Hiring Company Benchmarks</h4>
+    <span class="text-xs text-tertiary">Verified tech employers</span>
+  </div>
+  <div class="ledger-table-wrapper border-none" style="overflow-x: auto;">
+    <table class="ledger-table ledger-table-compact text-xs w-full">
+      <thead>
+        <tr>
+          <th style="white-space: nowrap; width: 26%;">Company</th>
+          <th style="min-width: 130px;">Role Title</th>
+          <th style="white-space: nowrap; width: 26%;">CTC Range</th>
+          <th style="white-space: nowrap; text-align: right; width: 15%;">Match</th>
+        </tr>
+      </thead>
+      <tbody id="jobsCompanyMatrixBody"></tbody>
+    </table>
+  </div>
 </div>
 </div>
 
