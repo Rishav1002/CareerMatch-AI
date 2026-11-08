@@ -86,6 +86,21 @@ export class AuthManager {
       submitBtn.addEventListener("click", () => this.handleSubmit());
     }
 
+    const pageForm = document.getElementById("authPageForm");
+    if (pageForm) {
+      pageForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        this.handleSubmit();
+      });
+    }
+
+    const modalForm = document.getElementById("authModalForm");
+    if (modalForm) {
+      modalForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+      });
+    }
+
     if (guestBtn) {
       guestBtn.addEventListener("click", (e) => {
         e.preventDefault();

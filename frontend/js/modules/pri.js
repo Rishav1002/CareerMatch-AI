@@ -17,9 +17,21 @@ export class PriModule {
     if (this.initialized) return;
     this.initialized = true;
 
-    const recalcBtn = document.getElementById("recalculatePriBtn");
+    const recalcBtn = document.getElementById("recalculatePriBtn") || document.getElementById("applyPriWeightsBtn");
     if (recalcBtn) {
       recalcBtn.addEventListener("click", () => this.load());
+    }
+
+    const resetWeightsBtn = document.getElementById("recalculateWeightsBtn");
+    if (resetWeightsBtn) {
+      resetWeightsBtn.addEventListener("click", () => {
+        const defaults = { priWTech: 30, priWRes: 20, priWPort: 15, priWInt: 15, priWAsmt: 10, priWMkt: 10 };
+        for (const [id, val] of Object.entries(defaults)) {
+          const el = document.getElementById(id);
+          if (el) el.value = val;
+        }
+        this.load();
+      });
     }
 
     const uploadCta = document.getElementById("priEmptyUploadCtaBtn");

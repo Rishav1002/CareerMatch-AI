@@ -1,8 +1,10 @@
-name: Tests
+name: CI & Deployment Safety Net
 
 on:
   push:
+    branches: [ main, "hotfix/**", "feature/**" ]
   pull_request:
+    branches: [ main ]
 
 jobs:
   test:
@@ -11,27 +13,66 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt -r requirements-dev.txt
 
-      - name: Run pytest
+      - name: Run Backend Unit & Isolation Tests
         env:
           PYTHONPATH: .
-        run: python -m pytest
+        run: |
+          pytest tests/test_isolation.py tests/test_contract.py
 
-      - name: Set up Node.js
+      - name: Set up Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: "npm"
 
-      - name: Run frontend smoke test & module audit
+      - name: Install Node Dependencies
+        run: |
+          npm ci || npm install --no-audit --no-fund
+
+      - name: Stage 1: Strict JS Syntax Verification (All ES Modules)
+        run: |
+          node --input-type=module --check < frontend/js/main.js
+          node --input-type=module --check < frontend/js/api.js
+          node --check frontend/js/theme-init.js frontend/js/boot-watchdog.js frontend/js/sw-register.js frontend/sw.js
+
+      - name: Start Background FastAPI Server
         env:
           PYTHONPATH: .
-        run: node scripts/smoke_frontend.mjs
+          PORT: 3000
+          APP_ENV: development
+        run: |
+          python -m uvicorn backend.main:app --host 127.0.0.1 --port 3000 --no-server-header &
+          sleep 3
+          curl -I http://127.0.0.1:3000/api/health
+
+      - name: Stage 2: Headless DOM Boot Smoke Test (JSDOM)
+        env:
+          BASE_URL: http://127.0.0.1:3000
+        run: |
+          node scripts/boot_smoke.mjs
+
+      - name: Install Playwright Chromium
+        run: |
+          npx playwright install --with-deps chromium
+
+      - name: Stage 3: Real Browser CSP & Security Violation Check
+        run: |
+          node scripts/verify_csp.mjs
+
+      - name: Stage 4: End-to-End User Journey Test (Real Browser)
+        run: |
+          node scripts/journey_test.mjs
+
+      - name: Stage 5: Local Deploy Smoke Audit (Health, CSP, Deployed Assets)
+        run: |
+          python scripts/post_deploy_smoke.py --url http://127.0.0.1:3000

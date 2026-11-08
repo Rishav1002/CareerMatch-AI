@@ -94,36 +94,66 @@ CareerMatch AI combines semantic resume extraction with deterministic scoring al
 
 ---
 
-## Production Deployment (Render + Neon)
+## Production Deployment & Operational Runbook (Render + Neon)
 
-CareerMatch AI is engineered for zero-compilation, zero-breakage continuous deployment from GitHub to Render with serverless Neon Postgres.
+CareerMatch AI is engineered for continuous zero-downtime deployment from GitHub to **Render Web Services** backed by serverless **Neon PostgreSQL**.
 
-### 1. Environment Variables Configuration
-
-Set the following variables in your **Render Web Service** dashboard:
-
-| Variable | Description | Default / Example |
-| :--- | :--- | :--- |
-| `DATABASE_URL` | Neon PostgreSQL pooled connection string | `postgresql://user:pass@ep-xyz.neon.tech/neondb?sslmode=require` |
-| `GEMINI_API_KEY` | Google Gemini API Key for grounded LLM coaching | `AIzaSy...` |
-| `JWT_SECRET` | Secret key for signing student JWT auth tokens | Any secure 64-char string |
-| `APP_ENV` | Application environment flag | `production` |
-| `CORS_ORIGINS` | Allowed CORS origins (comma-separated) | `https://carrermatch-ai.onrender.com` |
-| `ADZUNA_APP_ID` | *(Optional)* Adzuna Job Market App ID | Custom API ID |
-| `ADZUNA_APP_KEY` | *(Optional)* Adzuna Job Market API Key | Custom API Key |
-
-### 2. Render Deployment Settings
-
+### 1. Render Service Specifications
+- **Service Type**: Web Service (Python)
 - **Environment**: Python
 - **Build Command**: `pip install -r requirements.txt`
-- **Start Command**: `uvicorn backend.main:app --host 0.0.0.0 --port $PORT`
-- **Python Version**: Pinned to `3.12.8` via `.python-version`
+- **Start Command**: `uvicorn backend.main:app --host 0.0.0.0 --port $PORT --no-server-header --proxy-headers --forwarded-allow-ips="*"`
+- **Python Version**: `3.12.8` (pinned in `.python-version`)
 
-### 3. Neon Cold-Start & Free-Tier Resilience
-Render free-tier instances sleep when idle, and Neon serverless databases auto-suspend after periods of inactivity. CareerMatch AI handles this via:
-- Built-in exponential backoff connection retry loop in `backend/database.py` (3 attempts with 1.5s backoff).
-- `/api/health` connectivity probe that verifies active database queries (`SELECT 1;`).
-- Frontend connection status banner notifying the user that the server is waking up instead of failing abruptly.
+### 2. Environment Variables Reference Table
+
+Configure the following variables in your **Render Web Service** dashboard (**Environment** tab):
+
+| Variable | Type | Required | Default / Description |
+| :--- | :--- | :--- | :--- |
+| `APP_ENV` | String | Yes | Set to `production` in live deployments. Strict JWT length ($\ge 32$ chars) and CORS checks are enforced. |
+| `DATABASE_URL` | String | Yes (Prod) | Neon PostgreSQL pooled connection string: `postgresql://user:pass@ep-xyz.neon.tech/neondb?sslmode=require` |
+| `JWT_SECRET` | String | Yes | Cryptographic secret for student JWTs. Server refuses to boot in `production` if $< 32$ chars or default. |
+| `GEMINI_API_KEY` | String | Recommended | Google Gemini API key from [Google AI Studio](https://aistudio.google.com/). Safe deterministic fallback if unset. |
+| `GEMINI_MODEL` | String | Optional | Primary model: `gemini-2.0-flash` (auto-falls back to `gemini-1.5-flash` $\rightarrow$ `gemini-2.5-flash`). |
+| `CORS_ORIGINS` | String | Optional | Comma-separated allowed origins (e.g. `https://careermatch-ai.onrender.com`). Strict same-origin if blank in production. |
+| `HEALTH_KEY` | String | Optional | Confidential secret for viewing detailed `/api/health` database & Gemini diagnostic telemetry. |
+| `GUEST_DATA_TTL_DAYS` | Integer | Optional | TTL for guest session retention (default: `30` days). Older guest records are pruned automatically. |
+| `GITHUB_TOKEN` | String | Optional | Personal access token with `public_repo` scope to avoid GitHub public API rate limits. |
+
+### 3. Google Gemini Setup & Deterministic Fallbacks
+1. Obtain an API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
+2. Set `GEMINI_API_KEY` in Render environment variables.
+3. If `GEMINI_API_KEY` is not provided or quota limits are exceeded, CareerMatch AI functions in **deterministic fallback mode**:
+   - Skills are parsed and matched deterministically against the curated catalog (`backend/resume_parser.py`).
+   - Strategic bullet rewrites and courses are sourced from verified catalog mappings (`backend/resources.json`).
+   - User-facing responses clearly distinguish whether advice was generated via `"ai"` or `"template"`.
+
+### 4. Neon Database Migrations & Cold-Start Resilience
+- **Additive Idempotent Migrations**: On container startup, `backend/database.py` executes additive schema updates (`ALTER TABLE ... ADD COLUMN IF NOT EXISTS`, `CREATE INDEX IF NOT EXISTS`). It never drops tables or deletes user data.
+- **Serverless Wakeup Retry Loop**: Neon serverless databases auto-suspend after inactivity. The backend implements an exponential backoff connection loop (3 retries, 1.5s backoff) to wake the database cleanly without dropping requests.
+- **Data Minimization**: Users who check "Don't save my resume" have their resumes parsed strictly in memory with zero database writes.
+
+### 5. Troubleshooting & Rollback Runbook
+
+#### Symptom: Buttons Show Hover Animations but Clicking Does Nothing
+- **Root Cause**: An unhandled JavaScript syntax error in an imported ES module broke the module graph before event listeners attached.
+- **Fix**: Run `node scripts/boot_smoke.mjs` locally to pinpoint the exact file and line number. Verify that all JavaScript modules parse cleanly.
+
+#### Symptom: Content Security Policy (CSP) Violation in DevTools Console
+- **Root Cause**: An inline `<script>` tag or inline event handler (`onclick=`, `onsubmit=`) was added to `frontend/index.html`.
+- **Fix**: Never use inline scripts or handlers. Extract logic into dedicated JavaScript files (e.g. `frontend/js/theme-init.js`) and attach listeners using `addEventListener()`. Run `node scripts/verify_csp.mjs` to prove zero violations.
+
+#### Render 1-Click Rollback Procedure
+If an unexpected regression reaches production on Render:
+1. Open the **Render Dashboard** and select your `careermatch-ai` Web Service.
+2. Navigate to the **Events** or **Deploys** tab.
+3. Locate the last known good deployment commit (e.g., `hotfix/restore-app-boot`).
+4. Click the three dots `...` next to that deploy and select **Rollback to this deploy**.
+5. Once rolled back, verify health immediately using the automated smoke checker:
+   ```bash
+   python scripts/post_deploy_smoke.py --url https://careermatch-ai.onrender.com
+   ```
 
 ---
 
@@ -131,6 +161,7 @@ Render free-tier instances sleep when idle, and Neon serverless databases auto-s
 
 ### Prerequisites
 - Python 3.12+
+- Node.js 20+
 - Git
 
 ### 1. Clone & Set Up Virtual Environment
@@ -148,38 +179,47 @@ source venv/bin/activate
 
 ### 2. Install Dependencies
 
-All dependencies are pinned to pre-compiled wheels for Python 3.12:
-
 ```bash
-pip install -r requirements.txt
+pip install -r requirements.txt -r requirements-dev.txt
+npm install
 ```
 
 ### 3. Run the Development Server
 
 ```bash
-uvicorn backend.main:app --reload --port 8000
+python -m uvicorn backend.main:app --host 127.0.0.1 --port 3000 --no-server-header
 ```
 
-Open [http://localhost:8000](http://localhost:8000) in your browser.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## Automated Test Suite
+## Automated Test & Audit Suite
 
 Run the complete test suite locally:
 
 ```bash
-# Run unit, route architecture, and endpoint tests:
-python scripts/run_tests.py
+# 1. ES module syntax check & headless DOM boot smoke test:
+node scripts/boot_smoke.mjs
 
-# Run frontend ES module and end-to-end smoke tests:
-node scripts/smoke_frontend.mjs
+# 2. Backend unit, isolation, and API contract test suite:
+pytest tests/test_isolation.py tests/test_contract.py
 
-# Run automated WCAG 2.1 AA color-contrast audits:
+# 3. Real Chrome browser CSP and security policy verification:
+node scripts/verify_csp.mjs
+
+# 4. End-to-end browser user journey test:
+node scripts/journey_test.mjs
+
+# 5. DOM ID reference and link integrity audits:
+python scripts/verify_dom_ids.py
+python scripts/check_links.py
+
+# 6. Responsive multi-viewport audit (360px, 768px, 1440px):
+node scripts/verify_viewports.mjs
+
+# 7. Automated WCAG 2.1 AA color-contrast audits:
 python scripts/check_contrast.py
-
-# Run view text density and word budget audit:
-python scripts/audit_views_text.py
 ```
 
 ---
@@ -194,35 +234,8 @@ python scripts/audit_views_text.py
 
 ---
 
-## Render Production Deployment Guide
-
-CareerMatch AI is optimized for deployment on **Render Web Services** backed by **Neon PostgreSQL**:
-
-### 1. Build & Start Commands
-- **Build Command:** `pip install -r requirements.txt`
-- **Start Command:** `uvicorn backend.main:app --host 0.0.0.0 --port $PORT`
-- **Python Version:** 3.12.8 (specified in `.python-version`)
-
-### 2. Environment Variables Checklist
-Configure these in the Render Dashboard (**Environment** tab):
-- `APP_ENV` = `production`
-- `DATABASE_URL` = `postgresql://<user>:<password>@<neon-host>/<dbname>?sslmode=require`
-- `JWT_SECRET` = `<Generate a secure random string of at least 32 characters>`
-- `GEMINI_API_KEY` = `<Google Gemini API key from AI Studio>`
-- `GEMINI_MODEL` = `gemini-2.5-flash`
-- `CORS_ORIGINS` = `https://your-app.onrender.com` (or leave blank for strict same-origin)
-- `HEALTH_KEY` = `<Generate a private token for inspecting /api/health>`
-- `GUEST_DATA_TTL_DAYS` = `30`
-- `GITHUB_TOKEN` = `<Optional personal access token>`
-
-### 3. Safe Neon Database Migrations
-Migrations run automatically, additively, and idempotently inside `init_db()` upon container startup:
-- All schema updates use `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` and `CREATE INDEX IF NOT EXISTS`.
-- **Zero data loss:** Startup code never drops, truncates, or bulk-deletes user records.
-- Stale guest records older than `GUEST_DATA_TTL_DAYS` (30 days) are automatically purged.
-
----
-
 ## License
+
+CareerMatch AI is open-source software licensed under the [MIT License](LICENSE).
 
 CareerMatch AI is open-source software licensed under the [MIT License](LICENSE).

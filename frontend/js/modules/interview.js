@@ -80,29 +80,48 @@ export class InterviewModule {
   }
 
   renderHistory(history) {
+    const tableBody = document.getElementById("intHistoryTableBody");
     const listEl = document.getElementById("interviewHistoryList");
-    if (!listEl) return;
 
-    if (!history.length) {
-      listEl.innerHTML = `<p style="font-size:0.8rem;color:var(--text-tertiary);">No previous interview sessions recorded.</p>`;
-      return;
-    }
+    if (tableBody) {
+      if (!history.length) {
+        tableBody.innerHTML = `<tr><td colspan="4" class="text-center text-tertiary">No sessions recorded.</td></tr>`;
+      } else {
+        tableBody.innerHTML = history
+          .map(
+            (h) => `
+            <tr>
+              <td class="text-xs text-secondary">${escapeHtml((h.createdAt || "").slice(0, 10))}</td>
+              <td><strong>${escapeHtml(h.targetRole)}</strong></td>
+              <td><span class="badge-tag">${escapeHtml(h.interviewRound)}</span></td>
+              <td class="num font-semibold text-accent">${Math.round(h.overallScore)}%</td>
+            </tr>
+          `
+          )
+          .join("");
+      }
+    } else if (listEl) {
+      if (!history.length) {
+        listEl.innerHTML = `<p style="font-size:0.8rem;color:var(--text-tertiary);">No previous interview sessions recorded.</p>`;
+        return;
+      }
 
-    listEl.innerHTML = history
-      .map(
-        (h) => `
-        <div class="card" style="padding:10px 14px;margin-bottom:6px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <strong>${escapeHtml(h.targetRole)} · ${escapeHtml(h.interviewRound)}</strong>
-            <span class="tag tag-match">${Math.round(h.overallScore)}%</span>
+      listEl.innerHTML = history
+        .map(
+          (h) => `
+          <div class="card" style="padding:10px 14px;margin-bottom:6px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <strong>${escapeHtml(h.targetRole)} · ${escapeHtml(h.interviewRound)}</strong>
+              <span class="tag tag-match">${Math.round(h.overallScore)}%</span>
+            </div>
+            <p style="font-size:0.75rem;color:var(--text-tertiary);margin:4px 0 0;">
+              ${h.answeredCount}/${h.totalQuestions} answered · ${escapeHtml(h.createdAt || "")}
+            </p>
           </div>
-          <p style="font-size:0.75rem;color:var(--text-tertiary);margin:4px 0 0;">
-            ${h.answeredCount}/${h.totalQuestions} answered · ${escapeHtml(h.createdAt || "")}
-          </p>
-        </div>
-      `
-      )
-      .join("");
+        `
+        )
+        .join("");
+    }
   }
 
   async startNewSession() {
@@ -246,11 +265,33 @@ export class InterviewModule {
     const ev = data.questionEvaluation;
     if (!ev) return;
 
-    const feedbackSection = document.getElementById("intFeedbackSection");
-    if (feedbackSection) feedbackSection.classList.remove("hidden");
+    const feedbackSection = document.getElementById("intFeedbackBox") || document.getElementById("intFeedbackSection");
+    if (feedbackSection) {
+      feedbackSection.classList.remove("hidden");
+      feedbackSection.style.display = "block";
+    }
 
     const scoreBadge = document.getElementById("intEvalScoreBadge");
-    if (scoreBadge) scoreBadge.textContent = `Score: ${Math.round(ev.overallScore)}%`;
+    if (scoreBadge) scoreBadge.textContent = `${Math.round(ev.overallScore || 0)}/100`;
+
+    const rubricBars = document.getElementById("intRubricBars");
+    if (rubricBars && ev.rubrics) {
+      rubricBars.innerHTML =
+        Object.entries(ev.rubrics)
+          .map(
+            ([k, v]) => `
+          <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:2px;">
+            <span style="text-transform:capitalize;">${escapeHtml(k)}</span>
+            <span class="font-semibold">${Math.round(v)}%</span>
+          </div>
+          <div style="height:4px;background:var(--bg-sunken);border-radius:2px;overflow:hidden;margin-bottom:6px;">
+            <div style="width:${Math.min(100, v)}%;height:100%;background:var(--score-high);"></div>
+          </div>
+        `
+          )
+          .join("") +
+        (ev.feedback ? `<p class="text-sm mt-1 mb-0">${escapeHtml(ev.feedback)}</p>` : "");
+    }
 
     const feedbackText = document.getElementById("intFeedbackText");
     if (feedbackText) feedbackText.textContent = ev.feedback || "";
@@ -263,10 +304,12 @@ export class InterviewModule {
       if (data.sessionProgress?.status === "completed") {
         nextBtn.textContent = "Interview Completed ✓";
         nextBtn.classList.remove("hidden");
+        nextBtn.style.display = "inline-block";
         this.stopTimer();
       } else {
         nextBtn.textContent = "Next Question →";
         nextBtn.classList.remove("hidden");
+        nextBtn.style.display = "inline-block";
         this.currentSession.nextQuestion = data.nextQuestion;
       }
     }

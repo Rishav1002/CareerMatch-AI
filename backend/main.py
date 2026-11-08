@@ -37,7 +37,7 @@ from fastapi.middleware.cors import CORSMiddleware  # type: ignore
 from fastapi.responses import FileResponse, JSONResponse  # type: ignore
 from fastapi.staticfiles import StaticFiles  # type: ignore
 
-from backend.ai_service import enrich_resume_profile_with_gemini, generate_career_intelligence
+from backend.ai_service import enrich_resume_profile_with_gemini, generate_career_intelligence, is_configured as is_ai_configured
 from backend.career_modules import (
     DEFAULT_PRI_WEIGHTS,
     analyze_github_portfolio,
@@ -227,6 +227,7 @@ def handle_health_check(request_key: Optional[str] = None) -> tuple[Dict[str, An
         "status": "ok" if db_ok else "unavailable",
         "database": "connected" if db_ok else "disconnected",
         "engine": engine,
+        "gemini": "configured" if is_ai_configured() else "missing",
         "version": "4.0.0",
         "timestamp": datetime.utcnow().isoformat() + "Z",
     }, status_code
@@ -381,18 +382,31 @@ def handle_analyze_payload(body: Dict[str, Any], owner_id: str = "legacy_unowned
             owner_id=owner_id,
         )
 
+    completed_nodes = get_roadmap_progress(resume["id"], active_job["title"], owner_id=owner_id) if not dont_save else {}
+    stages = intelligence.get("stages", roadmap_nodes)
+
     return {
         "analysisId": analysis_id,
+        "saved": not dont_save,
+        "source": intelligence.get("source", "template"),
+        "aiError": intelligence.get("aiError"),
         "resume": resume,
-        "job": active_job,
-        "match": match_result,
+        "activeJob": active_job,
+        "matchResult": match_result,
         "skillGaps": skill_gaps,
-        "roadmap": intelligence.get("stages", roadmap_nodes),
+        "roadmapNodes": roadmap_nodes,
+        "completedNodes": completed_nodes,
+        "stages": stages,
         "advisor": intelligence.get("advisor", {}),
         "projects": intelligence.get("projects", []),
         "improvements": intelligence.get("improvements", {}),
+        "atsReport": ats_eval,
+        "dashboard": get_dashboard_metrics(resume["id"] if not dont_save else None, owner_id=owner_id),
+        # Aliases for 061fe98 compatibility
+        "job": active_job,
+        "match": match_result,
+        "roadmap": stages,
         "ats": ats_eval,
-        "dashboard": get_dashboard_metrics(resume["id"], owner_id=owner_id),
     }
 
 
@@ -400,24 +414,70 @@ def handle_load_history_record(analysis_id: int, owner_id: str) -> Dict[str, Any
     record = get_analysis_by_id(analysis_id, owner_id=owner_id)
     if not record:
         raise ValueError("Analysis record not found.")
+
+    resume = get_resume_by_id(record["resumeId"], owner_id=owner_id) or {
+        "id": record["resumeId"],
+        "contact": {"name": record["candidateName"], "email": "", "phone": "", "location": ""},
+        "targetRole": record["targetRole"],
+        "technicalSkills": record.get("matchedSkills", []),
+        "softSkills": [],
+        "education": [],
+        "experience": [],
+        "projects": [],
+        "certifications": [],
+    }
+    active_job = resolve_job_profile(record["targetRole"], record["goalCompany"])
+    match_result = {
+        "overallScore": float(record.get("overallScore", 0.0)),
+        "mandatorySatisfiedPct": float(record.get("mandatoryMetPct", 0.0)),
+        "preferredSatisfiedPct": float(record.get("preferredMetPct", 0.0)),
+        "projectsExperienceScore": 0.0,
+        "educationScore": 0.0,
+        "matchedSkills": record.get("matchedSkills", []),
+        "partialSkills": record.get("partialSkills", []),
+        "missingSkills": record.get("missingSkills", []),
+    }
+    skill_gaps = record.get("skillGaps") or build_skill_gaps(match_result, active_job["title"])
+    roadmap_nodes = build_roadmap_tree_nodes(match_result, skill_gaps)
+    completed_nodes = get_roadmap_progress(record["resumeId"], record["targetRole"], owner_id=owner_id)
+    stages = record.get("stages") or record.get("roadmap") or roadmap_nodes
+    ats_eval = record.get("atsReport") or evaluate_ats_resume({"resume": resume, "targetRole": record["targetRole"]})
+
     return {
+        "analysisId": record["id"],
         "id": record["id"],
+        "source": "sqlite_history",
+        "aiError": None,
+        "saved": True,
+        "resume": resume,
+        "activeJob": active_job,
+        "matchResult": match_result,
+        "skillGaps": skill_gaps,
+        "roadmapNodes": roadmap_nodes,
+        "completedNodes": completed_nodes,
+        "stages": stages,
+        "advisor": record.get("advisor", {}),
+        "projects": record.get("projects", []),
+        "improvements": record.get("improvements", {}),
+        "atsReport": ats_eval,
+        "dashboard": get_dashboard_metrics(record["resumeId"], owner_id=owner_id),
+        # Backward-compatible aliases
+        "job": active_job,
+        "match": match_result,
+        "roadmap": stages,
+        "ats": ats_eval,
+        # Flat history fields
         "resumeId": record["resumeId"],
         "candidateName": record["candidateName"],
         "targetRole": record["targetRole"],
         "goalCompany": record["goalCompany"],
-        "overallScore": record["overallScore"],
-        "mandatoryMetPct": record["mandatoryMetPct"],
-        "preferredMetPct": record["preferredMetPct"],
-        "matchedSkills": record["matchedSkills"],
-        "partialSkills": record["partialSkills"],
-        "missingSkills": record["missingSkills"],
-        "skillGaps": record["skillGaps"],
-        "roadmap": record["stages"],
-        "advisor": record["advisor"],
-        "projects": record["projects"],
-        "improvements": record["improvements"],
-        "createdAt": record["createdAt"],
+        "overallScore": record.get("overallScore", match_result.get("overallScore", 0)),
+        "mandatoryMetPct": record.get("mandatoryMetPct", match_result.get("mandatorySatisfiedPct", 0)),
+        "preferredMetPct": record.get("preferredMetPct", match_result.get("preferredSatisfiedPct", 0)),
+        "matchedSkills": record.get("matchedSkills", match_result.get("matchedSkills", [])),
+        "partialSkills": record.get("partialSkills", match_result.get("partialSkills", [])),
+        "missingSkills": record.get("missingSkills", match_result.get("missingSkills", [])),
+        "createdAt": record.get("createdAt", ""),
     }
 
 
@@ -529,7 +589,10 @@ async def session_and_security_middleware(request: Request, call_next: Any) -> A
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
         "font-src 'self' https://fonts.gstatic.com data:; "
         "img-src 'self' data: https:; "
-        "connect-src 'self' https:; "
+        "connect-src 'self'; "
+        "object-src 'none'; "
+        "base-uri 'self'; "
+        "form-action 'self'; "
         "frame-ancestors 'none';"
     )
 
@@ -992,6 +1055,11 @@ async def api_readiness_index(
         return compute_placement_readiness_index(body, owner_id=owner_id)
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.get("/api/ai/status")
+async def api_ai_status() -> Dict[str, Any]:
+    return {"enabled": is_ai_configured()}
 
 
 @app.get("/api/ai/usage")
