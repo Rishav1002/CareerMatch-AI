@@ -37,7 +37,7 @@ from fastapi.middleware.cors import CORSMiddleware  # type: ignore
 from fastapi.responses import FileResponse, JSONResponse  # type: ignore
 from fastapi.staticfiles import StaticFiles  # type: ignore
 
-from backend.ai_service import enrich_resume_profile_with_gemini, generate_career_intelligence
+from backend.ai_service import enrich_resume_profile_with_gemini, generate_career_intelligence, is_configured as is_ai_configured
 from backend.career_modules import (
     DEFAULT_PRI_WEIGHTS,
     analyze_github_portfolio,
@@ -227,6 +227,7 @@ def handle_health_check(request_key: Optional[str] = None) -> tuple[Dict[str, An
         "status": "ok" if db_ok else "unavailable",
         "database": "connected" if db_ok else "disconnected",
         "engine": engine,
+        "gemini": "configured" if is_ai_configured() else "missing",
         "version": "4.0.0",
         "timestamp": datetime.utcnow().isoformat() + "Z",
     }, status_code
@@ -1054,6 +1055,11 @@ async def api_readiness_index(
         return compute_placement_readiness_index(body, owner_id=owner_id)
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.get("/api/ai/status")
+async def api_ai_status() -> Dict[str, Any]:
+    return {"enabled": is_ai_configured()}
 
 
 @app.get("/api/ai/usage")

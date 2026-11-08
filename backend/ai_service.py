@@ -188,6 +188,69 @@ def validate_trusted_url(raw_url: str, fallback: str = "https://www.coursera.org
         return fallback
 
 
+def is_configured() -> bool:
+    """
+    Check if a valid, non-placeholder GEMINI_API_KEY is configured.
+    Sanitizes whitespace, surrounding quotes, and ignores placeholder strings.
+    """
+    raw = os.environ.get("GEMINI_API_KEY", "")
+    val = raw.strip().strip("'\"").strip()
+    if not val:
+        return False
+    placeholders = {
+        "my_gemini_api_key",
+        "your_gemini_api_key",
+        "your_api_key",
+        "placeholder",
+        "none",
+        "null",
+        "changeme",
+        "test",
+    }
+    if val.lower() in placeholders or len(val) < 10:
+        return False
+    return True
+
+
+def get_sanitized_api_key() -> str:
+    """Return cleaned GEMINI_API_KEY if configured, or empty string."""
+    if not is_configured():
+        return ""
+    return os.environ.get("GEMINI_API_KEY", "").strip().strip("'\"").strip()
+
+
+def _classify_gemini_error(exc: Exception) -> Tuple[str, str]:
+    """
+    Classify a Gemini exception into a diagnostic category and a friendly,
+    non-technical user message that does not expose internal stack traces.
+    """
+    err_str = str(exc).lower()
+    if any(k in err_str for k in ("400", "403", "invalid_argument", "api_key_invalid", "permission_denied")):
+        return (
+            "AUTH_ERROR",
+            "AI service authentication error. Using deterministic fallback recommendations.",
+        )
+    if any(k in err_str for k in ("429", "resource_exhausted", "quota_exceeded", "rate limit")):
+        return (
+            "RATE_LIMIT",
+            "AI service rate limit reached. Using deterministic fallback recommendations.",
+        )
+    if any(k in err_str for k in ("404", "not_found", "model not found")):
+        return (
+            "MODEL_NOT_FOUND",
+            "AI model unavailable. Using deterministic fallback recommendations.",
+        )
+    if any(k in err_str for k in ("timed out", "timeout", "deadline", "connection", "remoteendclosed", "temporary failure")):
+        return (
+            "TIMEOUT",
+            "AI service response timed out. Using deterministic fallback recommendations.",
+        )
+    return (
+        "UNAVAILABLE",
+        "AI service unavailable. Using deterministic fallback recommendations.",
+    )
+
+
 def _call_gemini_json(
     prompt: str,
     response_schema: Optional[Dict[str, Any]] = None,
@@ -196,76 +259,167 @@ def _call_gemini_json(
     Call Google Gemini API via official `google-genai` SDK or REST endpoint.
     Returns (parsed_json_or_none, error_message_or_none). Never swallows errors silently.
     """
-    api_key = os.environ.get("GEMINI_API_KEY", "").strip()
-    if not api_key or api_key == "MY_GEMINI_API_KEY":
-        return None, "GEMINI_API_KEY not configured; using deterministic template."
+    if not is_configured():
+        return None, "AI features are operating in deterministic template mode (no API key configured)."
 
+    api_key = get_sanitized_api_key()
     active_model = os.environ.get("GEMINI_MODEL", GEMINI_MODEL).strip() or GEMINI_MODEL
     candidate_models = [active_model]
-    for fallback_m in ("gemini-2.5-flash", "gemini-1.5-flash", "gemini-1.5-flash-latest"):
+    for fallback_m in ("gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.5-flash"):
         if fallback_m not in candidate_models:
             candidate_models.append(fallback_m)
 
+    last_user_message = "AI service unavailable. Using deterministic fallback recommendations."
+
     # 1. Primary: Official Google Gemini Python SDK (`google-genai`)
     if genai is not None and types is not None:
-        client = genai.Client(api_key=api_key)
-        cfg_kwargs: Dict[str, Any] = {
-            "system_instruction": SYSTEM_GUARDRAIL,
-            "response_mime_type": "application/json",
-            "temperature": 0.2,
-        }
-        if response_schema is not None:
-            cfg_kwargs["response_schema"] = response_schema
+        try:
+            client = genai.Client(api_key=api_key)
+            cfg_kwargs: Dict[str, Any] = {
+                "system_instruction": SYSTEM_GUARDRAIL,
+                "response_mime_type": "application/json",
+                "temperature": 0.2,
+            }
+            if response_schema is not None:
+                cfg_kwargs["response_schema"] = response_schema
 
-        for mdl in candidate_models:
-            try:
-                response = client.models.generate_content(
-                    model=mdl,
-                    contents=prompt,
-                    config=types.GenerateContentConfig(**cfg_kwargs),
-                )
-                if response and response.text:
-                    return json.loads(response.text), None
-            except Exception as exc:
-                logger.warning("Gemini SDK call (%s) failed: %s", mdl, exc)
-                if "404" not in str(exc) and "NOT_FOUND" not in str(exc):
+            for mdl in candidate_models:
+                try:
+                    response = client.models.generate_content(
+                        model=mdl,
+                        contents=prompt,
+                        config=types.GenerateContentConfig(**cfg_kwargs),
+                    )
+                    if response and response.text:
+                        return json.loads(response.text), None
+                except Exception as exc:
+                    cat, user_msg = _classify_gemini_error(exc)
+                    last_user_message = user_msg
+                    logger.warning("Gemini SDK call failed [category=%s, model=%s]: %s", cat, mdl, exc)
+                    if cat == "MODEL_NOT_FOUND":
+                        continue
                     break
+        except Exception as client_exc:
+            cat, user_msg = _classify_gemini_error(client_exc)
+            last_user_message = user_msg
+            logger.warning("Gemini Client initialization failed [category=%s]: %s", cat, client_exc)
 
-    # 2. Direct HTTPS call to Gemini API if SDK wheel is not installed
-    try:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{active_model}:generateContent?key={api_key}"
-        gen_config: Dict[str, Any] = {
-            "responseMimeType": "application/json",
-            "temperature": 0.2,
-        }
-        if response_schema is not None:
-            gen_config["responseSchema"] = response_schema
+    # 2. Direct HTTPS call to Gemini API if SDK wheel fails or is unavailable
+    for mdl in candidate_models:
+        try:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{mdl}:generateContent?key={api_key}"
+            gen_config: Dict[str, Any] = {
+                "responseMimeType": "application/json",
+                "temperature": 0.2,
+            }
+            if response_schema is not None:
+                gen_config["responseSchema"] = response_schema
 
-        payload = {
-            "systemInstruction": {"parts": [{"text": SYSTEM_GUARDRAIL}]},
-            "contents": [{"parts": [{"text": prompt}]}],
-            "generationConfig": gen_config,
-        }
-        req = urllib.request.Request(
-            url,
-            data=json.dumps(payload).encode("utf-8"),
-            headers={"Content-Type": "application/json"},
-            method="POST",
-        )
-        with urllib.request.urlopen(req, timeout=12) as resp:
-            body = json.loads(resp.read().decode("utf-8"))
-            text = (
-                body.get("candidates", [{}])[0]
-                .get("content", {})
-                .get("parts", [{}])[0]
-                .get("text", "")
+            payload = {
+                "systemInstruction": {"parts": [{"text": SYSTEM_GUARDRAIL}]},
+                "contents": [{"parts": [{"text": prompt}]}],
+                "generationConfig": gen_config,
+            }
+            req = urllib.request.Request(
+                url,
+                data=json.dumps(payload).encode("utf-8"),
+                headers={"Content-Type": "application/json"},
+                method="POST",
             )
-            if text:
-                return json.loads(text), None
-            return None, "Empty response from Gemini API."
-    except Exception as exc:
-        logger.warning("Gemini REST call failed: %s", exc)
-        return None, str(exc)
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                body = json.loads(resp.read().decode("utf-8"))
+                text = (
+                    body.get("candidates", [{}])[0]
+                    .get("content", {})
+                    .get("parts", [{}])[0]
+                    .get("text", "")
+                )
+                if text:
+                    return json.loads(text), None
+                return None, "Empty response from Gemini API."
+        except Exception as exc:
+            cat, user_msg = _classify_gemini_error(exc)
+            last_user_message = user_msg
+            logger.warning("Gemini REST call failed [category=%s, model=%s]: %s", cat, mdl, exc)
+            if cat == "MODEL_NOT_FOUND":
+                continue
+            break
+
+    return None, last_user_message
+
+
+def _call_gemini_text(prompt: str) -> str:
+    """
+    Call Gemini to generate plain-text response, raising exception if failed or unconfigured.
+    """
+    if not is_configured():
+        raise RuntimeError("GEMINI_API_KEY is not configured.")
+
+    api_key = get_sanitized_api_key()
+    active_model = os.environ.get("GEMINI_MODEL", GEMINI_MODEL).strip() or GEMINI_MODEL
+    candidate_models = [active_model]
+    for fallback_m in ("gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.5-flash"):
+        if fallback_m not in candidate_models:
+            candidate_models.append(fallback_m)
+
+    # SDK call
+    if genai is not None and types is not None:
+        try:
+            client = genai.Client(api_key=api_key)
+            for mdl in candidate_models:
+                try:
+                    resp = client.models.generate_content(
+                        model=mdl,
+                        contents=prompt,
+                        config=types.GenerateContentConfig(
+                            system_instruction=SYSTEM_GUARDRAIL,
+                            temperature=0.4,
+                        ),
+                    )
+                    if resp and resp.text:
+                        return resp.text.strip()
+                except Exception as exc:
+                    cat, _ = _classify_gemini_error(exc)
+                    logger.warning("Gemini text call failed [category=%s, model=%s]: %s", cat, mdl, exc)
+                    if cat == "MODEL_NOT_FOUND":
+                        continue
+                    break
+        except Exception as client_exc:
+            logger.warning("Gemini text client init failed: %s", client_exc)
+
+    # REST call fallback
+    for mdl in candidate_models:
+        try:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{mdl}:generateContent?key={api_key}"
+            payload = {
+                "systemInstruction": {"parts": [{"text": SYSTEM_GUARDRAIL}]},
+                "contents": [{"parts": [{"text": prompt}]}],
+                "generationConfig": {"temperature": 0.4},
+            }
+            req = urllib.request.Request(
+                url,
+                data=json.dumps(payload).encode("utf-8"),
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                body = json.loads(resp.read().decode("utf-8"))
+                text = (
+                    body.get("candidates", [{}])[0]
+                    .get("content", {})
+                    .get("parts", [{}])[0]
+                    .get("text", "")
+                )
+                if text:
+                    return text.strip()
+        except Exception as exc:
+            cat, _ = _classify_gemini_error(exc)
+            logger.warning("Gemini text REST call failed [category=%s, model=%s]: %s", cat, mdl, exc)
+            if cat == "MODEL_NOT_FOUND":
+                continue
+            break
+
+    raise RuntimeError("Failed to generate response from Gemini text service.")
 
 
 def extract_jd_requirements_with_gemini(jd_text: str) -> Optional[List[Dict[str, str]]]:
