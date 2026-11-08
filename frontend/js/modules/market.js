@@ -165,17 +165,26 @@ export class MarketModule {
         .join("");
     }
 
-    // Company Matrix Table
+   // Company Matrix Table
     const matrixBody = document.getElementById("jobsCompanyMatrixBody");
     if (matrixBody) {
       matrixBody.innerHTML = (data.companyMatrix || [])
         .map(
           (cm) => `
           <tr>
-            <td><strong>${escapeHtml(cm.companyName)}</strong><br><small style="color:var(--text-tertiary);">${escapeHtml(cm.location)}</small></td>
-            <td>${escapeHtml(cm.roleTitle)}</td>
-            <td class="tabular-nums">${escapeHtml(cm.salaryRange)}</td>
-            <td><strong class="tabular-nums" style="color:var(--score-high);">${Math.round(cm.candidateMatchPct)}%</strong></td>
+            <td style="white-space: nowrap; vertical-align: top;">
+              <strong class="text-primary">${escapeHtml(cm.companyName)}</strong>
+              ${cm.location ? `<br><small class="text-tertiary font-mono text-xxs">${escapeHtml(cm.location)}</small>` : ""}
+            </td>
+            <td style="vertical-align: top;">
+              <div class="line-clamp-2" title="${escapeHtml(cm.roleTitle)}" style="font-weight: 500; line-height: 1.35;">${escapeHtml(cm.roleTitle)}</div>
+            </td>
+            <td class="tabular-nums font-mono text-xxs" style="white-space: nowrap; vertical-align: top;">
+              ${escapeHtml(cm.salaryRange)}
+            </td>
+            <td style="text-align: right; white-space: nowrap; vertical-align: top;">
+              <span class="tag tag-match font-semibold tabular-nums">${Math.round(cm.candidateMatchPct)}%</span>
+            </td>
           </tr>
         `
         )
