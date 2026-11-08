@@ -265,7 +265,7 @@ def _call_gemini_json(
     api_key = get_sanitized_api_key()
     active_model = os.environ.get("GEMINI_MODEL", GEMINI_MODEL).strip() or GEMINI_MODEL
     candidate_models = [active_model]
-    for fallback_m in ("gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.5-flash"):
+    for fallback_m in ("gemini-3.8-flash", "gemini-2.5-flash", "gemini-2.0-flash"):
         if fallback_m not in candidate_models:
             candidate_models.append(fallback_m)
 
@@ -358,7 +358,7 @@ def _call_gemini_text(prompt: str) -> str:
     api_key = get_sanitized_api_key()
     active_model = os.environ.get("GEMINI_MODEL", GEMINI_MODEL).strip() or GEMINI_MODEL
     candidate_models = [active_model]
-    for fallback_m in ("gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.5-flash"):
+    for fallback_m in ("gemini-3.8-flash", "gemini-2.5-flash", "gemini-2.0-flash"):
         if fallback_m not in candidate_models:
             candidate_models.append(fallback_m)
 
