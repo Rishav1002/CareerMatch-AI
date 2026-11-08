@@ -39,3 +39,196 @@
 .hidden {
   display: none !important;
 }
+
+
+/* =========================================================
+          CAREERMATCH AI — MOBILE RESPONSIVENESS
+   ========================================================= */
+
+/* Prevent horizontal overflow */
+@media (max-width: 900px) {
+
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* Landing header */
+  .landing-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    gap: 10px;
+    padding: 14px 16px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Keep logo and brand name together */
+  .landing-topbar > .rail-brand {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
+    min-width: max-content;
+    width: auto;
+    gap: 8px;
+    white-space: nowrap;
+  }
+
+  .landing-topbar .brand-logo {
+    width: 28px;
+    height: 28px;
+    flex: 0 0 28px;
+  }
+
+  .landing-topbar .brand-name {
+    display: inline-block;
+    font-size: 1rem;
+    white-space: nowrap;
+    overflow-wrap: normal;
+    word-break: normal;
+    flex: 0 0 auto;
+  }
+
+  /* Hide desktop navigation on mobile/tablet */
+  .landing-nav-links {
+    display: none !important;
+  }
+
+  /* Keep header action buttons aligned */
+  .landing-topbar > .d-flex {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+    gap: 6px;
+    margin-left: auto;
+  }
+}
+
+/* Smaller phones */
+@media (max-width: 480px) {
+
+  .landing-topbar {
+    padding: 12px;
+    gap: 6px;
+  }
+
+  .landing-topbar .brand-name {
+    font-size: 0.95rem;
+  }
+
+  /* Theme icon only */
+  #landingThemeToggleBtn {
+    width: 38px;
+    min-width: 38px;
+    padding: 8px;
+    justify-content: center;
+  }
+
+  #landingThemeToggleBtn .btn-text {
+    display: none;
+  }
+
+  /* Hide the extra workspace button to save space */
+  #landingOpenAppBtn {
+    display: none !important;
+  }
+
+  #landingAuthBtn {
+    padding: 7px 9px;
+    font-size: 0.78rem;
+  }
+
+  /* Hero section */
+  .landing-hero-center {
+    width: 100%;
+    margin: 0 auto;
+    padding: 24px 14px 36px;
+    box-sizing: border-box;
+  }
+
+  .landing-hero-card {
+    padding: 28px 18px;
+    border-radius: 20px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .landing-hero-title {
+    font-size: clamp(1.8rem, 8vw, 2.25rem);
+    line-height: 1.14;
+  }
+
+  .landing-hero-subline {
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+
+  .landing-hero-actions {
+    gap: 10px;
+  }
+
+  .landing-hero-actions .btn {
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  /* Prevent carousel labels overlapping hero buttons */
+  .carousel-progress,
+  .scene-caption {
+    display: none !important;
+  }
+
+  /* How it works section */
+  .landing-steps-strip {
+    padding: 40px 14px;
+  }
+
+  .landing-steps-strip h2 {
+    font-size: clamp(2.1rem, 10vw, 3rem);
+    line-height: 1.08;
+  }
+
+  .steps-3-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .step-liquid-card {
+    padding: 22px 18px;
+  }
+
+  /* Footer */
+  .editorial-footer {
+    padding: 32px 16px 90px;
+    box-sizing: border-box;
+  }
+
+  .editorial-footer > .d-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+
+  .editorial-footer .rail-brand {
+    display: flex;
+    flex-wrap: nowrap;
+    width: max-content;
+    max-width: 100%;
+    white-space: nowrap;
+  }
+
+  .editorial-footer .brand-name {
+    white-space: nowrap;
+    overflow-wrap: normal;
+  }
+
+  .editorial-footer > .border-top {
+    gap: 12px;
+    padding-top: 16px;
+  }
+}
+
