@@ -482,8 +482,10 @@ export class Router {
       topbarTitle.textContent = route.title || activeRouteKey;
     }
 
-    // Update document title
-    document.title = `${route.title || "Career Readiness"} — CareerMatch AI`;
+    // Update document title based on active route
+    document.title = activeRouteKey === "landing"
+      ? "CareerMatch AI"
+      : `${route.title || "Career Readiness"} — CareerMatch AI`;
 
     // Refresh scroll animations
     if (window.__careermatch?.scrollReveal) {
