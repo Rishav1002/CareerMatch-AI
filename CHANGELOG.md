@@ -1,5 +1,39 @@
 # CHANGELOG: CareerMatch AI "Field Guide" Redesign
 
+## [4.1.1] - 2026-11-08 — P0 Production Boot Restoration & Safety Guardrails (hotfix/restore-app-boot)
+
+### Production Outage Restoration (RC1 & RC1b)
+- **ES Module Syntax Error Hotfix:** Eliminated duplicate half-function block in `frontend/js/api.js` (introduced in commit `827b32d`). Restored ES-module graph execution and interactive listener attachment.
+- **Missing Module Import:** Added missing `escapeHtml` import in `frontend/js/api.js` from `./formatters.js`.
+- **Automated Boot Smoke Test:** Built `scripts/boot_smoke.mjs` verifying JavaScript module syntax and headless DOM boot before any build reaches production.
+
+### Canonical API Contract Recovery (RC2)
+- **Restored Canonical API Contract:** Restored legacy response shapes (`activeJob`, `matchResult`, `stages`, `roadmapNodes`, `completedNodes`, `atsReport`, `source`, `aiError`, `saved`, `resume`, `skillGaps`, `advisor`, `projects`, `improvements`, `dashboard`) across `/api/analyze` and `/api/history/{id}` in `backend/main.py`.
+- **Deprecation Aliases:** Preserved modern keys (`job`, `match`, `roadmap`, `ats`) alongside canonical keys for backwards compatibility.
+- **Contract Enforcement:** Authored formal specifications in `docs/API_CONTRACT.md`, Pydantic response models in `backend/schemas.py`, and automated regression test suite in `tests/test_contract.py`.
+
+### Strict Content Security Policy Enforcement (RC3)
+- **Zero Inline Scripts:** Extracted inline theme detection to `frontend/js/theme-init.js`, boot watchdog to `frontend/js/boot-watchdog.js`, and service worker registration to `frontend/js/sw-register.js`.
+- **Zero Inline Handlers:** Removed inline `onclick="window.location.reload()"` and `onsubmit="return false;"`. Wired native submission prevention via `addEventListener('submit', ...)` in `authManager.js`.
+- **CSP Hardening:** Tightened CSP headers in `backend/main.py` (`object-src 'none'; base-uri 'self'; form-action 'self'`). Verified zero violations via Playwright Chrome script `scripts/verify_csp.mjs`.
+
+### AI Integration Hardening
+- **Gemini Model Cascade:** Updated default model to `gemini-2.0-flash` with candidate fallback cascade `["gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.5-flash"]` to mitigate 404 NOT_FOUND errors.
+- **Missing Plain-Text Helper:** Implemented `_call_gemini_text(prompt)` with SDK and REST fallbacks.
+- **Safe Probes & Status:** Added `GET /api/ai/status` returning `{"enabled": bool}`. Sanitized `GEMINI_API_KEY` to strip surrounding quotes, whitespace, and placeholder strings.
+- **Error Classification:** Mapped Gemini exceptions into non-technical user messages and precise backend logs.
+
+### UI Element Binding & Route Audits
+- **DOM ID Mismatches Resolved:** Bound primary element IDs in `career.js` (`#runCareerCompareBtn`), `roadmap.js` (`#regenerateAdaptiveRoadmapBtn`), `assessment.js` (`#asmtHistoryBody` table), `interview.js` (`#intHistoryTableBody` and `#intFeedbackBox`), `ats.js` (`#runAtsAuditBtn` and `#atsMissingKeywordsTags`), and `pri.js` (`#applyPriWeightsBtn`).
+- **Interview Start Button Enabled:** Removed static `disabled=""` attribute from `#startInterviewBtn` in `index.html`.
+- **Safe Storage Construction:** Guarded `localStorage` in `frontend/js/store.js` against undefined globals in headless Node/SSR environments.
+
+### Operational Guardrails & Tooling
+- **CI / CD Pipeline Safety Net:** Updated `.github/workflows/test.yml` with JavaScript syntax checks, contract test runs, background server boot smoke, real-browser Chromium CSP audit, and E2E journey tests.
+- **Post-Deploy Smoke Validator:** Created `scripts/post_deploy_smoke.py` validating health, server header stripping, CSP, and deployed asset syntax over live HTTP.
+- **Documentation Consolidation:** Merged duplicate Render deployment sections in `README.md`, added complete environment variable table, troubleshooting runbook, and `CONTRIBUTING.md`.
+- **Repository Hygiene:** Archived 26 one-off scripts into `scripts/dev-tools/` and documented in `REMOVAL_LEDGER.md`.
+
 ## [4.1.0] - 2026-11-08 — Launch Hardening & Production Hardening
 
 ### Security & Data Protection (P0/P1)
