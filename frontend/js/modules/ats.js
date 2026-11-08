@@ -17,9 +17,24 @@ export class AtsModule {
     if (this.initialized) return;
     this.initialized = true;
 
-    const rerunBtn = document.getElementById("reEvaluateAtsBtn");
+    const rerunBtn = document.getElementById("reEvaluateAtsBtn") || document.getElementById("runAtsAuditBtn");
     if (rerunBtn) {
       rerunBtn.addEventListener("click", () => this.load(true));
+    }
+
+    const downloadBtn = document.getElementById("downloadAtsResumeBtn");
+    if (downloadBtn) {
+      downloadBtn.addEventListener("click", () => {
+        const resume = store.get("activeResume");
+        const text = resume?.raw_text || resume?.text || "No resume text available";
+        const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `ats-optimized-resume-${new Date().toISOString().slice(0, 10)}.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+      });
     }
 
     const uploadCta = document.getElementById("atsEmptyUploadCtaBtn");
@@ -167,7 +182,7 @@ export class AtsModule {
     }
 
     // Missing ATS keywords
-    const kwEl = document.getElementById("atsMissingKeywordsList");
+    const kwEl = document.getElementById("atsMissingKeywordsList") || document.getElementById("atsMissingKeywordsTags");
     if (kwEl) {
       const missingKw = data.missingKeywords || [];
       if (missingKw.length === 0) {

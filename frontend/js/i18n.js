@@ -5,7 +5,7 @@
 
 import { store } from "./store.js";
 
-const STRINGS = {
+export const STRINGS = {
   en: {
     // Brand & Header
     brand_name: "CareerMatch AI",

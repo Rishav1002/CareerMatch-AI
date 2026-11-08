@@ -18,7 +18,7 @@ export class RoadmapModule {
     if (this.initialized) return;
     this.initialized = true;
 
-    const regenBtn = document.getElementById("regenerateRoadmapBtn");
+    const regenBtn = document.getElementById("regenerateRoadmapBtn") || document.getElementById("regenerateAdaptiveRoadmapBtn");
     if (regenBtn) {
       regenBtn.addEventListener("click", () => this.load(true));
     }

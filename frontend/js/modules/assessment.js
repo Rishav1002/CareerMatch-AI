@@ -306,9 +306,28 @@ export class AssessmentModule {
       const res = await fetch(url, { headers });
       if (res.ok) {
         const data = await res.json();
+        const tableBody = document.getElementById("asmtHistoryBody");
         const listEl = document.getElementById("asmtHistoryList");
-        if (listEl) {
-          const hist = data.history || [];
+        const hist = data.history || [];
+
+        if (tableBody) {
+          if (!hist.length) {
+            tableBody.innerHTML = `<tr><td colspan="4" class="text-center text-tertiary">No test sessions yet.</td></tr>`;
+          } else {
+            tableBody.innerHTML = hist
+              .map(
+                (h) => `
+                <tr>
+                  <td class="text-xs text-secondary">${escapeHtml((h.completedAt || "").slice(0, 10))}</td>
+                  <td><strong>${escapeHtml(h.topic)}</strong></td>
+                  <td><span class="badge-tag">${escapeHtml(h.difficulty)}</span></td>
+                  <td class="num font-semibold text-accent">${Math.round(h.overallScore)}%</td>
+                </tr>
+              `
+              )
+              .join("");
+          }
+        } else if (listEl) {
           if (!hist.length) {
             listEl.innerHTML = `<p style="font-size:0.8rem;color:var(--text-tertiary);">No completed skill assessments recorded yet.</p>`;
           } else {

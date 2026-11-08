@@ -9,14 +9,18 @@ class Store {
   constructor() {
     this.subscribers = new Map();
 
-    const savedTheme = storage.getPref("theme", null) || localStorage.getItem("cm_theme") || "light";
+    const hasLS = typeof localStorage !== "undefined" && localStorage !== null;
+    const savedTheme = storage.getPref("theme", null) || (hasLS ? localStorage.getItem("cm_theme") : null) || "light";
     const savedLang = storage.getPref("lang", "en");
-    const savedToken = localStorage.getItem("cm_jwt_token") || localStorage.getItem("cm:v1:token") || localStorage.getItem("careermatch_jwt_token") || "";
-    // Clean up legacy token keys immediately
-    localStorage.removeItem("cm:v1:token");
-    localStorage.removeItem("careermatch_jwt_token");
-    if (savedToken) {
-      localStorage.setItem("cm_jwt_token", savedToken);
+    const savedToken = hasLS ? (localStorage.getItem("cm_jwt_token") || localStorage.getItem("cm:v1:token") || localStorage.getItem("careermatch_jwt_token") || "") : "";
+    if (hasLS) {
+      try {
+        localStorage.removeItem("cm:v1:token");
+        localStorage.removeItem("careermatch_jwt_token");
+        if (savedToken) {
+          localStorage.setItem("cm_jwt_token", savedToken);
+        }
+      } catch (_) {}
     }
     const savedUser = storage.getPref("user", null);
 

@@ -17,7 +17,7 @@ export class CareerModule {
     if (this.initialized) return;
     this.initialized = true;
 
-    const compareBtn = document.getElementById("compareRolesBtn");
+    const compareBtn = document.getElementById("compareRolesBtn") || document.getElementById("runCareerCompareBtn");
     if (compareBtn) {
       compareBtn.addEventListener("click", () => this.compare());
     }
