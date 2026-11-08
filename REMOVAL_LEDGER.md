@@ -137,3 +137,29 @@ Six competing, redundant navigation schemes were replaced by a single, canonical
 - **Template Seed Data**:
   - Removed hardcoded template table rows and placeholder metrics from `view-dashboard`, `view-analyzer`, and `view-interview`.
   - Empty states now render clear, clean instructions.
+
+---
+
+## 7. Phase 4: Production Restoration & Dev-Tools Archival (`hotfix/restore-app-boot`)
+- **Archival of 26 One-off Codemod & Scratch Scripts**:
+  - Moved from `scripts/` to `scripts/dev-tools/` to ensure the root `scripts/` directory only contains authoritative test runners and verified lifecycle utilities.
+  - Archived files:
+    - `all_style_lines.py`, `append_audit_section_8.py`, `append_utilities.py`
+    - `audit_views_text.py`, `check_escaping.py`, `check_github_actions.py`
+    - `clean_important.py`, `count_styles.py`, `eliminate_inline_styles.py`
+    - `final_trim_budgets.py`, `fine_tune_view_budgets.py`, `fix_toast_style.py`
+    - `generate_logo.py`, `inspect_unique_styles.py`, `list_all_styles.py`, `list_views.py`
+    - `scan_component_ids.py`, `scan_module_ids.py`, `trim_analyzer.py`
+    - `trim_view_word_budgets.py`, `update_build_tag.py`, `update_ledger.py`
+    - `update_readme.py`, `update_tokens_devanagari.py`, `view_line_locations.py`
+    - `browser_test_step1.mjs`
+- **Active Canonical Scripts Retained in `scripts/`**:
+  - `boot_smoke.mjs`: Syntax validator and JSDOM headless boot runner.
+  - `journey_test.mjs`: Real-browser Chromium end-to-end user journey test.
+  - `verify_csp.mjs`: Strict Content Security Policy violation detector.
+  - `verify_dom_ids.py`: Comprehensive DOM ID and route reference auditor.
+  - `verify_viewports.mjs`: Multi-viewport (360px, 768px, 1440px) responsive layout tester.
+  - `post_deploy_smoke.py`: Production staging health, CSP, and deployed JS syntax validator.
+  - `check_contrast.py`: WCAG 2.1 AA automated color contrast audit.
+  - `check_links.py`: Course URL and DOM hash link verifier.
+  - `run_tests.py`: Python unit and endpoint test suite runner.
