@@ -1251,3 +1251,95 @@
   border-top: 1px solid var(--border-subtle);
   background: var(--bg-card);
 }
+
+/* =========================================================
+   CAREERMATCH AI — LANDING HEADER RESPONSIVENESS FIX
+   ========================================================= */
+
+/* Keep the brand logo and name together at every screen size */
+.landing-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    gap: 16px;
+}
+
+.landing-topbar > .rail-brand {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
+    width: auto;
+    min-width: max-content;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.landing-topbar .brand-logo {
+    display: block;
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    flex: 0 0 28px;
+}
+
+.landing-topbar .brand-name {
+    display: inline-block;
+    flex: 0 0 auto;
+    width: auto;
+    min-width: max-content;
+    white-space: nowrap;
+    word-break: normal;
+    overflow-wrap: normal;
+    writing-mode: horizontal-tb;
+}
+
+/* Navigation should not compete with the brand on smaller screens */
+@media (max-width: 1100px) {
+    .landing-topbar {
+        gap: 10px;
+        padding: 14px 18px;
+    }
+
+    .landing-nav-links {
+        display: none !important;
+    }
+}
+
+/* Compact mobile header */
+@media (max-width: 600px) {
+    .landing-topbar {
+        padding: 12px 14px;
+        gap: 8px;
+    }
+
+    .landing-topbar .brand-name {
+        font-size: 0.95rem;
+    }
+
+    .landing-topbar .brand-logo {
+        width: 26px;
+        height: 26px;
+        min-width: 26px;
+        flex-basis: 26px;
+    }
+
+    .landing-topbar > .d-flex {
+        flex: 0 0 auto;
+        gap: 6px;
+    }
+
+    #landingOpenAppBtn {
+        display: none !important;
+    }
+
+    #landingAuthBtn {
+        padding: 7px 10px;
+        font-size: 0.8rem;
+    }
+}
