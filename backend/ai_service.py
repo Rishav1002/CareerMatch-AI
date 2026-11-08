@@ -12,6 +12,7 @@ import logging
 import os
 import urllib.parse
 import urllib.request
+import time
 from typing import Any, Dict, List, Optional, Tuple
 
 from backend.config import GEMINI_MODEL
@@ -259,19 +260,23 @@ def _call_gemini_json(
     Call Google Gemini API via official `google-genai` SDK or REST endpoint.
     Returns (parsed_json_or_none, error_message_or_none). Never swallows errors silently.
     """
+    call_started = time.perf_counter()
     if not is_configured():
         return None, "AI features are operating in deterministic template mode (no API key configured)."
 
     api_key = get_sanitized_api_key()
     active_model = os.environ.get("GEMINI_MODEL", GEMINI_MODEL).strip() or GEMINI_MODEL
+    # Prefer the configured stable model. Only try current supported Flash
+    # fallbacks when Google explicitly reports MODEL_NOT_FOUND.
     candidate_models = [active_model]
-    for fallback_m in ("gemini-3.8-flash", "gemini-2.5-flash", "gemini-2.0-flash"):
+    for fallback_m in ("gemini-3.7-flash", "gemini-3.5-flash-lite"):
         if fallback_m not in candidate_models:
             candidate_models.append(fallback_m)
 
     last_user_message = "AI service unavailable. Using deterministic fallback recommendations."
 
     # 1. Primary: Official Google Gemini Python SDK (`google-genai`)
+    sdk_request_attempted = False
     if genai is not None and types is not None:
         try:
             client = genai.Client(api_key=api_key)
@@ -279,18 +284,26 @@ def _call_gemini_json(
                 "system_instruction": SYSTEM_GUARDRAIL,
                 "response_mime_type": "application/json",
                 "temperature": 0.2,
+                "max_output_tokens": 4096,
             }
             if response_schema is not None:
                 cfg_kwargs["response_schema"] = response_schema
 
             for mdl in candidate_models:
                 try:
+                    sdk_request_attempted = True
                     response = client.models.generate_content(
                         model=mdl,
                         contents=prompt,
                         config=types.GenerateContentConfig(**cfg_kwargs),
                     )
                     if response and response.text:
+                        logger.info(
+                            "gemini_json_timing model=%s duration_ms=%d prompt_chars=%d",
+                            mdl,
+                            round((time.perf_counter() - call_started) * 1000),
+                            len(prompt),
+                        )
                         return json.loads(response.text), None
                 except Exception as exc:
                     cat, user_msg = _classify_gemini_error(exc)
@@ -304,13 +317,25 @@ def _call_gemini_json(
             last_user_message = user_msg
             logger.warning("Gemini Client initialization failed [category=%s]: %s", cat, client_exc)
 
-    # 2. Direct HTTPS call to Gemini API if SDK wheel fails or is unavailable
+    # Do not repeat a failed/slow SDK network request through REST. That doubled
+    # the wait on timeouts and rate limits. REST is only a compatibility fallback
+    # when the SDK is unavailable or client initialization failed before a request.
+    if sdk_request_attempted:
+        logger.warning(
+            "gemini_json_timing failed duration_ms=%d prompt_chars=%d",
+            round((time.perf_counter() - call_started) * 1000),
+            len(prompt),
+        )
+        return None, last_user_message
+
+    # 2. Direct HTTPS call only if SDK is unavailable or could not initialize.
     for mdl in candidate_models:
         try:
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{mdl}:generateContent?key={api_key}"
             gen_config: Dict[str, Any] = {
                 "responseMimeType": "application/json",
                 "temperature": 0.2,
+                "maxOutputTokens": 4096,
             }
             if response_schema is not None:
                 gen_config["responseSchema"] = response_schema
@@ -335,6 +360,12 @@ def _call_gemini_json(
                     .get("text", "")
                 )
                 if text:
+                    logger.info(
+                        "gemini_json_timing model=%s transport=rest duration_ms=%d prompt_chars=%d",
+                        mdl,
+                        round((time.perf_counter() - call_started) * 1000),
+                        len(prompt),
+                    )
                     return json.loads(text), None
                 return None, "Empty response from Gemini API."
         except Exception as exc:
@@ -357,8 +388,10 @@ def _call_gemini_text(prompt: str) -> str:
 
     api_key = get_sanitized_api_key()
     active_model = os.environ.get("GEMINI_MODEL", GEMINI_MODEL).strip() or GEMINI_MODEL
+    # Prefer the configured stable model. Only try current supported Flash
+    # fallbacks when Google explicitly reports MODEL_NOT_FOUND.
     candidate_models = [active_model]
-    for fallback_m in ("gemini-3.8-flash", "gemini-2.5-flash", "gemini-2.0-flash"):
+    for fallback_m in ("gemini-3.7-flash", "gemini-3.5-flash-lite"):
         if fallback_m not in candidate_models:
             candidate_models.append(fallback_m)
 
@@ -566,19 +599,6 @@ Required JSON structure:
     }}
   ],
   "advisor": {{
-    "viableCourses": [
-      {{
-        "title": "...",
-        "provider": "Coursera | edX | AWS Skill Builder | Microsoft Learn | freeCodeCamp | Udemy | Kaggle Learn",
-        "instructorOrOrg": "...",
-        "pricingType": "Free",
-        "priceDetail": "100% Free",
-        "skillFocus": "...",
-        "duration": "3 weeks",
-        "url": "https://...",
-        "whyViable": "..."
-      }}
-    ],
     "websitesAndMaterials": [
       {{
         "name": "...",
@@ -610,12 +630,12 @@ Required JSON structure:
     ]
   }}
 }}
-Include 3 stages, 6 viableCourses (3 with pricingType "Free" and 3 with pricingType "Paid"), 4 websitesAndMaterials, 3 projects, and 2 grounded bulletRewrites based only on the candidate's existing bullets.
+Include 3 stages, 4 websitesAndMaterials, 3 projects, and up to 2 grounded bulletRewrites based only on the candidate's existing bullets. Do not generate courses; verified courses are added from the local resource catalog.
 """
 
     ai_data, ai_err = _call_gemini_json(prompt)
     if isinstance(ai_data, dict) and "stages" in ai_data and "advisor" in ai_data:
-        ai_data["advisor"]["viableCourses"] = build_courses_from_resources(
+        ai_data.setdefault("advisor", {})["viableCourses"] = build_courses_from_resources(
             ([safe_focus] if safe_focus else []) + focus_skills, is_template=False
         )
         for w in ai_data.get("advisor", {}).get("websitesAndMaterials", []):

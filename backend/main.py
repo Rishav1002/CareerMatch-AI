@@ -24,6 +24,8 @@ import base64
 import hashlib
 import hmac
 import json
+import logging
+import time
 import mimetypes
 import os
 import subprocess
@@ -36,8 +38,9 @@ from fastapi import Depends, FastAPI, File, HTTPException, Request, Response, Up
 from fastapi.middleware.cors import CORSMiddleware  # type: ignore
 from fastapi.responses import FileResponse, JSONResponse  # type: ignore
 from fastapi.staticfiles import StaticFiles  # type: ignore
+from starlette.concurrency import run_in_threadpool
 
-from backend.ai_service import enrich_resume_profile_with_gemini, generate_career_intelligence, is_configured as is_ai_configured
+from backend.ai_service import generate_career_intelligence, is_configured as is_ai_configured
 from backend.career_modules import (
     DEFAULT_PRI_WEIGHTS,
     analyze_github_portfolio,
@@ -108,6 +111,8 @@ from backend.resume_parser import (
     sanitize_short_field,
 )
 from backend.roles_catalog import get_roles_by_category, get_roles_catalog
+
+logger = logging.getLogger(__name__)
 
 FRONTEND_DIR = os.path.join(ROOT_DIR, "frontend")
 
@@ -300,6 +305,7 @@ def handle_parse_resume_payload(body: Dict[str, Any], owner_id: str = "legacy_un
     pasted_text = body.get("pastedText", "")
     dont_save = bool(body.get("dontSave", False))
 
+    parse_started = time.perf_counter()
     if base64_data:
         if "," in base64_data:
             base64_data = base64_data.split(",", 1)[1]
@@ -311,8 +317,16 @@ def handle_parse_resume_payload(body: Dict[str, Any], owner_id: str = "legacy_un
     else:
         raise ValueError("Please provide a valid PDF, DOCX, or TXT resume file or paste at least 20 characters of resume text.")
 
+    # Skill extraction is deterministic and already validates every skill against
+    # the resume text. A second Gemini extraction request duplicated this work and
+    # added one full network round-trip to every upload.
     profile = parse_resume_text_to_profile(extracted_text, filename)
-    profile = enrich_resume_profile_with_gemini(extracted_text, profile)
+    logger.info(
+        "resume_parse_timing extraction_and_profile_parse_ms=%d text_chars=%d skills=%d",
+        round((time.perf_counter() - parse_started) * 1000),
+        len(extracted_text),
+        len(profile.get("technicalSkills", [])),
+    )
     if not dont_save:
         save_resume(profile, owner_id=owner_id)
     return {
@@ -348,11 +362,19 @@ def handle_analyze_payload(body: Dict[str, Any], owner_id: str = "legacy_unowned
     custom_focus = sanitize_short_field(body.get("customFocus", ""), 200)
     persist_record = bool(body.get("persistRecord", True)) and not dont_save
 
+    analysis_started = time.perf_counter()
     active_job = resolve_job_profile(role_title, goal_company, custom_jd, job_url)
+    match_started = time.perf_counter()
     match_result = match_resume_to_job(resume, active_job, weights)
     skill_gaps = build_skill_gaps(match_result, active_job["title"])
     roadmap_nodes = build_roadmap_tree_nodes(match_result, skill_gaps)
+    logger.info(
+        "resume_analysis_timing matching_ms=%d missing_skills=%d",
+        round((time.perf_counter() - match_started) * 1000),
+        len(skill_gaps),
+    )
 
+    intelligence_started = time.perf_counter()
     intelligence = generate_career_intelligence(
         resume=resume,
         target_role=active_job["title"],
@@ -360,8 +382,18 @@ def handle_analyze_payload(body: Dict[str, Any], owner_id: str = "legacy_unowned
         missing_skills=[g["skillName"] for g in skill_gaps],
         custom_focus=custom_focus,
     )
+    logger.info(
+        "resume_analysis_timing gemini_and_intelligence_ms=%d source=%s",
+        round((time.perf_counter() - intelligence_started) * 1000),
+        intelligence.get("source", "template"),
+    )
 
+    ats_started = time.perf_counter()
     ats_eval = evaluate_ats_resume({"resume": resume, "targetRole": active_job["title"]})
+    logger.info(
+        "resume_analysis_timing ats_ms=%d",
+        round((time.perf_counter() - ats_started) * 1000),
+    )
     ats_score = float(ats_eval.get("atsScore", 0.0))
 
     analysis_id = 0
@@ -384,6 +416,10 @@ def handle_analyze_payload(body: Dict[str, Any], owner_id: str = "legacy_unowned
 
     completed_nodes = get_roadmap_progress(resume["id"], active_job["title"], owner_id=owner_id) if not dont_save else {}
     stages = intelligence.get("stages", roadmap_nodes)
+    logger.info(
+        "resume_analysis_timing total_before_response_ms=%d",
+        round((time.perf_counter() - analysis_started) * 1000),
+    )
 
     return {
         "analysisId": analysis_id,
@@ -650,7 +686,7 @@ async def api_parse_resume(
 
     try:
         body = await request.json()
-        return handle_parse_resume_payload(body, owner_id=owner_id)
+        return await run_in_threadpool(handle_parse_resume_payload, body, owner_id=owner_id)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     except Exception as exc:
@@ -672,9 +708,9 @@ async def api_upload_multipart(
         if len(file_bytes) > 5 * 1024 * 1024:
             raise ValueError("Uploaded file exceeds maximum allowed size of 5 MB.")
         safe_filename = os.path.basename(file.filename or "resume.pdf")
-        text = extract_text_from_file_bytes(safe_filename, file_bytes)
-        profile = parse_resume_text_to_profile(text, safe_filename)
-        save_resume(profile, owner_id=owner_id)
+        text = await run_in_threadpool(extract_text_from_file_bytes, safe_filename, file_bytes)
+        profile = await run_in_threadpool(parse_resume_text_to_profile, text, safe_filename)
+        await run_in_threadpool(save_resume, profile, owner_id=owner_id)
         return {"resume": profile, "dashboard": get_dashboard_metrics(profile["id"], owner_id=owner_id)}
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
@@ -692,7 +728,7 @@ async def api_analyze(
 
     try:
         body = await request.json()
-        return handle_analyze_payload(body, owner_id=owner_id)
+        return await run_in_threadpool(handle_analyze_payload, body, owner_id=owner_id)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     except Exception as exc:
