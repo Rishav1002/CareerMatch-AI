@@ -9,16 +9,16 @@
   - [x] Real browser verification: theme toggle, navigation, zero errors
   - [x] Commit hotfix: `hotfix(api): restore ES module loading and error rendering`
 
-- [ ] **Step 2: API Contract (RC2)**
-  - [ ] Diff backend contract changes between `061fe98^` and `HEAD`
-  - [ ] Author `docs/API_CONTRACT.md` detailing request/response shapes
-  - [ ] Restore original response keys in `/api/analyze` and history with deprecated aliases
-  - [ ] Enforce contract with Pydantic response models / TypedDicts
-  - [ ] Add `tests/test_contract.py` validating UI property reads against backend responses
-  - [ ] Add dev-only runtime guard in `frontend/js/api.js` (`assertShape`)
-  - [ ] Real browser / journey test for full flow
-  - [ ] Verify user isolation still holds
-  - [ ] Commit contract fix: `fix(contract): restore canonical response shapes and add contract test suite`
+- [x] **Step 2: API Contract (RC2)**
+  - [x] Diff backend contract changes between `061fe98^` and `HEAD`
+  - [x] Author `docs/API_CONTRACT.md` detailing request/response shapes
+  - [x] Restore original response keys in `/api/analyze` and history with deprecated aliases
+  - [x] Enforce contract with Pydantic response models / TypedDicts
+  - [x] Add `tests/test_contract.py` validating UI property reads against backend responses
+  - [x] Add dev-only runtime guard in `frontend/js/api.js` (`assertShape`)
+  - [x] Real browser / journey test for full flow
+  - [x] Verify user isolation still holds
+  - [x] Commit contract fix: `fix(contract): restore canonical response shapes and add contract test suite`
 
 - [ ] **Step 3: CSP and Inline Scripts/Handlers (RC3)**
   - [ ] Extract inline `<script>` blocks into `frontend/js/theme-init.js`, `frontend/js/boot-watchdog.js`, `frontend/js/sw-register.js`

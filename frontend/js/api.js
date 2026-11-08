@@ -15,6 +15,23 @@ export class ApiError extends Error {
   }
 }
 
+export function assertShape(endpointName, data, requiredKeys) {
+  if (!data || typeof data !== "object") {
+    console.error(`API contract mismatch: ${endpointName} returned invalid non-object response:`, data);
+    return;
+  }
+  const missing = requiredKeys.filter((k) => !(k in data) || data[k] === undefined);
+  if (missing.length > 0) {
+    const msg = `API contract mismatch: ${endpointName} is missing required key(s): ${missing.join(", ")}`;
+    console.error(msg, data);
+    if (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) {
+      if (typeof window.showToast === "function") {
+        window.showToast(`Dev Warning: ${msg}`, "warning");
+      }
+    }
+  }
+}
+
 export function renderInlineError(containerEl, message, retryFn) {
   if (!containerEl) return;
   const safeMsg = typeof message === "string" ? message : (message?.detail || message?.message || "Failed to load data.");
@@ -111,6 +128,18 @@ async function request(path, options = {}, maxRetries = 2) {
 }
 
 export const api = {
+  // Generic REST methods
+  get: (path, options = {}) => request(path, { ...options, method: "GET" }),
+  post: async (path, body, options = {}) => {
+    const res = await request(path, { ...options, method: "POST", body });
+    if (path === "/api/analyze") {
+      assertShape("/api/analyze", res, ["matchResult", "activeJob", "resume", "skillGaps", "stages"]);
+    }
+    return res;
+  },
+  put: (path, body, options = {}) => request(path, { ...options, method: "PUT", body }),
+  delete: (path, options = {}) => request(path, { ...options, method: "DELETE" }),
+
   // Authentication
   auth: {
     login: (email, password) => request("/api/auth/login", { method: "POST", body: { email, password } }),
@@ -147,8 +176,11 @@ export const api = {
     updateSkills: (skills) =>
       request("/api/resume/skills", { method: "PUT", body: { skills } }),
   },
-  analyze: (payload) =>
-    request("/api/analyze", { method: "POST", body: payload }),
+  analyze: async (payload) => {
+    const res = await request("/api/analyze", { method: "POST", body: payload });
+    assertShape("/api/analyze", res, ["matchResult", "activeJob", "resume", "skillGaps", "stages"]);
+    return res;
+  },
 
   // ATS Simulator
   ats: {

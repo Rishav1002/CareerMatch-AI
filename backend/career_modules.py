@@ -1020,7 +1020,7 @@ def start_interview_session(body: Dict[str, Any], owner_id: str = "legacy_unowne
 def submit_interview_answer(body: Dict[str, Any], owner_id: str = "legacy_unowned") -> Dict[str, Any]:
     session_id = sanitize_short_field(body.get("sessionId", ""), 80)
     question_index = int(body.get("questionIndex", 1))
-    answer_text = sanitize_plain_text(body.get("answerText", ""), 8000)
+    answer_text = sanitize_plain_text(body.get("answerText") or body.get("answer", ""), 8000)
     input_mode = sanitize_short_field(body.get("inputMode", "text"), 20)
     time_taken = int(body.get("timeTakenSeconds", 45))
 
@@ -2843,7 +2843,20 @@ def submit_skill_assessment(body: Dict[str, Any], owner_id: str = "legacy_unowne
     weak_subtopics: List[str] = []
 
     for idx, q in enumerate(questions):
-        selected = int(mcq_answers[idx]) if idx < len(mcq_answers) and mcq_answers[idx] is not None else -1
+        selected = -1
+        if isinstance(mcq_answers, list):
+            if 0 <= idx < len(mcq_answers) and mcq_answers[idx] is not None:
+                try:
+                    selected = int(mcq_answers[idx])
+                except (ValueError, TypeError):
+                    selected = -1
+        elif isinstance(mcq_answers, dict):
+            raw_val = mcq_answers.get(idx) if idx in mcq_answers else mcq_answers.get(str(idx))
+            if raw_val is not None:
+                try:
+                    selected = int(raw_val)
+                except (ValueError, TypeError):
+                    selected = -1
         correct_idx = int(q.get("correctIndex", 0))
         is_ok = selected == correct_idx
         used_tier = hints_used.get(str(idx), 0)
