@@ -1,9 +1,3 @@
-"""
-Check every Free and Paid course URL in backend/resources.json
-AND audit every in-app href="#..." in frontend/index.html against registered routes
-and valid DOM IDs to prevent 404 dead ends (Bug 2).
-"""
-
 import json
 import os
 import re
