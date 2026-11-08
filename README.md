@@ -5,7 +5,7 @@
 <div align="center">
 
 [![Live Application](https://img.shields.io/badge/🌐%20Live%20App-carrermatch--ai.onrender.com-B84D2B?style=for-the-badge&logo=render&logoColor=black)](https://carrermatch-ai.onrender.com)
-[![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Rishav1002/CarrerMatch)
+[![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Rishav1002/CareerMatch)
 
 <br/>
 
@@ -167,7 +167,7 @@ If an unexpected regression reaches production on Render:
 ### 1. Clone & Set Up Virtual Environment
 
 ```bash
-git clone https://github.com/Rishav1002/CarrerMatch.git
+git clone https://github.com/Rishav1002/CareerMatch.git
 cd CareerMatch
 
 python -m venv venv
@@ -235,7 +235,5 @@ python scripts/check_contrast.py
 ---
 
 ## License
-
-CareerMatch AI is open-source software licensed under the [MIT License](LICENSE).
 
 CareerMatch AI is open-source software licensed under the [MIT License](LICENSE).
