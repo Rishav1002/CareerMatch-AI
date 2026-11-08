@@ -4,7 +4,7 @@
 
 <div align="center">
 
-[![Live Application](https://img.shields.io/badge/🌐%20Live%20App-carrermatch--ai.onrender.com-46E3B7?style=for-the-badge&logo=render&logoColor=black)](https://carrermatch-ai.onrender.com)
+[![Live Application](https://img.shields.io/badge/🌐%20Live%20App-carrermatch--ai.onrender.com-B84D2B?style=for-the-badge&logo=render&logoColor=black)](https://carrermatch-ai.onrender.com)
 [![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Rishav1002/CarrerMatch)
 
 <br/>
