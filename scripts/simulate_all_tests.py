@@ -7,6 +7,7 @@ sys.path.insert(0, os.path.abspath('.'))
 import tests.test_basic as tb
 import tests.test_routes as tr
 import tests.test_api_endpoints as ta
+import tests.test_neon_auth as tna
 
 class DummyMonkeyPatch:
     def __init__(self):
@@ -43,8 +44,13 @@ tests = [
     (tr, 'test_component_required_ids_exist', []),
     (tr, 'test_database_retry_loop_is_present', []),
     (ta, 'test_roles_catalog_has_over_40_roles', []),
-    (ta, 'test_health_check_returns_database_connected', []),
+    (ta, 'test_health_check_returns_sanitized_status', []),
     (ta, 'test_ai_rate_limiter_and_usage', []),
+    (tna, 'test_registration_validation_password_mismatch', []),
+    (tna, 'test_registration_validation_short_password', []),
+    (tna, 'test_registration_and_login_flow', []),
+    (tna, 'test_session_cookie_extraction', []),
+    (tna, 'test_sync_neon_user_preserves_existing_data', []),
 ]
 
 print(f"Simulating all {len(tests)} tests...")

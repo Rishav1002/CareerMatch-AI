@@ -144,19 +144,22 @@ def seed_demo_user_and_profile() -> None:
 
 
 def register_user(body: Dict[str, Any]) -> Dict[str, Any]:
-    full_name = sanitize_short_field(body.get("fullName", ""), 100)
-    email = sanitize_short_field(body.get("email", ""), 140).lower()
+    full_name = sanitize_short_field(body.get("fullName", "") or body.get("name", ""), 100)
+    email = sanitize_short_field(body.get("email", ""), 140).lower().strip()
     password = str(body.get("password", ""))
+    confirm_password = body.get("confirmPassword")
     target_role = sanitize_short_field(body.get("targetRole", "Full Stack Developer"), 100)
     institution = sanitize_short_field(body.get("institution", ""), 140)
     graduation_year = sanitize_short_field(body.get("graduationYear", "2026"), 10)
 
-    if len(full_name) < 2:
+    if not full_name or len(full_name) < 2:
         raise ValueError("Please enter your full name (at least 2 characters).")
-    if not re.match(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$", email):
+    if not email or not re.match(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$", email):
         raise ValueError("Please provide a valid email address.")
-    if len(password) < 6:
-        raise ValueError("Password must be at least 6 characters long.")
+    if confirm_password is not None and str(confirm_password) != password:
+        raise ValueError("Passwords do not match. Please re-enter your password.")
+    if len(password) < 8:
+        raise ValueError("Password must be at least 8 characters long.")
 
     conn = get_connection()
     cursor = conn.cursor()
@@ -207,10 +210,178 @@ def register_user(body: Dict[str, Any]) -> Dict[str, Any]:
 
     token = create_jwt_token(user_id, email, full_name)
     return {
+        "status": "ok",
         "token": token,
         "user": {"id": user_id, "fullName": full_name, "email": email, "role": "student"},
         "profile": get_student_profile(user_id),
     }
+
+
+def sync_neon_user_with_student_profile(user_info: Dict[str, Any]) -> str:
+    """Safely map Neon Auth user identity to existing CareerMatch student profile.
+    Preserves all existing resumes, analyses, roadmaps, and interview history.
+    """
+    user_id = str(user_info.get("id", ""))
+    email = str(user_info.get("email", "")).lower().strip()
+    full_name = str(user_info.get("fullName") or user_info.get("name") or "Student")
+
+    if not user_id:
+        return ""
+
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+
+        # Check if student_profile already exists for this exact user_id
+        cur.execute("SELECT user_id FROM student_profiles WHERE user_id = ?", (user_id,))
+        if cur.fetchone():
+            conn.close()
+            return user_id
+
+        # If not, check if an existing profile exists with this email
+        legacy_id = None
+        if email:
+            cur.execute("SELECT user_id FROM student_profiles WHERE LOWER(email) = ?", (email,))
+            legacy_row = cur.fetchone()
+            if legacy_row:
+                legacy_id = str(legacy_row["user_id"])
+
+        if legacy_id and legacy_id != user_id:
+            # Map legacy records to the new Neon user_id
+            now_iso = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+            cur.execute("UPDATE student_profiles SET user_id = ?, updated_at = ? WHERE user_id = ?", (user_id, now_iso, legacy_id))
+            cur.execute("UPDATE resumes SET owner_id = ?, user_id = ? WHERE owner_id = ? OR user_id = ?", (user_id, user_id, legacy_id, legacy_id))
+            cur.execute("UPDATE interview_sessions SET owner_id = ? WHERE owner_id = ?", (user_id, legacy_id))
+            cur.execute("UPDATE learning_roadmaps SET owner_id = ? WHERE owner_id = ?", (user_id, legacy_id))
+            cur.execute("UPDATE assessment_sessions SET owner_id = ? WHERE owner_id = ?", (user_id, legacy_id))
+            conn.commit()
+            conn.close()
+            return user_id
+
+        # If completely new user, create an initial student profile
+        now_iso = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+        cur.execute(
+            """
+            INSERT INTO student_profiles (
+                user_id, full_name, email, education_degree, institution, graduation_year,
+                experience_level, target_role, secondary_roles_json, preferred_locations_json,
+                target_companies_json, github_username, linkedin_url, active_resume_id,
+                pri_weights_json, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                user_id,
+                full_name,
+                email,
+                "B.Tech / Bachelor's in Computer Science",
+                "University / Institute",
+                "2026",
+                "Entry Level / Final Year (0-1 Yrs)",
+                "Full Stack Developer",
+                json.dumps(["Python Backend Developer", "Data Engineer"]),
+                json.dumps(["Bengaluru", "Remote"]),
+                json.dumps(["Google", "Microsoft", "Amazon"]),
+                "",
+                "",
+                "",
+                json.dumps(DEFAULT_PRI_WEIGHTS),
+                now_iso,
+            ),
+        )
+        conn.commit()
+        conn.close()
+    except Exception:
+        pass
+
+    return user_id
+
+
+def verify_session_token(token: str) -> Optional[Dict[str, Any]]:
+    """Verify session token against Neon Managed Better Auth or local database/JWT.
+
+    1. Checks Neon Auth PostgreSQL session table (neon_auth.sessions) if present.
+    2. Checks Neon Auth HTTP API (NEON_AUTH_BASE_URL/api/auth/get-session) if configured.
+    3. Falls back to verified local JWT claims.
+    """
+    if not token or not isinstance(token, str):
+        return None
+
+    token = token.strip()
+    if token.lower().startswith("bearer "):
+        token = token[7:].strip()
+    if not token:
+        return None
+
+    # 1. Check Neon PostgreSQL neon_auth.sessions table
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT s.user_id, u.email, u.name, u.role
+            FROM neon_auth.sessions s
+            JOIN neon_auth.users u ON s.user_id = u.id
+            WHERE s.token = ? AND s.expires_at > CURRENT_TIMESTAMP
+            """,
+            (token,),
+        )
+        row = cur.fetchone()
+        conn.close()
+        if row:
+            user_data = {
+                "id": str(row["user_id"]),
+                "email": str(row["email"]),
+                "fullName": str(row.get("name") or "Student"),
+                "role": str(row.get("role") or "student"),
+            }
+            sync_neon_user_with_student_profile(user_data)
+            return user_data
+    except Exception:
+        pass
+
+    # 2. Check Neon Managed Auth HTTP API if NEON_AUTH_BASE_URL configured
+    from backend.config import NEON_AUTH_BASE_URL
+    if NEON_AUTH_BASE_URL:
+        try:
+            import urllib.request
+            req = urllib.request.Request(
+                f"{NEON_AUTH_BASE_URL.rstrip('/')}/api/auth/get-session",
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Cookie": f"better-auth.session_token={token}",
+                    "Accept": "application/json",
+                },
+            )
+            with urllib.request.urlopen(req, timeout=4) as resp:
+                if resp.status == 200:
+                    data = json.loads(resp.read().decode("utf-8"))
+                    u = data.get("user")
+                    if u and u.get("id"):
+                        user_data = {
+                            "id": str(u["id"]),
+                            "email": str(u.get("email", "")),
+                            "fullName": str(u.get("name") or "Student"),
+                            "role": str(u.get("role") or "student"),
+                        }
+                        sync_neon_user_with_student_profile(user_data)
+                        return user_data
+        except Exception:
+            pass
+
+    # 3. Fallback to local verified JWT
+    try:
+        claims = decode_jwt_token(token)
+        if claims and claims.get("sub"):
+            return {
+                "id": str(claims["sub"]),
+                "email": str(claims.get("email", "")),
+                "fullName": str(claims.get("name", "Student")),
+                "role": str(claims.get("role", "student")),
+            }
+    except Exception:
+        pass
+
+    return None
 
 
 # Login Rate Limiting (Section 13 C)
@@ -257,6 +428,7 @@ def login_user(body: Dict[str, Any], client_ip: str = "unknown") -> Dict[str, An
 
     token = create_jwt_token(row["id"], row["email"], row["full_name"], row["role"])
     return {
+        "status": "ok",
         "token": token,
         "user": {
             "id": row["id"],

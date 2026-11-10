@@ -99,13 +99,13 @@ export class AtsModule {
 
   renderEmptyState() {
     const emptyContainer = document.getElementById("atsEmptyStateContainer");
-    const contentContainer = document.getElementById("atsContentContainer");
+    const contentContainer = document.getElementById("atsContentContainer") || document.querySelector("#view-ats > .card");
     if (emptyContainer) emptyContainer.hidden = false;
     if (contentContainer) contentContainer.hidden = true;
   }
 
   renderError(msg) {
-    const content = document.getElementById("atsContentContainer");
+    const content = document.getElementById("atsContentContainer") || document.querySelector("#view-ats > .card");
     if (content) {
       content.innerHTML = `
         <div class="card error-card" style="padding:1.5rem;text-align:center;">
@@ -124,7 +124,7 @@ export class AtsModule {
     }
 
     const emptyContainer = document.getElementById("atsEmptyStateContainer");
-    const contentContainer = document.getElementById("atsContentContainer");
+    const contentContainer = document.getElementById("atsContentContainer") || document.querySelector("#view-ats > .card");
     if (emptyContainer) emptyContainer.hidden = true;
     if (contentContainer) contentContainer.hidden = false;
 

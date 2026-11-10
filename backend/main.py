@@ -65,6 +65,7 @@ from backend.career_modules import (
     submit_skill_assessment,
     toggle_learning_task,
     update_student_profile,
+    verify_session_token,
 )
 from backend.config import (
     APP_ENV,
@@ -152,11 +153,11 @@ def _verify_cookie_val(raw: Optional[str]) -> Optional[str]:
 async def get_owner(request: Request) -> Tuple[str, bool]:
     """
     FastAPI dependency returning (owner_id, is_authenticated).
-    - Authenticated: extracted and verified from JWT token
+    - Authenticated: verified from Neon Managed Better Auth session or signed JWT
     - Guest: verified signed cm_sid cookie or newly generated guest session
     Never trusts client-supplied user ID in queries, headers, or body.
     """
-    # 1. Check verified JWT from Authorization header or cookie
+    # 1. Check verified session / token from Authorization header or cookies
     auth_header = request.headers.get("Authorization")
     token = None
     if auth_header and auth_header.strip():
@@ -165,16 +166,15 @@ async def get_owner(request: Request) -> Tuple[str, bool]:
             token = raw[7:].strip()
         else:
             token = raw
+    elif request.cookies.get("better-auth.session_token"):
+        token = request.cookies.get("better-auth.session_token")
     elif request.cookies.get("cm_jwt_token"):
         token = request.cookies.get("cm_jwt_token")
 
     if token:
-        try:
-            claims = decode_jwt_token(token)
-            if claims and claims.get("sub"):
-                return str(claims["sub"]), True
-        except Exception:
-            pass
+        user_info = verify_session_token(token)
+        if user_info and user_info.get("id"):
+            return str(user_info["id"]), True
 
     # 2. Check guest session from request.state (set by middleware)
     guest_id = getattr(request.state, "guest_id", None)
@@ -187,19 +187,23 @@ async def get_owner(request: Request) -> Tuple[str, bool]:
     return guest_id, False
 
 
-def _extract_user_id_from_auth_header(auth_header: Optional[str]) -> Optional[str]:
-    if not auth_header or not auth_header.strip():
-        return None
-    raw = auth_header.strip()
-    if raw.lower().startswith("bearer "):
-        token = raw[7:].strip()
-    else:
-        token = raw
+def _extract_user_id_from_auth_header(auth_header: Optional[str] = None, session_cookie: Optional[str] = None) -> Optional[str]:
+    token = None
+    if auth_header and auth_header.strip():
+        raw = auth_header.strip()
+        if raw.lower().startswith("bearer "):
+            token = raw[7:].strip()
+        else:
+            token = raw
+    elif session_cookie and session_cookie.strip():
+        token = session_cookie.strip()
+
     if not token:
-        raise PermissionError("Invalid or expired authentication token.")
-    claims = decode_jwt_token(token)
-    if claims and claims.get("sub"):
-        return str(claims["sub"])
+        return None
+
+    user_info = verify_session_token(token)
+    if user_info and user_info.get("id"):
+        return str(user_info["id"])
     raise PermissionError("Invalid or expired authentication token.")
 
 
@@ -792,6 +796,7 @@ async def api_delete_history(
 
 # ---- CareerMatch AI Authentication & Modules ----
 
+@app.post("/api/auth/sign-up/email")
 @app.post("/api/auth/register")
 async def api_auth_register(request: Request) -> Dict[str, Any]:
     client_ip = request.client.host if request.client and request.client.host else "unknown"
@@ -806,6 +811,7 @@ async def api_auth_register(request: Request) -> Dict[str, Any]:
         raise HTTPException(status_code=400, detail=str(exc))
 
 
+@app.post("/api/auth/sign-in/email")
 @app.post("/api/auth/login")
 async def api_auth_login(
     request: Request,
@@ -830,6 +836,35 @@ async def api_auth_login(
         raise HTTPException(status_code=429, detail=str(exc))
     except ValueError as exc:
         raise HTTPException(status_code=401, detail=str(exc))
+
+
+@app.get("/api/auth/me")
+@app.get("/api/auth/get-session")
+async def api_auth_get_session(
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    owner_id, is_auth = owner_info
+    if not is_auth:
+        raise HTTPException(status_code=401, detail="Authentication required.")
+    profile = get_student_profile(owner_id)
+    return {
+        "user": {
+            "id": owner_id,
+            "fullName": profile.get("fullName") if profile else "Student",
+            "email": profile.get("email") if profile else "",
+            "role": "student",
+        },
+        "session": {"userId": owner_id},
+        "profile": profile,
+    }
+
+
+@app.post("/api/auth/sign-out")
+@app.post("/api/auth/logout")
+async def api_auth_logout(response: Response) -> Dict[str, Any]:
+    response.delete_cookie("better-auth.session_token", path="/")
+    response.delete_cookie("cm_jwt_token", path="/")
+    return {"success": True, "message": "Signed out successfully."}
 
 
 @app.post("/api/profile/import")
@@ -1133,6 +1168,10 @@ if os.path.isdir(FRONTEND_DIR):
         app.mount("/js", StaticFiles(directory=js_dir), name="js")
     if os.path.isdir(assets_dir):
         app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+node_modules_dir = os.path.join(ROOT_DIR, "node_modules")
+if os.path.isdir(node_modules_dir):
+    app.mount("/node_modules", StaticFiles(directory=node_modules_dir), name="node_modules")
 
 
 @app.get("/")

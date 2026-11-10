@@ -79,7 +79,7 @@ export class ReportModule {
 
   renderEmptyState() {
     const emptyContainer = document.getElementById("reportEmptyState");
-    const contentContainer = document.getElementById("reportContentContainer");
+    const contentContainer = document.getElementById("reportContentContainer") || document.getElementById("results");
     if (emptyContainer) emptyContainer.hidden = false;
     if (contentContainer) contentContainer.hidden = true;
   }
@@ -91,7 +91,7 @@ export class ReportModule {
     }
 
     const emptyContainer = document.getElementById("reportEmptyState");
-    const contentContainer = document.getElementById("reportContentContainer");
+    const contentContainer = document.getElementById("reportContentContainer") || document.getElementById("results");
     if (emptyContainer) emptyContainer.hidden = true;
     if (contentContainer) contentContainer.hidden = false;
 

@@ -20,6 +20,10 @@ GEMINI_MODEL: str = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash").strip() o
 DATABASE_PATH: str = os.environ.get("DATABASE_PATH", os.path.join(ROOT_DIR, "careermatch.db")).strip()
 DATABASE_URL: str = os.environ.get("DATABASE_URL", "").strip()
 
+# Neon Managed Better Auth configuration
+NEON_AUTH_BASE_URL: str = os.environ.get("NEON_AUTH_BASE_URL", "").strip()
+NEON_AUTH_JWKS_URL: str = os.environ.get("NEON_AUTH_JWKS_URL", "").strip()
+
 JWT_SECRET: str = os.environ.get("JWT_SECRET", "careermatch-ai-2-dev-secret-key-change-in-prod").strip()
 JWT_EXPIRY_HOURS: int = int(os.environ.get("JWT_EXPIRY_HOURS", "72"))
 

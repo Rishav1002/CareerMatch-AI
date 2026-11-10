@@ -16,6 +16,7 @@ export class StudyPlanner {
 
   init() {
     this.render();
+    this.populateRoles();
     this._bindControls();
 
     store.subscribe("plannerTasks", (newTasks) => {
@@ -26,6 +27,27 @@ export class StudyPlanner {
     store.subscribe("activeResume", () => {
       this._syncTargetRoleFromStore();
     });
+  }
+
+  async populateRoles() {
+    try {
+      const res = await fetch("/api/roles");
+      if (res.ok) {
+        const data = await res.json();
+        const roles = data.roles || [];
+        const roleSelect = document.getElementById("plannerTargetRole");
+        if (roleSelect && roles.length) {
+          const currentVal = roleSelect.value;
+          roleSelect.innerHTML = roles
+            .map((r) => `<option value="${escapeHtml(r.title)}">${escapeHtml(r.title)}</option>`)
+            .join("");
+          if (currentVal) {
+            roleSelect.value = currentVal;
+          }
+          this._syncTargetRoleFromStore();
+        }
+      }
+    } catch (_) {}
   }
 
   _syncTargetRoleFromStore() {

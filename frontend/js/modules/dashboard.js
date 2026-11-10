@@ -18,9 +18,9 @@ export class DashboardModule {
     this.initialized = true;
 
     // Attach listeners for actions inside dashboard
-    const startAnalysisBtn = document.getElementById("dashStartAnalysisBtn");
-    if (startAnalysisBtn) {
-      startAnalysisBtn.addEventListener("click", () => {
+    const uploadBtn = document.getElementById("dashUploadResumeBtn") || document.getElementById("dashStartAnalysisBtn");
+    if (uploadBtn) {
+      uploadBtn.addEventListener("click", () => {
         window.location.hash = "#/analyzer";
       });
     }

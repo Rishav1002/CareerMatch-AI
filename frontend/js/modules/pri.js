@@ -17,7 +17,10 @@ export class PriModule {
     if (this.initialized) return;
     this.initialized = true;
 
-    const recalcBtn = document.getElementById("recalculatePriBtn") || document.getElementById("applyPriWeightsBtn");
+    const recalcBtn =
+      document.getElementById("recalcPriBtn") ||
+      document.getElementById("recalculatePriBtn") ||
+      document.getElementById("applyPriWeightsBtn");
     if (recalcBtn) {
       recalcBtn.addEventListener("click", () => this.load());
     }
@@ -94,7 +97,7 @@ export class PriModule {
 
   renderEmptyState() {
     const emptyContainer = document.getElementById("priEmptyState");
-    const contentContainer = document.getElementById("priContentContainer");
+    const contentContainer = document.getElementById("priContentContainer") || document.querySelector("#view-pri > .card");
     if (emptyContainer) emptyContainer.hidden = false;
     if (contentContainer) contentContainer.hidden = true;
   }
@@ -119,7 +122,7 @@ export class PriModule {
     }
 
     const emptyContainer = document.getElementById("priEmptyState");
-    const contentContainer = document.getElementById("priContentContainer");
+    const contentContainer = document.getElementById("priContentContainer") || document.querySelector("#view-pri > .card");
     if (emptyContainer) emptyContainer.hidden = true;
     if (contentContainer) contentContainer.hidden = false;
 

@@ -55,14 +55,14 @@ export class InterviewModule {
 
   renderEmptyState() {
     const emptyContainer = document.getElementById("interviewEmptyState");
-    const contentContainer = document.getElementById("interviewContentContainer");
+    const contentContainer = document.getElementById("interviewContentContainer") || document.querySelector("#view-interview > .card");
     if (emptyContainer) emptyContainer.hidden = false;
     if (contentContainer) contentContainer.hidden = true;
   }
 
   renderReadyState() {
     const emptyContainer = document.getElementById("interviewEmptyState");
-    const contentContainer = document.getElementById("interviewContentContainer");
+    const contentContainer = document.getElementById("interviewContentContainer") || document.querySelector("#view-interview > .card");
     if (emptyContainer) emptyContainer.hidden = true;
     if (contentContainer) contentContainer.hidden = false;
   }

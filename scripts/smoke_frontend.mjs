@@ -97,7 +97,12 @@ const html = fs.readFileSync(htmlPath, "utf8");
 
 // Assert boot watchdog and banner exist
 assert(html.includes('id="cmBootFailureBanner"'), "index.html must contain boot failure banner #cmBootFailureBanner");
-assert(html.includes("window.__cmBooted"), "index.html must contain boot watchdog checking window.__cmBooted");
+assert(
+  html.includes("window.__cmBooted") ||
+    (html.includes("boot-watchdog.js") &&
+      fs.readFileSync(path.join(jsDir, "boot-watchdog.js"), "utf8").includes("window.__cmBooted")),
+  "index.html must contain boot watchdog checking window.__cmBooted"
+);
 
 // All 15 required routes
 const expectedRoutes = [

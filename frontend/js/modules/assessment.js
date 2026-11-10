@@ -46,6 +46,11 @@ export class AssessmentModule {
     if (resume) {
       this.populateTopicOptions(resume);
     }
+    const saved = store.get("assessmentSession");
+    if (saved && !this.currentAssessment) {
+      this.currentAssessment = saved;
+      this.render(saved);
+    }
     this.loadHistory();
   }
 

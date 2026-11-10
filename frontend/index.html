@@ -272,17 +272,13 @@
 <span>Settings &amp; Privacy</span>
 </a>
 <div class="avatar-menu-divider"></div>
-<div class="p-2">
-<div class="text-xs text-tertiary mb-1 font-semibold">Language / भाषा</div>
-<div class="segmented-nav d-flex w-full" id="avatarLangSegmented">
-<button class="tab-btn active text-xs flex-1" id="langBtnEn" type="button">English</button>
-<button class="tab-btn text-xs flex-1" id="langBtnHi" type="button">हिन्दी</button>
-</div>
-</div>
-<div class="avatar-menu-divider"></div>
 <button class="avatar-menu-item" id="openAuthModalBtn" type="button">
 <svg fill="none" height="15" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="15"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" x2="3" y1="12" y2="12"></line></svg>
 <span id="authModalBtnText">Sign In</span>
+</button>
+<button class="avatar-menu-item hidden text-low" id="avatarSignOutBtn" type="button">
+<svg fill="none" height="15" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="15"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+<span>Sign Out</span>
 </button>
 </div>
 </div>
@@ -515,21 +511,35 @@
 </div>
 <form id="authPageForm" method="post" action="#">
 <div class="form-group hidden mb-15" id="authPageNameGroup">
-<label class="form-label" for="authPageNameInput">Name</label>
-<input autocomplete="name" class="form-input" id="authPageNameInput" placeholder="Your Name" type="text" minlength="2"/>
+<label class="form-label" for="authPageNameInput">Full Name</label>
+<input autocomplete="name" class="form-input" id="authPageNameInput" placeholder="Your Full Name" type="text" minlength="2"/>
 </div>
 <div class="form-group mb-15">
 <label class="form-label" for="authPageEmailInput">Email Address</label>
 <input autocomplete="email" class="form-input" id="authPageEmailInput" placeholder="name@college.edu" required="" type="email"/>
 </div>
 <div class="form-group mb-1">
-<div class="d-flex flex-between">
-<label class="form-label" for="authPagePasswordInput">Password</label>
-<button class="btn btn-ghost btn-sm text-xs badge-tag" id="authTogglePasswordBtn" type="button">
-                      Show
-                    </button>
+<div class="d-flex flex-between align-center mb-05">
+<label class="form-label m-0" for="authPagePasswordInput">Password</label>
+<div class="d-flex gap-xs">
+<button class="btn btn-ghost btn-sm text-xxs badge-tag hidden" id="authGeneratePasswordBtn" type="button" title="Generate strong random password">
+  Suggest Password
+</button>
+<button class="btn btn-ghost btn-sm text-xxs badge-tag" id="authTogglePasswordBtn" type="button">
+  Show
+</button>
 </div>
-<input autocomplete="new-password" class="form-input" id="authPagePasswordInput" placeholder="At least 8 characters" required="" type="password" minlength="6"/>
+</div>
+<input autocomplete="new-password" class="form-input" id="authPagePasswordInput" placeholder="At least 8 characters" required="" type="password" minlength="8"/>
+</div>
+<!-- Confirm Password (Signup only) -->
+<div class="form-group hidden mb-15" id="authPageConfirmPasswordGroup">
+<label class="form-label" for="authPageConfirmPasswordInput">Confirm Password</label>
+<input autocomplete="new-password" class="form-input" id="authPageConfirmPasswordInput" placeholder="Repeat your password" type="password" minlength="8"/>
+</div>
+<!-- Password Requirements hint -->
+<div class="text-xs text-tertiary mb-1 hidden" id="authPasswordRequirements">
+  Password must be at least 8 characters with letters and numbers.
 </div>
 <!-- Password Strength Meter -->
 <div class="hidden mb-15" id="authPasswordStrengthWrap">
@@ -538,7 +548,8 @@
 </div>
 <span class="text-xs text-tertiary" id="authPasswordStrengthLabel">Password strength</span>
 </div>
-<div class="text-low mb-15 hidden" id="authPageErrorMsg"></div>
+<div class="text-low mb-15 hidden" id="authPageErrorMsg" role="alert"></div>
+<div class="text-high mb-15 hidden" id="authPageSuccessMsg" role="status"></div>
 <button class="btn btn-primary w-full mb-15" id="authPageSubmitBtn" type="submit">
                   Sign In →
                 </button>
@@ -582,10 +593,13 @@
 <p class="text-sm" id="ovTargetRoleLabel">
                     Upload a resume to get started.
                   </p>
-<div class="d-flex gap-md text-sm">
+<div class="d-flex gap-md text-sm mb-1">
 <div>Match: <strong id="ovTechScore">—</strong></div>
 <div>ATS: <strong id="ovAtsScore">—</strong></div>
 <div>Fit: <strong id="ovMarketScore">—</strong></div>
+</div>
+<div class="mt-1">
+<a class="btn btn-primary btn-sm" href="#/analyzer" id="dashUploadResumeBtn">Upload Resume in Matcher →</a>
 </div>
 </div>
 </div>
@@ -830,37 +844,37 @@
                VIEW 4: CAREER REPORT & EVIDENCE LEDGER (#/report)
                ================================================================== -->
 <section class="view-panel" hidden="" id="view-report">
-<div id="results">
+<div id="results" class="report-content-container">
 <!-- Spotlight Banner -->
 <div class="spotlight-banner">
 <div class="spotlight-score-group">
 <div class="font-serif text-score-huge font-semibold lh-tight text-primary" id="spotlightScoreNum">
-                    83.2%
+                    —
                   </div>
 <div>
-<span class="status-badge status-matched" id="spotlightVerdictBadge">Strong Match</span>
-<h3 class="text-lg" id="spotlightSummaryTitle">Data Engineer Alignment</h3>
+<span class="status-badge" id="spotlightVerdictBadge">Pending Analysis</span>
+<h3 class="text-lg" id="spotlightSummaryTitle">Target Role Alignment</h3>
 <p class="text-sm text-secondary m-0" id="spotlightSummaryDesc">
-                      Meets mandatory requirements with verified production ETL proof.
+                      Upload and analyze your resume in the Matcher to view personalized scores.
                     </p>
 </div>
 </div>
 <div class="spotlight-kpis">
 <div class="spotlight-kpi-item">
 <span class="spotlight-kpi-label">Mandatory</span>
-<span class="spotlight-kpi-val" id="spotMandatoryPct">100%</span>
+<span class="spotlight-kpi-val" id="spotMandatoryPct">—</span>
 </div>
 <div class="spotlight-kpi-item">
 <span class="spotlight-kpi-label">Preferred</span>
-<span class="spotlight-kpi-val" id="spotPreferredPct">66.7%</span>
+<span class="spotlight-kpi-val" id="spotPreferredPct">—</span>
 </div>
 <div class="spotlight-kpi-item">
 <span class="spotlight-kpi-label">Education</span>
-<span class="spotlight-kpi-val" id="spotEducationScore">100%</span>
+<span class="spotlight-kpi-val" id="spotEducationScore">—</span>
 </div>
 <div class="spotlight-kpi-item">
 <span class="spotlight-kpi-label">Projects</span>
-<span class="spotlight-kpi-val" id="spotProjectsScore">80%</span>
+<span class="spotlight-kpi-val" id="spotProjectsScore">—</span>
 </div>
 </div>
 <div class="d-flex gap-sm">
@@ -1190,7 +1204,13 @@ Derived from your verified roadmap and skill gaps. Structured daily deliverables
 <div class="d-grid grid-auto-fit gap-sm mb-3">
 <div>
 <label class="form-label text-xs" for="plannerTargetRole">Target Role</label>
-<input class="form-input text-xs" id="plannerTargetRole" type="text" value="Backend Engineer"/>
+<select class="form-select text-xs" id="plannerTargetRole">
+  <option value="Full Stack Developer">Full Stack Developer</option>
+  <option value="Data Engineer">Data Engineer</option>
+  <option value="Machine Learning Engineer">Machine Learning Engineer</option>
+  <option value="Backend Engineer">Backend Engineer</option>
+  <option value="Cloud / DevOps Engineer">Cloud / DevOps Engineer</option>
+</select>
 </div>
 <div>
 <label class="form-label text-xs" for="plannerIntensity">Study Pace &amp; Intensity</label>
@@ -1326,17 +1346,15 @@ Derived from your verified roadmap and skill gaps. Structured daily deliverables
 </div>
 <div class="d-flex items-center gap-sm">
 <select class="form-select text-xs w-auto" id="asmtTopicSelect" required="">
-<option disabled="" selected="" value="">Topic (e.g. Python)...</option>
-<option value="Python">Python</option>
+<option value="Python" selected="">Python</option>
 <option value="SQL">SQL</option>
 <option value="Data Structures">Data Structures</option>
 </select>
 <select class="form-select text-xs w-auto" id="asmtDifficultySelect" required="">
-<option disabled="" selected="" value="">Difficulty (e.g. Intermediate)...</option>
-<option value="Intermediate">Intermediate</option>
+<option value="Intermediate" selected="">Intermediate</option>
 <option value="Advanced">Advanced</option>
 </select>
-<button class="btn btn-primary btn-sm" disabled="" id="generateAssessmentBtn" type="button">
+<button class="btn btn-primary btn-sm" id="generateAssessmentBtn" type="button">
                     Start Test
                   </button>
 </div>
@@ -1346,10 +1364,24 @@ Derived from your verified roadmap and skill gaps. Structured daily deliverables
 <div class="d-flex flex-col gap-md mb-3" id="asmtMcqContainer"></div>
 <!-- Coding Challenge Box -->
 <div class="card p-2 bg-sunken mb-2">
-<h4 class="text-base mb-05" id="asmtCodingTitle">Code Challenge</h4>
-<p class="text-sm text-secondary mb-1" id="asmtCodingPrompt"></p>
-<textarea class="form-textarea font-mono text-sm" id="asmtCodeEditor" rows="6"></textarea>
-<div class="mt-1" id="asmtTestCasesList"></div>
+<h4 class="text-base mb-05" id="asmtCodingTitle">Part 2 · Top-K Frequent Skill Tags Aggregator (35% Weight)</h4>
+<p class="text-sm text-secondary mb-1" id="asmtCodingPrompt">Write a Python function <code>top_k_skills(skills: list[str], k: int) -&gt; list[str]</code> that returns the <code>k</code> most frequent skill strings (case-insensitive normalized to lowercase), ordered by frequency descending and alphabetically on ties. Handle empty lists or <code>k &lt;= 0</code> safely.</p>
+<textarea class="form-textarea font-mono text-sm" id="asmtCodeEditor" rows="8" spellcheck="false">def top_k_skills(skills: list[str], k: int) -> list[str]:
+    if not skills or k <= 0:
+        return []
+    counts = {}
+    for s in skills:
+        key = str(s).strip().lower()
+        if key:
+            counts[key] = counts.get(key, 0) + 1
+    sorted_keys = sorted(counts.keys(), key=lambda x: (-counts[x], x))
+    return sorted_keys[:k]
+</textarea>
+<div class="mt-1" id="asmtTestCasesList">
+  <div>• <strong>Input:</strong> <code>top_k_skills(['Python', 'SQL', 'python', 'React', 'SQL', 'python'], 2)</code> → <strong>Expected:</strong> <code>['python', 'sql']</code></div>
+  <div>• <strong>Input:</strong> <code>top_k_skills([], 3)</code> → <strong>Expected:</strong> <code>[] (Edge Case: Empty input)</code></div>
+  <div>• <strong>Input:</strong> <code>top_k_skills(['Docker', 'AWS'], 0)</code> → <strong>Expected:</strong> <code>[] (Edge Case: k &lt;= 0)</code></div>
+</div>
 </div>
 <button class="btn btn-primary" id="submitAssessmentBtn" type="button">
                   Submit

@@ -46,7 +46,6 @@ const COMMAND_ITEMS = [
       document.documentElement.setAttribute("data-theme", next);
     },
   },
-  },
   {
     id: "act-print",
     label: "Print / Export Ledger PDF Report",
