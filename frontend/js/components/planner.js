@@ -31,8 +31,13 @@ export class StudyPlanner {
   _syncTargetRoleFromStore() {
     const analysis = store.get("analysis");
     const roleInput = document.getElementById("plannerTargetRole");
-    if (roleInput && analysis?.targetRole) {
-      roleInput.value = analysis.targetRole;
+    const targetRole = analysis?.targetRole || store.get("targetRole");
+    if (roleInput && targetRole) {
+      const optionExists = Array.from(roleInput.options || []).some(o => o.value === targetRole || o.textContent === targetRole);
+      if (!optionExists && roleInput.tagName === "SELECT") {
+        const option = document.createElement("option"); option.value = targetRole; option.textContent = targetRole; roleInput.add(option);
+      }
+      roleInput.value = targetRole;
     }
   }
 

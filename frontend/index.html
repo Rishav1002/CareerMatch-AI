@@ -516,7 +516,7 @@
 <form id="authPageForm" method="post" action="#">
 <div class="form-group hidden mb-15" id="authPageNameGroup">
 <label class="form-label" for="authPageNameInput">Name</label>
-<input autocomplete="name" class="form-input" id="authPageNameInput" placeholder="Your Name" type="text"/>
+<input autocomplete="name" class="form-input" id="authPageNameInput" placeholder="Your Name" type="text" minlength="2"/>
 </div>
 <div class="form-group mb-15">
 <label class="form-label" for="authPageEmailInput">Email Address</label>
@@ -529,7 +529,7 @@
                       Show
                     </button>
 </div>
-<input autocomplete="current-password" class="form-input" id="authPagePasswordInput" placeholder="••••••••" required="" type="password"/>
+<input autocomplete="new-password" class="form-input" id="authPagePasswordInput" placeholder="At least 8 characters" required="" type="password" minlength="6"/>
 </div>
 <!-- Password Strength Meter -->
 <div class="hidden mb-15" id="authPasswordStrengthWrap">
@@ -539,7 +539,7 @@
 <span class="text-xs text-tertiary" id="authPasswordStrengthLabel">Password strength</span>
 </div>
 <div class="text-low mb-15 hidden" id="authPageErrorMsg"></div>
-<button class="btn btn-primary w-full mb-15" id="authPageSubmitBtn" type="button">
+<button class="btn btn-primary w-full mb-15" id="authPageSubmitBtn" type="submit">
                   Sign In →
                 </button>
 </form>

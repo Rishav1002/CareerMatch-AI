@@ -765,3 +765,9 @@
     display: none;
   }
 }
+
+
+/* Prevent nested planner content from forcing seven-column overflow. */
+.planner-day-col, .planner-day-col > div, .planner-day-col .flex-1 { min-width: 0; }
+.planner-day-col .card { align-items: flex-start; }
+.planner-day-col .card span { overflow-wrap: anywhere; }

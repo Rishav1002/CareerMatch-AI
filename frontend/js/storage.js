@@ -194,8 +194,8 @@ class StorageService {
     try {
       const scopedKey = `cm:v1:${this._currentScope}:${key}`;
       localStorage.setItem(scopedKey, JSON.stringify(value));
-      // Keep global pref mirror for theme & lang
-      if (key === "theme" || key === "lang") {
+      // Keep a global preference mirror for the visual theme only.
+      if (key === "theme") {
         localStorage.setItem(`cm:v1:pref:${key}`, JSON.stringify(value));
       }
     } catch (e) {

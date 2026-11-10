@@ -6,7 +6,6 @@
 import { store } from "./store.js";
 import { api } from "./api.js";
 import { router } from "./router.js";
-import { setLanguage, applyTranslations } from "./i18n.js";
 import { commandPalette } from "./components/cmdPalette.js";
 import { guidedFix } from "./components/guidedFix.js";
 import { notifications } from "./components/notifications.js";
@@ -75,13 +74,6 @@ function initApp() {
     document.querySelectorAll(".btn-primary").forEach(attachSpecularHighlight);
   } catch (err) {
     console.error("[Boot] Specular highlight failed:", err);
-  }
-
-  // 3. Initialize Language
-  try {
-    applyTranslations();
-  } catch (err) {
-    console.error("[Boot] i18n applyTranslations failed:", err);
   }
 
   // 4. Attach Shell Listeners
@@ -194,31 +186,9 @@ function attachShellListeners() {
   bindOnce(document.getElementById("landingThemeToggleBtn"), "click", toggleAppTheme);
   bindOnce(document.getElementById("settingsThemeToggleBtn"), "click", toggleAppTheme);
 
-  // Language Segmented Control (EN/HI)
-  const langBtnEn = document.getElementById("langBtnEn");
-  const langBtnHi = document.getElementById("langBtnHi");
-
-  function syncLangButtons(lang) {
-    if (lang === "hi") {
-      langBtnHi?.classList.add("active");
-      langBtnEn?.classList.remove("active");
-    } else {
-      langBtnEn?.classList.add("active");
-      langBtnHi?.classList.remove("active");
-    }
-  }
-
-  langBtnEn?.addEventListener("click", () => {
-    setLanguage("en");
-    syncLangButtons("en");
-  });
-
-  langBtnHi?.addEventListener("click", () => {
-    setLanguage("hi");
-    syncLangButtons("hi");
-  });
-
-  syncLangButtons(store.get("lang") || "en");
+  // CareerMatch AI is English-only. Remove any legacy language preference.
+  try { localStorage.removeItem("cm_pref_lang"); localStorage.removeItem("lang"); } catch (_) {}
+  document.documentElement.setAttribute("lang", "en");
 
   // Settings Actions: Export JSON
   document.getElementById("settingsExportJsonBtn")?.addEventListener("click", async () => {
@@ -260,17 +230,6 @@ function attachShellListeners() {
       if (window.showToast) window.showToast("Deletion failed: " + e.message, "error");
     }
   });
-
-  // Language Switcher Toggle (EN/HI)
-  const langBtn = document.getElementById("langToggleBtn");
-  if (langBtn) {
-    langBtn.addEventListener("click", () => {
-      const current = store.get("lang") || "en";
-      const next = current === "en" ? "hi" : "en";
-      setLanguage(next);
-      langBtn.textContent = next === "en" ? "HI" : "EN";
-    });
-  }
 
   // Storage notice banner
   const storageNoticeEl = document.getElementById("cmStorageNotice");

@@ -1478,3 +1478,38 @@
     padding: 10px;
   }
 }
+
+
+/* CareerMatch AI usability fixes (English-only UI) */
+.auth-viewport { align-items: flex-end; justify-content: center; padding-right: clamp(24px, 8vw, 12vw); }
+.auth-glass-card { width: min(100%, 440px); }
+@media (max-width: 700px) { .auth-viewport { align-items: center; padding: 20px; } .auth-glass-card { max-width: 480px; } }
+
+/* Weekly planner: preserve readable card widths instead of wrapping each word vertically. */
+.planner-week-grid { grid-template-columns: repeat(7, minmax(175px, 1fr)); overflow-x: auto; align-items: start; padding-bottom: 8px; }
+.planner-day-col { min-width: 0; overflow-wrap: break-word; word-break: normal; }
+.planner-day-col .card { min-width: 0; }
+.planner-day-col .flex-1 { min-width: 0; overflow-wrap: anywhere; }
+.planner-day-col span { white-space: normal; }
+@media (max-width: 1200px) { .planner-week-grid { grid-template-columns: repeat(4, minmax(180px, 1fr)); } }
+@media (max-width: 760px) { .planner-week-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); overflow-x: visible; } }
+@media (max-width: 480px) { .planner-week-grid { grid-template-columns: 1fr; } }
+
+/* Role comparison header and salary cards adapt to narrow screens. */
+#view-career .card-header { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+#view-career .card-header > div:last-child { display: flex; flex: 1 1 520px; flex-wrap: wrap; min-width: 0; gap: 8px; }
+#view-career .card-header select { flex: 1 1 190px; min-width: 0; width: auto; max-width: 100%; }
+#view-career .card-header button { flex: 0 0 auto; }
+#view-career .d-grid.grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+#careerRoleACard, #careerRoleBCard, #careerBridgeBody { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 760px) { #view-career .d-grid.grid-2 { grid-template-columns: 1fr; } #view-career .card-header > div:last-child { flex-basis: 100%; } #view-career .card-header select { flex: 1 1 100%; } #view-career .ledger-table-wrapper { overflow-x: auto; } }
+
+/* Long code prompts and supplied challenge code should scroll/wrap within their panels. */
+#asmtCodingPrompt { overflow-wrap: anywhere; word-break: normal; }
+#asmtCodeEditor { width: 100%; max-width: 100%; min-width: 0; white-space: pre; overflow: auto; }
+#asmtTestCasesList { max-width: 100%; overflow-x: auto; overflow-wrap: anywhere; }
+.report-tab-panel[hidden] { display: none !important; }
+#view-career .card-header > div:first-child { flex: 1 1 220px; min-width: 200px; }
+#view-career .card-header h2 { overflow-wrap: normal; word-break: keep-all; }
+#careerRoleACard > div[style*="grid-template-columns"],
+#careerRoleBCard > div[style*="grid-template-columns"] { grid-template-columns: repeat(auto-fit, minmax(125px, 1fr)) !important; }

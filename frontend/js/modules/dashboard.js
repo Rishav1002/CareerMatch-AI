@@ -25,12 +25,6 @@ export class DashboardModule {
       });
     }
 
-    const uploadResumeBtn = document.getElementById("dashUploadResumeBtn");
-    if (uploadResumeBtn) {
-      uploadResumeBtn.addEventListener("click", () => {
-        window.location.hash = "#/analyzer";
-      });
-    }
 
     // Subscribe to activeResume and analysisResult changes
     store.subscribe("activeResume", () => {
@@ -40,9 +34,7 @@ export class DashboardModule {
     });
 
     store.subscribe("analysisResult", (res) => {
-      if (store.get("currentView") === "dashboard" && res?.dashboard) {
-        this.render(res.dashboard);
-      }
+      if (store.get("currentView") === "dashboard") this.load();
     });
   }
 

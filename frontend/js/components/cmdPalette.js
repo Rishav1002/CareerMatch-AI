@@ -5,7 +5,6 @@
 
 import { router } from "../router.js";
 import { store } from "../store.js";
-import { setLanguage } from "../i18n.js";
 
 const COMMAND_ITEMS = [
   // Navigation
@@ -47,14 +46,6 @@ const COMMAND_ITEMS = [
       document.documentElement.setAttribute("data-theme", next);
     },
   },
-  {
-    id: "act-lang",
-    label: "Switch Language (English / Hindi)",
-    tag: "Action",
-    action: () => {
-      const current = store.get("lang");
-      setLanguage(current === "en" ? "hi" : "en");
-    },
   },
   {
     id: "act-print",

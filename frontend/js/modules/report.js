@@ -20,10 +20,10 @@ export class ReportModule {
     this.initialized = true;
 
     // Report Tab navigation
-    const tabBtns = document.querySelectorAll(".report-tab-btn");
+    const tabBtns = document.querySelectorAll("[data-report-tab]");
     tabBtns.forEach((btn) => {
       btn.addEventListener("click", () => {
-        const targetTab = btn.getAttribute("data-tab");
+        const targetTab = btn.getAttribute("data-report-tab");
         this.switchTab(targetTab);
       });
     });
@@ -68,12 +68,12 @@ export class ReportModule {
   }
 
   switchTab(tabId) {
-    document.querySelectorAll(".report-tab-btn").forEach((b) => {
-      b.classList.toggle("active", b.getAttribute("data-tab") === tabId);
+    document.querySelectorAll("[data-report-tab]").forEach((b) => {
+      b.classList.toggle("active", b.getAttribute("data-report-tab") === tabId);
     });
     document.querySelectorAll(".report-tab-panel").forEach((p) => {
-      p.classList.toggle("active", p.id === `tab-${tabId}`);
-      p.hidden = p.id !== `tab-${tabId}`;
+      p.classList.toggle("active", p.id === tabId);
+      p.hidden = p.id !== tabId;
     });
   }
 

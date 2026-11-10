@@ -11,7 +11,6 @@ class Store {
 
     const hasLS = typeof localStorage !== "undefined" && localStorage !== null;
     const savedTheme = storage.getPref("theme", null) || (hasLS ? localStorage.getItem("cm_theme") : null) || "light";
-    const savedLang = storage.getPref("lang", "en");
     const savedToken = hasLS ? (localStorage.getItem("cm_jwt_token") || localStorage.getItem("cm:v1:token") || localStorage.getItem("careermatch_jwt_token") || "") : "";
     if (hasLS) {
       try {
@@ -35,7 +34,6 @@ class Store {
       currentUser: savedUser,
       studentProfile: null,
       theme: savedTheme,
-      lang: savedLang,
       currentView: "landing",
       sidebarCollapsed: false,
       parsedResume: null,
@@ -101,10 +99,6 @@ class Store {
         localStorage.setItem("theme", value);
         document.documentElement.setAttribute("data-theme", value);
         document.documentElement.style.colorScheme = value;
-      }
-      if (key === "lang") {
-        storage.setPref("lang", value);
-        localStorage.setItem("cm_lang", value);
       }
       if (key === "trackerJobs") storage.setPref("trackerJobs", value);
       if (key === "plannerTasks") storage.setPref("plannerTasks", value);

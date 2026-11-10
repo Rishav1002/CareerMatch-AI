@@ -59,7 +59,6 @@ from backend.career_modules import (
     login_demo_user,
     login_user,
     register_user,
-    seed_demo_user_and_profile,
     start_interview_session,
     submit_interview_answer,
     submit_roadmap_stage_quiz,
@@ -118,9 +117,13 @@ FRONTEND_DIR = os.path.join(ROOT_DIR, "frontend")
 
 
 def seed_initial_sqlite_data() -> None:
-    """Initialize relational tables and purge legacy unowned rows."""
+    """Initialize relational tables without deleting user data at application startup.
+
+    Legacy demo-account cleanup must be an explicit, reviewed maintenance task.
+    Running broad DELETE statements on every production boot can remove real
+    accounts and resumes that happen to match demo-like email or filename patterns.
+    """
     init_db()
-    seed_demo_user_and_profile()
 
 
 # Initialize database on module load

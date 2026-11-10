@@ -34,20 +34,20 @@ export class AuthManager {
         this.mode = "login";
         loginSeg.classList.add("active");
         signupSeg.classList.remove("active");
-        if (nameGroup) nameGroup.style.display = "none";
+        if (nameGroup) { nameGroup.classList.add("hidden"); nameGroup.style.removeProperty("display"); }
         if (submitBtn) submitBtn.textContent = "Sign In →";
         if (subtitle) subtitle.textContent = "Sign in to your career intelligence workspace";
-        if (strengthWrap) strengthWrap.style.display = "none";
+        if (strengthWrap) { strengthWrap.classList.add("hidden"); strengthWrap.style.removeProperty("display"); }
       });
 
       signupSeg.addEventListener("click", () => {
         this.mode = "signup";
         signupSeg.classList.add("active");
         loginSeg.classList.remove("active");
-        if (nameGroup) nameGroup.style.display = "block";
+        if (nameGroup) { nameGroup.classList.remove("hidden"); nameGroup.style.display = "block"; }
         if (submitBtn) submitBtn.textContent = "Create Account & Sign In →";
         if (subtitle) subtitle.textContent = "Create your free, deterministic placement workspace";
-        if (strengthWrap) strengthWrap.style.display = "block";
+        if (strengthWrap) { strengthWrap.classList.remove("hidden"); strengthWrap.style.display = "block"; }
       });
     }
 
@@ -64,6 +64,7 @@ export class AuthManager {
         if (this.mode !== "signup") return;
         const val = e.target.value;
         const score = this.calculatePasswordStrength(val);
+        strengthWrap.classList.remove("hidden");
         strengthWrap.style.display = "block";
 
         if (score <= 1) {
@@ -80,10 +81,6 @@ export class AuthManager {
           strengthLabel.textContent = "Password strength: Strong";
         }
       });
-    }
-
-    if (submitBtn) {
-      submitBtn.addEventListener("click", () => this.handleSubmit());
     }
 
     // The account-menu "Sign in" control previously had no click handler.
@@ -132,8 +129,13 @@ export class AuthManager {
     const pwdEl = document.getElementById("authPagePasswordInput");
     const nameEl = document.getElementById("authPageNameInput");
     const errEl = document.getElementById("authPageErrorMsg");
+    const submitBtn = document.getElementById("authPageSubmitBtn");
 
-    if (errEl) errEl.style.display = "none";
+    if (errEl) {
+      errEl.textContent = "";
+      errEl.classList.add("hidden");
+      errEl.style.removeProperty("display");
+    }
 
     const email = emailEl?.value.trim() || "";
     const password = pwdEl?.value || "";
@@ -144,6 +146,7 @@ export class AuthManager {
         errEl.textContent = this.mode === "signup"
           ? "Please provide your name, email, and password."
           : "Please provide both email and password.";
+        errEl.classList.remove("hidden");
         errEl.style.display = "block";
       }
       return;
@@ -153,14 +156,25 @@ export class AuthManager {
     const payload = this.mode === "signup" ? { email, password, fullName: fullName || "Student" } : { email, password };
 
     try {
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = this.mode === "signup" ? "Creating account…" : "Signing in…";
+      }
+
       const res = await fetch(endpoint, {
         method: "POST",
         credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
         body: JSON.stringify(payload),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "Authentication failed");
+      const responseText = await res.text();
+      let data = {};
+      try { data = responseText ? JSON.parse(responseText) : {}; }
+      catch (_) { throw new Error(`Server returned an unreadable response (HTTP ${res.status}).`); }
+      if (!res.ok) {
+        const detail = typeof data.detail === "string" ? data.detail : `Request failed (HTTP ${res.status}).`;
+        throw new Error(detail);
+      }
 
       if (!data.user) {
         throw new Error("The server did not return an account profile. Please check the authentication API response.");
@@ -184,8 +198,16 @@ export class AuthManager {
       }
     } catch (err) {
       if (errEl) {
-        errEl.textContent = err.message;
+        errEl.textContent = err.message || "Authentication failed. Please try again.";
+        errEl.classList.remove("hidden");
         errEl.style.display = "block";
+      }
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = this.mode === "signup"
+          ? "Create Account & Sign In →"
+          : "Sign In →";
       }
     }
   }
