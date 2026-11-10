@@ -29,7 +29,7 @@ import time
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
-from backend.config import DATABASE_PATH, DATABASE_URL, GUEST_DATA_TTL_DAYS
+from backend.config import APP_ENV, DATABASE_PATH, DATABASE_URL, GUEST_DATA_TTL_DAYS
 
 DB_PATH = os.environ.get("DATABASE_PATH", DATABASE_PATH)
 
@@ -147,22 +147,57 @@ class PostgresConnectionWrapper:
 
 
 def get_connection() -> Any:
-    db_url = os.environ.get("DATABASE_URL", DATABASE_URL).strip()
-    if db_url and psycopg2 is not None and (db_url.startswith("postgres://") or db_url.startswith("postgresql://")):
-        if db_url.startswith("postgres://"):
-            db_url = db_url.replace("postgres://", "postgresql://", 1)
-        if "sslmode=" not in db_url:
-            db_url += ("&" if "?" in db_url else "?") + "sslmode=require"
+    """Return the configured database connection.
 
+    Production must use PostgreSQL/Neon exclusively. SQLite is permitted only
+    for local development when DATABASE_URL is not configured. A configured but
+    unavailable PostgreSQL database must fail closed rather than silently
+    creating a separate local database on Render.
+    """
+    db_url = os.environ.get("DATABASE_URL", DATABASE_URL).strip()
+    app_env = os.environ.get("APP_ENV", APP_ENV).strip().lower()
+    is_production = app_env == "production"
+
+    if db_url:
+        if not (db_url.startswith("postgres://") or db_url.startswith("postgresql://")):
+            raise RuntimeError(
+                "DATABASE_URL must use a PostgreSQL URL (postgres:// or postgresql://)."
+            )
+        if psycopg2 is None:
+            raise RuntimeError(
+                "PostgreSQL driver psycopg2 is unavailable. Install the backend requirements."
+            )
+
+        normalized_url = db_url
+        if normalized_url.startswith("postgres://"):
+            normalized_url = normalized_url.replace("postgres://", "postgresql://", 1)
+        if "sslmode=" not in normalized_url:
+            normalized_url += ("&" if "?" in normalized_url else "?") + "sslmode=require"
+
+        last_error: Optional[Exception] = None
         for attempt in range(3):
             try:
-                pg_conn = psycopg2.connect(db_url, cursor_factory=psycopg2.extras.RealDictCursor, connect_timeout=10)
+                pg_conn = psycopg2.connect(
+                    normalized_url,
+                    cursor_factory=psycopg2.extras.RealDictCursor,
+                    connect_timeout=10,
+                )
                 return PostgresConnectionWrapper(pg_conn)
             except Exception as exc:
+                last_error = exc
                 if attempt < 2:
                     time.sleep(1.0 * (attempt + 1))
-                    continue
-                print(f"Warning: PostgreSQL connection failed after retries, falling back to SQLite: {exc}")
+
+        # Never fall back when a PostgreSQL URL was explicitly configured.
+        # In production this prevents split-brain writes and apparent data loss.
+        raise RuntimeError(
+            "PostgreSQL/Neon connection failed after 3 attempts; refusing to fall back to SQLite."
+        ) from last_error
+
+    if is_production:
+        raise RuntimeError(
+            "DATABASE_URL is required in production. Configure the Neon PostgreSQL URL in Render."
+        )
 
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row

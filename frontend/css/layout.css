@@ -1343,3 +1343,138 @@
         font-size: 0.8rem;
     }
 }
+
+
+/* =========================================================
+   CareerMatch AI — dashboard mobile layout corrections
+   ========================================================= */
+@media (max-width: 768px) {
+  #appTopbar {
+    min-width: 0;
+    gap: 8px;
+    padding-inline: 12px;
+  }
+
+  #appTopbar .topbar-left {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  #appTopbar .topbar-view-title {
+    min-width: 0;
+    max-width: min(42vw, 180px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    writing-mode: horizontal-tb;
+    overflow-wrap: normal;
+    word-break: normal;
+    font-size: clamp(14px, 4vw, 17px);
+  }
+
+  #view-dashboard .dashboard-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  #view-dashboard .pri-hero-card {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 16px;
+  }
+
+  #view-dashboard .gauge-container {
+    width: 116px;
+    height: 116px;
+    min-width: 116px;
+    margin-inline: auto;
+  }
+
+  #view-dashboard .pri-hero-details {
+    width: 100%;
+    min-width: 0;
+    text-align: center;
+  }
+
+  #view-dashboard .pri-hero-details > .d-flex:first-child {
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  #view-dashboard .pri-hero-details h2 {
+    min-width: 0;
+    max-width: 100%;
+    font-size: clamp(19px, 5vw, 23px);
+    line-height: 1.25;
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+
+  #view-dashboard .pri-hero-details > .d-flex:last-child {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    justify-content: stretch;
+  }
+
+  #view-dashboard .next-action-card {
+    min-width: 0;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  #view-dashboard .next-action-card .btn {
+    width: 100%;
+    justify-content: center;
+    white-space: normal;
+  }
+
+  #view-dashboard .stats-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  #view-dashboard .stat-box {
+    min-width: 0;
+    min-height: 100px;
+    padding: 12px;
+  }
+
+  #view-dashboard .stat-num {
+    min-width: 0;
+    font-size: clamp(21px, 6vw, 30px);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
+  #view-dashboard .d-grid.grid-2-1 {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  #view-dashboard .card,
+  #view-dashboard .card-body,
+  #view-dashboard .card-header {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 380px) {
+  #view-dashboard .pri-hero-card {
+    padding: 13px;
+  }
+
+  #view-dashboard .stats-row {
+    gap: 8px;
+  }
+
+  #view-dashboard .stat-box {
+    padding: 10px;
+  }
+}

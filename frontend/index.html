@@ -567,30 +567,30 @@
 <div class="gauge-container" id="dashPriGaugeWrap">
 <svg class="gauge-svg" viewbox="0 0 100 100">
 <circle class="gauge-bg" cx="50" cy="50" r="42"></circle>
-<circle class="gauge-meter" cx="50" cy="50" id="dashPriGaugeCircle" r="42" stroke-dasharray="264" stroke-dashoffset="45"></circle>
+<circle class="gauge-meter" cx="50" cy="50" id="dashPriGaugeCircle" r="42" stroke-dasharray="264" stroke-dashoffset="264"></circle>
 </svg>
 <div class="gauge-center">
-<div class="gauge-value" id="ovPriScore">83</div>
+<div class="gauge-value" id="ovPriScore">—</div>
 <div class="gauge-label">PRI Score</div>
 </div>
 </div>
 <div class="pri-hero-details">
 <div class="d-flex items-baseline gap-sm">
-<h2 class="text-xl m-0" id="dashCandidateGreeting">Candidate Overview</h2>
-<span class="status-badge status-matched" id="ovPriTier">Ready</span>
+<h2 class="text-xl m-0" id="dashCandidateGreeting">Welcome to CareerMatch AI</h2>
+<span class="status-badge" id="ovPriTier">Not calculated</span>
 </div>
 <p class="text-sm" id="ovTargetRoleLabel">
-                    Target Role
+                    Upload a resume to get started.
                   </p>
 <div class="d-flex gap-md text-sm">
-<div>Match: <strong id="ovTechScore">83%</strong></div>
-<div>ATS: <strong id="ovAtsScore">88%</strong></div>
-<div>Fit: <strong id="ovMarketScore">78%</strong></div>
+<div>Match: <strong id="ovTechScore">—</strong></div>
+<div>ATS: <strong id="ovAtsScore">—</strong></div>
+<div>Fit: <strong id="ovMarketScore">—</strong></div>
 </div>
 </div>
 </div>
 <!-- Next Best Action Card -->
-<div class="next-action-card">
+<div class="next-action-card" id="dashNextActionCard" hidden>
 <div>
 <span class="font-mono text-xs text-accent uppercase">
                     Next Best Action
@@ -609,26 +609,26 @@
 <div class="stats-row">
 <div class="stat-box">
 <div class="stat-label">Analyses</div>
-<div class="stat-num" id="dashTotalAnalyses">1</div>
+<div class="stat-num" id="dashTotalAnalyses">0</div>
 </div>
 <div class="stat-box">
 <div class="stat-label">Resumes</div>
-<div class="stat-num" id="dashTotalResumes">1</div>
+<div class="stat-num" id="dashTotalResumes">0</div>
 </div>
 <div class="stat-box">
 <div class="stat-label">Avg Score</div>
-<div class="stat-num" id="dashAvgScore">83.2%</div>
+<div class="stat-num" id="dashAvgScore">—</div>
 </div>
 <div class="stat-box">
 <div class="stat-label">Status</div>
 <div class="stat-num text-lg text-high" id="dashReadinessStatus">
-                  High Readiness
+                  Not calculated
                 </div>
 </div>
 </div>
 <!-- Recent Activity & Recommendations -->
 <div class="d-grid grid-2-1 gap-lg">
-<div class="card">
+<div class="card" id="dashHistoryCard" hidden>
 <div class="card-header">
 <h3>Analysis History</h3>
 <a class="btn btn-secondary btn-sm" href="#/analyzer">+ New Analysis</a>
@@ -651,7 +651,7 @@
 </div>
 </div>
 </div>
-<div class="card">
+<div class="card" id="dashActionTipsCard" hidden>
 <div class="card-header">
 <h3>Actionable Tips</h3>
 </div>

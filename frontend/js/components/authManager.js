@@ -86,6 +86,12 @@ export class AuthManager {
       submitBtn.addEventListener("click", () => this.handleSubmit());
     }
 
+    // The account-menu "Sign in" control previously had no click handler.
+    // Route it to the functional full-page authentication form.
+    document.getElementById("openAuthModalBtn")?.addEventListener("click", () => {
+      router.navigate("login");
+    });
+
     const pageForm = document.getElementById("authPageForm");
     if (pageForm) {
       pageForm.addEventListener("submit", (e) => {
@@ -133,9 +139,11 @@ export class AuthManager {
     const password = pwdEl?.value || "";
     const fullName = nameEl?.value.trim() || "";
 
-    if (!email || !password) {
+    if (!email || !password || (this.mode === "signup" && !fullName)) {
       if (errEl) {
-        errEl.textContent = "Please provide both email and password.";
+        errEl.textContent = this.mode === "signup"
+          ? "Please provide your name, email, and password."
+          : "Please provide both email and password.";
         errEl.style.display = "block";
       }
       return;
@@ -147,15 +155,20 @@ export class AuthManager {
     try {
       const res = await fetch(endpoint, {
         method: "POST",
+        credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "Authentication failed");
 
-      store.set("token", data.token);
-      store.set("user", data.user);
-      localStorage.setItem("cm_jwt_token", data.token);
+      if (!data.user) {
+        throw new Error("The server did not return an account profile. Please check the authentication API response.");
+      }
+
+      // Store uses "currentUser" as its canonical account-state key.
+      store.set("token", data.token || "");
+      store.set("currentUser", data.user);
 
       // Offer guest data merge if guest session exists
       const guestResume = localStorage.getItem("cm:v1:guest:resumes");
