@@ -1,17 +1,29 @@
+<h1 align="left">
+  <a href="https://career-match-ai-six.vercel.app/#/landing">
+    <img src="https://raw.githubusercontent.com/Rishav1002/CareerMatch-AI/main/frontend/assets/favicon.svg"
+         alt="CareerMatch AI Logo"
+         width="38"
+         height="38"
+         align="center">
+    CareerMatch AI
+  </a>
+</h1>
 
-<a href="https://career-match-ai-six.vercel.app/#/landing">
-  <img src="https://github.com/Rishav1002/CareerMatch-AI/blob/main/frontend/assets/favicon.svg"
-       alt="CareerMatch AI Logo"
-       width="36"
-       height="36"
-       align="left">
-# CareerMatch AI       
-
-> Explainable career-readiness intelligence, deterministic skill verification, and placement benchmarking platform for engineering students and early-career software professionals.
+> AI-Powered Career Intelligence, Skill Development & Placement Readiness Platform.
+> Assess your Skills, Uncover Gaps, and Build a Career Path backed by data-driven insights.
 
 <div align="center">
 
 <br/>
+
+<a href="https://career-match-ai-six.vercel.app/#/landing">
+  <img src="https://img.shields.io/badge/LIVE_DEMO-Visit_Website-B84D2B?style=for-the-badge&logo=vercel&logoColor=white" alt="Live Demo">
+</a>
+<a href="https://github.com/Rishav1002/CareerMatch-AI">
+  <img src="https://img.shields.io/badge/GITHUB-REPOSITORY-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub Repository">
+</a>
+
+<br/><br/>
 
 [![Python 3.12](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](.python-version)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115.6-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
@@ -22,6 +34,7 @@
 <br/>
 
 </div>
+
 
 ---
 
