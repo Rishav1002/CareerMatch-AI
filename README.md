@@ -5,7 +5,7 @@
 
 <div align="center">
 
-[![Live Application](https://img.shields.io/badge/LIVE_APP-VERCEL-B84D2B?style=for-the-badge&logo=vercel&logoColor=white)](https://career-match-ai-six.vercel.app/#/landing)
+[![Live Application](🌐%20Live%20App-CareerMatch--AI-B84D2B?style=for-the-badge&logo=vercel&logoColor=white)](https://career-match-ai-six.vercel.app/#/landing)
 [![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Rishav1002/CareerMatch-AI)
 
 <br/>
