@@ -13,8 +13,6 @@
        align="center">
   <strong> CareerMatch AI</strong>
 
-[![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Rishav1002/CareerMatch-AI)
-
 <br/>
 
 [![Python 3.12](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](.python-version)
