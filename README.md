@@ -2,14 +2,15 @@
 
 > Explainable career-readiness intelligence, deterministic skill verification, and placement benchmarking platform for engineering students and early-career software professionals.
 
+
 <div align="center">
 
-[![Live Application](https://img.shields.io/badge/LIVE_APP-VERCEL-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://career-match-ai-six.vercel.app/#/landing)
-[![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Rishav1002/CareerMatch)
+[![Live Application](https://img.shields.io/badge/LIVE_APP-VERCEL-B84D2B?style=for-the-badge&logo=vercel&logoColor=white)](https://career-match-ai-six.vercel.app/#/landing)
+[![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Rishav1002/CareerMatch-AI)
 
 <br/>
 
-[![Python 3.12.8](https://img.shields.io/badge/Python-3.12.8-3776AB?logo=python&logoColor=white)](.python-version)
+[![Python 3.12](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](.python-version)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115.6-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![PostgreSQL / Neon](https://img.shields.io/badge/Database-PostgreSQL%20%2F%20Neon-336791?logo=postgresql&logoColor=white)](https://neon.tech/)
 [![WCAG 2.1 AA](https://img.shields.io/badge/Accessibility-WCAG%202.1%20AA%20Compliant-success)](#design-system--accessibility)
