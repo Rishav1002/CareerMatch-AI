@@ -1,10 +1,11 @@
-# CareerMatch AI
+
 <a href="https://career-match-ai-six.vercel.app/#/landing">
   <img src="https://github.com/Rishav1002/CareerMatch-AI/blob/main/frontend/assets/favicon.svg"
        alt="CareerMatch AI Logo"
        width="36"
        height="36"
        align="left">
+# CareerMatch AI       
 
 > Explainable career-readiness intelligence, deterministic skill verification, and placement benchmarking platform for engineering students and early-career software professionals.
 
