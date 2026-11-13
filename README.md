@@ -1,11 +1,15 @@
-<h1 align="left">
+<h1>
   <a href="https://career-match-ai-six.vercel.app/#/landing">
-    <img src="https://raw.githubusercontent.com/Rishav1002/CareerMatch-AI/main/frontend/assets/favicon.svg"
-         alt="CareerMatch AI Logo"
-         width="38"
-         height="38"
-         align="center">
-    CareerMatch AI
+    <img
+      src="https://raw.githubusercontent.com/Rishav1002/CareerMatch-AI/main/frontend/assets/favicon.svg"
+      alt="CareerMatch AI Logo"
+      width="40"
+      height="40"
+      style="vertical-align: middle;"
+    />
+    <span style="font-size: 36px; vertical-align: middle;">
+      CareerMatch AI
+    </span>
   </a>
 </h1>
 
