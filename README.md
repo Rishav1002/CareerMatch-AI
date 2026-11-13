@@ -12,7 +12,7 @@
        height="36"
        align="center">
   <strong> CareerMatch AI</strong>
-</a>
+
 [![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Rishav1002/CareerMatch-AI)
 
 <br/>
