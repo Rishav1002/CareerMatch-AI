@@ -6,12 +6,14 @@
 <div align="center">
 
 <a href="https://career-match-ai-six.vercel.app/#/landing">
-  <img src="https://career-match-ai-six.vercel.app/favicon.ico"
+  <img src="https://github.com/Rishav1002/CareerMatch-AI/blob/main/frontend/assets/favicon.svg"
        alt="CareerMatch AI Logo"
        width="36"
        height="36"
        align="center">
   <strong> CareerMatch AI</strong>
+
+<br/><br/>
 
 <br/>
 
@@ -22,8 +24,6 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 <br/>
-
-👉 **[🚀 Launch CareerMatch AI Live in Browser →](https://career-match-ai-six.vercel.app/#/landing)** 👈
 
 </div>
 
