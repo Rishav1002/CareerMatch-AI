@@ -10,6 +10,8 @@ Phase 1 improvements:
 - Supports optional Gemini structured extraction (with strict verification against resume text)
 """
 
+from __future__ import annotations
+
 import io
 import logging
 import os
@@ -18,7 +20,7 @@ import uuid
 import xml.etree.ElementTree as ET
 import zipfile
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
