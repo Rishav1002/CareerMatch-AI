@@ -14,12 +14,13 @@ KNOWN_ROUTES = {
     "landing", "dashboard", "analyzer", "ats", "readiness", "roadmap",
     "planner", "interview", "skills", "github", "market", "tracker",
     "compare", "report", "profile", "login", "settings", "privacy",
-    "terms", "cookies", "404"
+    "terms", "cookies", "404", "builder"
 }
 
 KNOWN_ALIASES = {
     "", "/", "signup", "auth", "jobs", "assessment", "career",
-    "pri", "match", "resume", "practice", "proof", "overview", "account"
+    "pri", "match", "resume", "practice", "proof", "overview", "account",
+    "resume-builder", "template-studio", "templates"
 }
 
 

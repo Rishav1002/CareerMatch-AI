@@ -821,7 +821,7 @@ def fetch_job_market_intelligence(body: Dict[str, Any]) -> Dict[str, Any]:
     resume_id = sanitize_short_field(body.get("resumeId", ""), 80)
     resume = body.get("resume") or (get_resume_by_id(resume_id) if resume_id else None)
     has_resume = bool(resume and resume.get("technicalSkills"))
-    candidate_skills = set(resume.get("technicalSkills", [])) if has_resume else set()
+    candidate_skills = {s["name"] if isinstance(s, dict) else s for s in resume.get("technicalSkills", [])} if has_resume else set()
 
     role_filter = sanitize_short_field(body.get("roleFilter", ""), 100)
     location_filter = sanitize_short_field(body.get("locationFilter", ""), 100)
@@ -3274,7 +3274,7 @@ def compare_career_paths(body: Dict[str, Any], owner_id: str = "legacy_unowned")
     primary_role = sanitize_short_field(body.get("primaryRole", "Full Stack Developer"), 100)
     secondary_role = sanitize_short_field(body.get("secondaryRole", "Data Engineer"), 100)
 
-    candidate_skills = set(resume.get("technicalSkills", []))
+    candidate_skills = {s["name"] if isinstance(s, dict) else s for s in resume.get("technicalSkills", [])}
     comparison_matrix: List[Dict[str, Any]] = []
 
     for tpl in ROLE_TEMPLATES:

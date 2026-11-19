@@ -71,6 +71,7 @@ html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
   accent-color: var(--brand-accent);
+  overflow-x: clip;
 }
 
 body {
@@ -88,6 +89,7 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-x: clip;
 }
 
 /* ==========================================================================

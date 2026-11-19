@@ -380,7 +380,7 @@ def match_resume_to_job(
     w_edu = float(w.get("education", 0.05))
     w_cert = float(w.get("certifications", 0.05))
 
-    candidate_skills = set(resume.get("technicalSkills", []))
+    candidate_skills = {s["name"] if isinstance(s, dict) else s for s in resume.get("technicalSkills", [])}
     evidence_map = resume.get("skillEvidence", {})
     req_quotes = job.get("requirementQuotes", {})
 

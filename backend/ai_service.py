@@ -773,3 +773,131 @@ Include 3 stages, 4 websitesAndMaterials, 3 projects, and up to 2 grounded bulle
         },
     }
 
+
+def extract_structured_resume_with_gemini(raw_text: str) -> Optional[Dict[str, Any]]:
+    """
+    Extract and classify resume text into structured fields using Gemini structured outputs.
+    Strictly extracts ONLY text present in the source resume without hallucinating entries.
+    Returns parsed dictionary conforming to builder schema, or None on failure/unconfigured.
+    """
+    if not is_configured() or not raw_text or len(raw_text.strip()) < 30:
+        return None
+
+    safe_text = raw_text[:20000]
+    prompt = (
+        "Extract and classify ONLY text present in the source resume. Never invent, embellish, or drop entries.\n"
+        "Map all content into this exact JSON structure:\n"
+        "{\n"
+        '  "personalInfo": {"full_name": "", "headline": "", "email": "", "phone": "", "location": "", "city": "", "address": "", "linkedin": "", "github": "", "portfolio": "", "dob": "", "nationality": "", "photo_data_url": ""},\n'
+        '  "summary": "",\n'
+        '  "workExperience": [{"role": "", "company": "", "location": "", "start_date": "", "end_date": "", "duration": "", "overview": "", "bullets": []}],\n'
+        '  "education": [{"degree": "", "institution": "", "location": "", "start_date": "", "end_date": "", "year": "", "gpa": "", "score": "", "bullets": []}],\n'
+        '  "projects": [{"title": "", "name": "", "tech_stack": "", "techStack": [], "dates": "", "github_link": "", "live_link": "", "description": "", "bullets": []}],\n'
+        '  "technicalSkills": [],\n'
+        '  "certifications": [],\n'
+        '  "achievements": [],\n'
+        '  "languages": [{"name": "", "proficiency": "Fluent", "level": 90}],\n'
+        '  "references": [],\n'
+        '  "hobbies": []\n'
+        "}\n\n"
+        f"<untrusted_user_data>\n{safe_text}\n</untrusted_user_data>"
+    )
+
+    schema = {
+        "type": "OBJECT",
+        "properties": {
+            "personalInfo": {
+                "type": "OBJECT",
+                "properties": {
+                    "full_name": {"type": "STRING"},
+                    "headline": {"type": "STRING"},
+                    "email": {"type": "STRING"},
+                    "phone": {"type": "STRING"},
+                    "location": {"type": "STRING"},
+                    "city": {"type": "STRING"},
+                    "address": {"type": "STRING"},
+                    "linkedin": {"type": "STRING"},
+                    "github": {"type": "STRING"},
+                    "portfolio": {"type": "STRING"},
+                    "dob": {"type": "STRING"},
+                    "nationality": {"type": "STRING"},
+                },
+            },
+            "summary": {"type": "STRING"},
+            "workExperience": {
+                "type": "ARRAY",
+                "items": {
+                    "type": "OBJECT",
+                    "properties": {
+                        "role": {"type": "STRING"},
+                        "company": {"type": "STRING"},
+                        "location": {"type": "STRING"},
+                        "start_date": {"type": "STRING"},
+                        "end_date": {"type": "STRING"},
+                        "duration": {"type": "STRING"},
+                        "overview": {"type": "STRING"},
+                        "bullets": {"type": "ARRAY", "items": {"type": "STRING"}},
+                    },
+                },
+            },
+            "education": {
+                "type": "ARRAY",
+                "items": {
+                    "type": "OBJECT",
+                    "properties": {
+                        "degree": {"type": "STRING"},
+                        "institution": {"type": "STRING"},
+                        "location": {"type": "STRING"},
+                        "start_date": {"type": "STRING"},
+                        "end_date": {"type": "STRING"},
+                        "year": {"type": "STRING"},
+                        "gpa": {"type": "STRING"},
+                        "bullets": {"type": "ARRAY", "items": {"type": "STRING"}},
+                    },
+                },
+            },
+            "projects": {
+                "type": "ARRAY",
+                "items": {
+                    "type": "OBJECT",
+                    "properties": {
+                        "name": {"type": "STRING"},
+                        "title": {"type": "STRING"},
+                        "tech_stack": {"type": "STRING"},
+                        "dates": {"type": "STRING"},
+                        "github_link": {"type": "STRING"},
+                        "live_link": {"type": "STRING"},
+                        "description": {"type": "STRING"},
+                        "bullets": {"type": "ARRAY", "items": {"type": "STRING"}},
+                    },
+                },
+            },
+            "technicalSkills": {"type": "ARRAY", "items": {"type": "STRING"}},
+            "certifications": {"type": "ARRAY", "items": {"type": "STRING"}},
+            "achievements": {"type": "ARRAY", "items": {"type": "STRING"}},
+            "languages": {
+                "type": "ARRAY",
+                "items": {
+                    "type": "OBJECT",
+                    "properties": {
+                        "name": {"type": "STRING"},
+                        "proficiency": {"type": "STRING"},
+                    },
+                },
+            },
+            "references": {"type": "ARRAY", "items": {"type": "STRING"}},
+            "hobbies": {"type": "ARRAY", "items": {"type": "STRING"}},
+        },
+    }
+
+    try:
+        data, err = _call_gemini_json(prompt, response_schema=schema)
+        if data and isinstance(data, dict):
+            return data
+        if err:
+            logger.info("Structured resume extraction fallback: %s", err)
+    except Exception as exc:
+        logger.warning("Gemini resume extraction error: %s", exc)
+    return None
+
+

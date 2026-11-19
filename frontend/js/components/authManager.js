@@ -260,6 +260,9 @@ export class AuthManager {
     const emailEl = document.getElementById("dropdownUserEmail");
     const openAuthBtn = document.getElementById("openAuthModalBtn");
     const signOutBtn = document.getElementById("avatarSignOutBtn");
+    const landingAuthBtn = document.getElementById("landingAuthBtn");
+    const landingOpenAppBtn = document.getElementById("landingOpenAppBtn");
+    const landingOpenDashboardCtaBtn = document.getElementById("landingOpenDashboardCtaBtn");
 
     if (user && (user.email || user.fullName || user.id)) {
       const displayName = user.fullName || user.name || "Student";
@@ -285,6 +288,18 @@ export class AuthManager {
         signOutBtn.classList.remove("hidden");
         signOutBtn.style.display = "flex";
       }
+      if (landingAuthBtn) {
+        landingAuthBtn.textContent = "Profile";
+        landingAuthBtn.href = "#/profile";
+      }
+      if (landingOpenAppBtn) {
+        landingOpenAppBtn.textContent = "Open Dashboard →";
+        landingOpenAppBtn.href = "#/dashboard";
+      }
+      if (landingOpenDashboardCtaBtn) {
+        landingOpenDashboardCtaBtn.classList.remove("hidden");
+        landingOpenDashboardCtaBtn.style.display = "inline-flex";
+      }
     } else {
       if (initialsEl) initialsEl.textContent = "G";
       if (nameEl) nameEl.textContent = "Guest User";
@@ -297,6 +312,18 @@ export class AuthManager {
       if (signOutBtn) {
         signOutBtn.classList.add("hidden");
         signOutBtn.style.display = "none";
+      }
+      if (landingAuthBtn) {
+        landingAuthBtn.textContent = "Log in";
+        landingAuthBtn.href = "#/login";
+      }
+      if (landingOpenAppBtn) {
+        landingOpenAppBtn.textContent = "Open Workspace →";
+        landingOpenAppBtn.href = "#/analyzer";
+      }
+      if (landingOpenDashboardCtaBtn) {
+        landingOpenDashboardCtaBtn.classList.add("hidden");
+        landingOpenDashboardCtaBtn.style.display = "none";
       }
     }
   }

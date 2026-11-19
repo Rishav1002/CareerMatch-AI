@@ -6,20 +6,20 @@
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", function () {
       // One-time cleanup of legacy shell caches
-      if (!localStorage.getItem("cm_sw_cleaned_v2")) {
+      if (!localStorage.getItem("cm_sw_cleaned_v431")) {
         if ("caches" in window) {
           caches.keys().then(function (names) {
             names.forEach(function (name) {
               if (
                 name.includes("shell-v") ||
-                (name.includes("careermatch-shell-") && !name.includes("2026-11-08-v4.0.1"))
+                (name.includes("careermatch-shell-") && !name.includes("2026-11-19-v4.3.1-landing-unslop-fix"))
               ) {
                 caches.delete(name);
               }
             });
           });
         }
-        localStorage.setItem("cm_sw_cleaned_v2", "true");
+        localStorage.setItem("cm_sw_cleaned_v431", "true");
       }
 
       navigator.serviceWorker

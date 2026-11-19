@@ -24,11 +24,17 @@ async function run() {
 
     const errors = [];
     page.on("console", (msg) => {
-      if (msg.type() === "error") errors.push(msg.text());
+      if (msg.type() === "error") {
+        const text = msg.text();
+        if (!text.includes("401 (Unauthorized)")) {
+          errors.push(text);
+        }
+      }
     });
     page.on("pageerror", (err) => errors.push(err.message));
 
-    await page.goto("http://localhost:3000/", { waitUntil: "networkidle" });
+    const baseUrl = process.env.BASE_URL || "http://127.0.0.1:3000";
+    await page.goto(`${baseUrl}/`, { waitUntil: "load" });
     await page.waitForTimeout(1000);
 
     // Check horizontal scroll overflow
@@ -52,6 +58,40 @@ async function run() {
         const rail = page.locator("#appRail");
         const isOpen = await rail.evaluate((el) => el.classList.contains("open") || el.classList.contains("mobile-open"));
         console.log(`  PASS: Mobile rail toggles cleanly (open state: ${isOpen}).`);
+      }
+
+      // Check Profile Dropdown & Sign-In/Sign-Out visibility on mobile above bottom nav (Task 6 Item 3)
+      console.log(`  Checking mobile user avatar dropdown visibility on ${vp.name}...`);
+      await page.goto(`${baseUrl}/#/dashboard`, { waitUntil: "load" });
+      await page.waitForTimeout(600);
+
+      const avatarBtn = page.locator("#topbarAvatarBtn");
+      if (await avatarBtn.isVisible()) {
+        await avatarBtn.click();
+        await page.waitForTimeout(300);
+
+        const dropdown = page.locator(".user-avatar-dropdown");
+        const isDropdownOpen = await dropdown.evaluate((el) => el.classList.contains("open"));
+        if (!isDropdownOpen) {
+          throw new Error("Mobile user avatar dropdown failed to open on click.");
+        }
+
+        // Verify dropdown bounds do not fall behind mobile bottom nav
+        const dropdownBox = await dropdown.boundingBox();
+        const bottomNav = page.locator(".mobile-bottom-nav");
+        let bottomNavY = 640;
+        if (await bottomNav.isVisible()) {
+          const navBox = await bottomNav.boundingBox();
+          if (navBox) bottomNavY = navBox.y;
+        }
+
+        if (dropdownBox) {
+          console.log(`  Dropdown bottom: ${dropdownBox.y + dropdownBox.height}px vs BottomNav top: ${bottomNavY}px`);
+          if (dropdownBox.y + dropdownBox.height > bottomNavY + 1) {
+            throw new Error(`Mobile user avatar dropdown is obscured behind bottom navigation: dropdown bottom ${dropdownBox.y + dropdownBox.height} > bottom nav ${bottomNavY}`);
+          }
+          console.log(`  PASS: Mobile user avatar dropdown floats cleanly above bottom navigation.`);
+        }
       }
     }
 

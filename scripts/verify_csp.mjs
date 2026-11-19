@@ -38,13 +38,18 @@ async function run() {
     consoleErrors.push(err.message);
   });
 
-  console.log("Navigating to http://localhost:3000/ ...");
-  await page.goto("http://localhost:3000/", { waitUntil: "networkidle" });
-  await page.waitForTimeout(1500);
+  const baseUrl = process.env.BASE_URL || "http://127.0.0.1:3000";
 
-  console.log("Navigating to http://localhost:3000/#/auth ...");
-  await page.goto("http://localhost:3000/#/auth", { waitUntil: "networkidle" });
+  console.log(`Navigating to ${baseUrl}/ ...`);
+  await page.goto(`${baseUrl}/`, { waitUntil: "load" });
   await page.waitForTimeout(1000);
+
+  const testRoutes = ["#/landing", "#/analyzer", "#/builder", "#/profile", "#/auth"];
+  for (const route of testRoutes) {
+    console.log(`Navigating to ${baseUrl}/${route} ...`);
+    await page.goto(`${baseUrl}/${route}`, { waitUntil: "load" });
+    await page.waitForTimeout(600);
+  }
 
   // Check form submit handler prevention: press Enter in email input
   const emailInput = page.locator("#authPageEmailInput");

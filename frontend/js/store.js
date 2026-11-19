@@ -36,7 +36,7 @@ class Store {
       theme: savedTheme,
       currentView: "landing",
       sidebarCollapsed: false,
-      parsedResume: null,
+      activeResume: null,
       rawResumeText: "",
       targetRole: "Full Stack Developer",
       goalCompany: "",

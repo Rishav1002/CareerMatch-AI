@@ -6,11 +6,11 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <script src="/frontend/js/theme-init.js"></script>
 <title>CareerMatch AI</title>
-<meta content="CareerMatch AI: An explainable career-readiness platform for Indian students and early-career engineers. Semantic resume parsing, evidence ledgers, adaptive roadmaps, ATS simulator, mock interview coach, and placement readiness index." name="description"/>
+<meta content="CareerMatch AI: Spot missing skills, fix ATS issues, and rebuild your resume in minutes with real proof." name="description"/>
 <meta content="#B84D2B" name="theme-color"/>
 <link href="/frontend/assets/favicon.svg" rel="icon" type="image/svg+xml"/>
-<meta content="CareerMatch AI — Explainable Career-Readiness Field Guide" property="og:title"/>
-<meta content="Explainable career intelligence, semantic skill matching, and placement readiness for Indian engineers." property="og:description"/>
+<meta content="CareerMatch AI — Know Why Your Resume Gets Shortlisted" property="og:title"/>
+<meta content="Spot missing skills, fix ATS issues, and rebuild your resume with real proof." property="og:description"/>
 <meta content="website" property="og:type"/>
 <meta content="/frontend/assets/icon-512.svg" property="og:image"/>
 <link href="/frontend/manifest.json" rel="manifest"/>
@@ -18,15 +18,17 @@
   <!-- Preload & Load High-Character Fonts: Serif for display/scores, Grotesque for UI, Mono for data -->
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&amp;family=Noto+Sans+Devanagari:wght@400;500;600;700&amp;family=Noto+Serif+Devanagari:wght@600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&amp;family=Noto+Sans+Devanagari:wght@400;500;600;700&amp;family=Noto+Serif+Devanagari:wght@600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700;800&amp;family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=Merriweather:ital,wght@0,400;0,700;1,400&amp;family=Oswald:wght@500;600&amp;family=Playfair+Display:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
 
   <!-- Tokenized Modular Stylesheets -->
-<link href="/frontend/css/tokens.css" rel="stylesheet"/>
-<link href="/frontend/css/base.css" rel="stylesheet"/>
-<link href="/frontend/css/layout.css" rel="stylesheet"/>
-<link href="/frontend/css/components.css" rel="stylesheet"/>
-<link href="/frontend/css/views.css" rel="stylesheet"/>
-<link href="/frontend/css/styles.css" rel="stylesheet"/>
+<link href="/frontend/css/tokens.css?v=20261119b" rel="stylesheet"/>
+<link href="/frontend/css/base.css?v=20261119b" rel="stylesheet"/>
+<link href="/frontend/css/layout.css?v=20261119b" rel="stylesheet"/>
+<link href="/frontend/css/components.css?v=20261119b" rel="stylesheet"/>
+<link href="/frontend/css/views.css?v=20261119b" rel="stylesheet"/>
+<link href="/frontend/css/styles.css?v=20261119b" rel="stylesheet"/>
+<link href="/frontend/css/resume-templates.css?v=20261119b" rel="stylesheet"/>
+<link href="/frontend/css/template-gallery.css?v=20261119b" rel="stylesheet"/>
 </head>
 <body>
 
@@ -139,6 +141,10 @@
 <a class="rail-nav-link" data-view="ats" href="#/ats">
 <svg fill="none" height="18" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="18"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
 <span class="rail-link-text">ATS Simulator</span>
+</a>
+<a class="rail-nav-link" data-view="builder" href="#/builder" id="navBuilderLink">
+<svg fill="none" height="18" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="18"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" x2="12" y1="18" y2="12"></line><line x1="9" x2="15" y1="15" y2="15"></line></svg>
+<span class="rail-link-text">Resume Builder</span>
 </a>
 </div>
 <!-- Group 2: Prepare -->
@@ -291,18 +297,19 @@
                VIEW 1: PUBLIC LANDING PAGE (#/landing, #/)
                ================================================================== -->
 <section class="view-panel landing-viewport active" id="view-landing">
-<!-- Minimal Landing Topbar (Section 13 B) -->
+<!-- Minimal Landing Topbar -->
 <header class="landing-topbar">
+<div class="landing-container d-flex items-center flex-between w-full">
 <a class="rail-brand link-muted" href="#/landing">
 <svg class="brand-logo" width="28" height="28" viewBox="0 0 200 200" aria-hidden="true"><use href="#cm-logo"/></svg>
 <span class="brand-name text-md font-bold text-primary ml-1">CareerMatch AI</span>
 </a>
 <nav class="landing-nav-links d-flex items-center gap-sm">
-<a class="btn btn-ghost btn-sm text-sm" href="#/dashboard">Dashboard</a>
-<a class="btn btn-ghost btn-sm text-sm" href="#/analyzer">Resume Matcher</a>
+<a class="btn btn-ghost btn-sm text-sm" href="#/dashboard">Overview</a>
+<a class="btn btn-ghost btn-sm text-sm" href="#/analyzer">Analyzer</a>
 <a class="btn btn-ghost btn-sm text-sm" href="#/market">Live Jobs</a>
 <a class="btn btn-ghost btn-sm text-sm" href="#/roadmap">Roadmap</a>
-<a class="btn btn-ghost btn-sm text-sm" href="#/skills">Skill Lab</a>
+<a class="btn btn-ghost btn-sm text-sm" href="#/skills">Skill Check</a>
 </nav>
 <div class="d-flex items-center gap-sm">
 <button aria-label="Toggle Theme" class="btn btn-secondary btn-sm" id="landingThemeToggleBtn" type="button">
@@ -310,159 +317,331 @@
 <span class="btn-text">Theme</span>
 </button>
 <a class="btn btn-secondary btn-sm" href="#/login" id="landingAuthBtn">
-                  Log in
-                </a>
+Log in
+</a>
 <a class="btn btn-primary btn-sm" href="#/dashboard" id="landingOpenAppBtn">
-                  Open Workspace →
-                </a>
+Open Workspace →
+</a>
+</div>
 </div>
 </header>
-<!-- Full-Viewport Hero with 4 Animated SVG Background Scenes -->
-<div class="landing-hero-center">
-<div aria-hidden="true" class="carousel-bg-wrap" id="landingCarouselBg">
-<div class="carousel-track">
-<!-- Scene 1: Upload Once -->
-<div class="carousel-scene" data-scene="0">
-<svg fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 1000 600">
-<path d="M200 120 h220 l60 60 v260 h-280 z" fill="var(--glass-bg-subtle)" stroke="var(--brand-accent)" stroke-width="2"></path>
-<line stroke="var(--text-tertiary)" stroke-dasharray="4 4" x1="240" x2="420" y1="220" y2="220"></line>
-<line stroke="var(--text-tertiary)" stroke-dasharray="4 4" x1="240" x2="400" y1="260" y2="260"></line>
-<line stroke="var(--text-tertiary)" stroke-dasharray="4 4" x1="240" x2="380" y1="300" y2="300"></line>
-<rect fill="var(--glass-bg)" height="34" rx="10" stroke="var(--brand-accent)" width="110" x="540" y="160"></rect>
-<rect fill="var(--glass-bg)" height="34" rx="10" stroke="var(--brand-accent)" width="130" x="670" y="160"></rect>
-<rect fill="var(--glass-bg)" height="34" rx="10" stroke="var(--brand-accent)" width="140" x="540" y="220"></rect>
-<rect fill="var(--glass-bg)" height="34" rx="10" stroke="var(--brand-accent)" width="100" x="700" y="220"></rect>
-<path d="M480 250 C 510 220, 520 200, 540 180" stroke="var(--brand-accent)" stroke-dasharray="3 3" stroke-width="2"></path>
-<path d="M480 270 C 510 260, 520 240, 540 235" stroke="var(--brand-accent)" stroke-dasharray="3 3" stroke-width="2"></path>
-</svg>
-</div>
-<!-- Scene 2: See Real Gaps -->
-<div class="carousel-scene" data-scene="1">
-<svg fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 1000 600">
-<path d="M150 400 C 300 380, 450 300, 500 250" stroke="var(--score-high)" stroke-width="3"></path>
-<path d="M150 150 C 300 170, 450 220, 500 250" stroke="var(--brand-accent)" stroke-width="3"></path>
-<circle cx="500" cy="250" fill="var(--brand-accent)" r="14" stroke="var(--text-primary)" stroke-width="2"></circle>
-<path d="M500 250 C 650 300, 750 350, 850 380" stroke="var(--score-low)" stroke-dasharray="6 6" stroke-width="2.5"></path>
-<circle cx="680" cy="310" fill="var(--score-low)" r="8"></circle>
-<circle cx="850" cy="380" fill="var(--score-mid)" r="10"></circle>
-</svg>
-</div>
-<!-- Scene 3: Follow a Clear Path -->
-<div class="carousel-scene" data-scene="2">
-<svg fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 1000 600">
-<path d="M180 320 Q 320 180 460 300 T 740 280 T 880 200" stroke="var(--brand-accent)" stroke-width="3"></path>
-<circle cx="180" cy="320" fill="var(--glass-bg)" r="12" stroke="var(--brand-accent)" stroke-width="3"></circle>
-<circle cx="460" cy="300" fill="var(--glass-bg)" r="12" stroke="var(--brand-accent)" stroke-width="3"></circle>
-<circle cx="740" cy="280" fill="var(--glass-bg)" r="12" stroke="var(--brand-accent)" stroke-width="3"></circle>
-<circle cx="880" cy="200" fill="var(--brand-accent)" r="14" stroke="var(--brand-accent)"></circle>
-</svg>
-</div>
-<!-- Scene 4: Match Live Jobs -->
-<div class="carousel-scene" data-scene="3">
-<svg fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 1000 600">
-<line stroke="var(--brand-accent)" stroke-dasharray="4 4" stroke-width="2" x1="200" x2="380" y1="350" y2="240"></line>
-<line stroke="var(--brand-accent)" stroke-dasharray="4 4" stroke-width="2" x1="380" x2="560" y1="240" y2="320"></line>
-<line stroke="var(--brand-accent)" stroke-dasharray="4 4" stroke-width="2" x1="560" x2="780" y1="320" y2="210"></line>
-<rect fill="var(--glass-bg)" height="24" rx="6" stroke="var(--brand-accent)" stroke-width="2" width="24" x="180" y="340"></rect>
-<rect fill="var(--glass-bg)" height="24" rx="6" stroke="var(--brand-accent)" stroke-width="2" width="24" x="368" y="228"></rect>
-<rect fill="var(--glass-bg)" height="24" rx="6" stroke="var(--brand-accent)" stroke-width="2" width="24" x="548" y="308"></rect>
-<rect fill="var(--brand-accent)" height="24" rx="6" stroke="var(--brand-accent)" stroke-width="2" width="24" x="768" y="198"></rect>
-</svg>
-</div>
-</div>
-<!-- Scene Captions (<= 5 words each) -->
-<div class="scene-caption opacity-1">Parse skills with proof</div>
-<div class="scene-caption opacity-0">Pinpoint skill gaps</div>
-<div class="scene-caption opacity-0">Follow adaptive roadmaps</div>
-<div class="scene-caption opacity-0">Connect to tech jobs</div>
-<!-- Segmented Progress Indicator -->
-<div aria-label="Landing background scenes" class="carousel-progress" role="tablist">
-<button aria-current="true" aria-label="Scene 1: Upload Once" class="progress-segment active" type="button"></button>
-<button aria-label="Scene 2: Real Gaps" class="progress-segment" type="button"></button>
-<button aria-label="Scene 3: Clear Path" class="progress-segment" type="button"></button>
-<button aria-label="Scene 4: Live Jobs" class="progress-segment" type="button"></button>
-</div>
-</div>
-<!-- Hero Glass Card -->
-<div class="landing-hero-card glass-panel">
-<h1 class="landing-hero-title">
-                  Explainable Career Intelligence for Engineers
-                </h1>
-<p class="landing-hero-subline">
-                  Evaluate your resume against live industry benchmarks with mathematical explainability and targeted learning roadmaps.
-                </p>
-<div class="landing-hero-actions">
-<a class="btn btn-primary btn-lg min-w-200" href="#/analyzer" id="landingAnalyzeCtaBtn">
-                    Analyze your resume →
-                  </a>
-<a class="how-it-works-link" href="#/landing" data-scroll-to="landingHowItWorks" id="howItWorksLink">
-                    How it works ↓
-                  </a>
-</div>
-</div>
-</div>
-<!-- Below the Fold: Slim 3-Step Strip (Upload, Analyze, Improve) -->
-<div class="landing-steps-strip" id="landingHowItWorks">
-<div class="text-center max-w-form">
-<h2 class="font-serif text-score-huge text-primary" id="landingHowItWorksHeading" tabindex="-1">
-                  How It Works in 3 Steps
-                </h2>
-<p class="text-base text-secondary m-0">
-                  Deterministic analysis backed by verifiable evidence.
-                </p>
-</div>
-<div class="steps-3-grid">
-<div class="step-liquid-card">
-<div class="font-mono text-xs font-bold text-accent mb-1">01 · UPLOAD</div>
-<h3 class="text-lg text-primary">Upload Once</h3>
-<p class="text-sm text-secondary lh-relaxed m-0">
-                    Drop PDF or paste text. Private transient sessions with zero retention.
-                  </p>
-</div>
-<div class="step-liquid-card">
-<div class="font-mono text-xs font-bold text-accent mb-1">02 · ANALYZE</div>
-<h3 class="text-lg text-primary">See Real Gaps</h3>
-<p class="text-sm text-secondary lh-relaxed m-0">
-                    Semantic parsing checks requirements against live benchmarks with exact proof quotes.
-                  </p>
-</div>
-<div class="step-liquid-card">
-<div class="font-mono text-xs font-bold text-accent mb-1">03 · IMPROVE</div>
-<h3 class="text-lg text-primary">Follow a Clear Path</h3>
-<p class="text-sm text-secondary lh-relaxed m-0">
-                    Close skill gaps with weekly roadmaps, ATS fixes, coding labs, and mock interviews.
-                  </p>
-</div>
-</div>
-</div>
-<!-- Professional Full Footer (Section 13 B) -->
-<footer class="editorial-footer p-clamp-hero bg-card border-top">
-<div class="d-grid grid-auto-fit gap-xl max-w-wide">
+<!-- Full Hero Band (SEC. 00) with Architectural Dot-Grid -->
+<section class="landing-section landing-architectural-hero border-bottom">
+  <div aria-hidden="true" class="carousel-bg-wrap" id="landingCarouselBg" style="opacity: 0.12; pointer-events: none;">
+    <div class="carousel-track">
+      <div class="carousel-scene" data-scene="0">
+        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 1000 600">
+          <path d="M200 120 h220 l60 60 v260 h-280 z" fill="var(--glass-bg-subtle)" stroke="var(--brand-accent)" stroke-width="2"></path>
+          <line stroke="var(--text-tertiary)" stroke-dasharray="4 4" x1="240" x2="420" y1="220" y2="220"></line>
+          <line stroke="var(--text-tertiary)" stroke-dasharray="4 4" x1="240" x2="400" y1="260" y2="260"></line>
+        </svg>
+      </div>
+      <div class="carousel-scene" data-scene="1">
+        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 1000 600">
+          <path d="M150 400 C 300 380, 450 300, 500 250" stroke="var(--score-high)" stroke-width="3"></path>
+          <circle cx="500" cy="250" fill="var(--brand-accent)" r="14" stroke="var(--text-primary)" stroke-width="2"></circle>
+        </svg>
+      </div>
+      <div class="carousel-scene" data-scene="2">
+        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 1000 600">
+          <path d="M180 320 Q 320 180 460 300 T 740 280 T 880 200" stroke="var(--brand-accent)" stroke-width="3"></path>
+        </svg>
+      </div>
+      <div class="carousel-scene" data-scene="3">
+        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 1000 600">
+          <line stroke="var(--brand-accent)" stroke-dasharray="4 4" stroke-width="2" x1="200" x2="380" y1="350" y2="240"></line>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2-Column Hero Grid inside Unified Container -->
+  <div class="landing-container">
+    <div class="landing-hero-2col position-relative">
+      <!-- Left Column: Editorial Headline & Actions (Strictly Left-Aligned) -->
+      <div class="landing-hero-content">
+        <div class="editorial-eyebrow">■ CAREERMATCH AI</div>
+        <h1 class="landing-headline font-serif text-primary m-0 mb-2">
+          Know why your resume gets <em class="text-accent italic font-serif">shortlisted.</em>
+        </h1>
+        <p class="landing-lead text-secondary text-base mb-4">
+          Spot missing skills, fix ATS issues, and rebuild your resume in minutes.
+        </p>
+        <div class="landing-cta-row d-flex items-center gap-sm mb-3">
+          <a class="btn btn-primary btn-lg" href="#/analyzer" id="landingAnalyzeCtaBtn">
+            Analyze Resume →
+          </a>
+          <a class="btn btn-secondary btn-lg" href="#/builder" id="landingBuildResumeCtaBtn">
+            Build Resume
+          </a>
+          <a class="btn btn-secondary btn-lg hidden" href="#/dashboard" id="landingOpenDashboardCtaBtn" style="display:none;">
+            Open Dashboard →
+          </a>
+        </div>
+        <div class="mb-2">
+          <a class="how-it-works-link text-xs text-secondary" href="#/landing" data-scroll-to="landingHowItWorks" id="howItWorksLink">
+            Explore architectural evidence ↓
+          </a>
+        </div>
+
+        <!-- 3-Metric Proof Strip -->
+        <div class="landing-proof-strip d-flex items-center gap-md pt-3 mt-3 border-top w-full">
+          <div class="d-flex items-baseline gap-xs">
+            <span class="font-mono font-bold text-accent text-lg">41+</span>
+            <span class="text-xs text-secondary">Tech Roles</span>
+          </div>
+          <span class="text-tertiary">·</span>
+          <div class="d-flex items-baseline gap-xs">
+            <span class="font-mono font-bold text-accent text-lg">10</span>
+            <span class="text-xs text-secondary">Pro Templates</span>
+          </div>
+          <span class="text-tertiary">·</span>
+          <div class="d-flex items-baseline gap-xs">
+            <span class="font-mono font-bold text-accent text-lg">Live</span>
+            <span class="text-xs text-secondary">Job Data</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Precision Visual Preview Card (Constrained Max-Width) -->
+      <div class="landing-hero-preview-col">
+        <div class="architectural-card p-4">
+          <div class="d-flex justify-between items-center mb-3 pb-2 border-bottom">
+            <span class="font-mono text-xs text-tertiary">SYSTEM: TELEMETRY // EV-2024</span>
+            <span class="floating-metric-badge">[ VERIFIABLE METRIC ]</span>
+          </div>
+          <div class="d-flex items-baseline justify-between mb-3">
+            <div>
+              <div class="text-xs text-secondary">Match Confidence</div>
+              <div class="font-mono text-score-huge font-bold text-primary">94.2<span class="text-sm font-normal text-accent">%</span></div>
+            </div>
+            <div class="text-right">
+              <span class="score-pill score-pill-green text-xs">High Alignment</span>
+              <div class="font-mono text-xs text-secondary mt-1">Full-Stack SDE</div>
+            </div>
+          </div>
+          <div class="landing-telemetry-box mb-3">
+            <div class="text-xs text-accent font-bold mb-1">■ EXACT PARSED PROOF</div>
+            <div class="text-xs text-primary font-mono lh-relaxed">
+              "Architected payments settlement pipeline processing 1.2M transactions daily with sub-200ms latency."
+            </div>
+          </div>
+          <div class="grid-2 gap-2 text-xs font-mono">
+            <div class="p-2 bg-card border rounded-xs">
+              <span class="text-tertiary block">ATS COMPATIBILITY</span>
+              <span class="font-bold text-primary">99% Validated</span>
+            </div>
+            <div class="p-2 bg-card border rounded-xs">
+              <span class="text-tertiary block">VERIFIED SKILLS</span>
+              <span class="font-bold text-primary">FastAPI · Postgres</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SEC. 01 // WHY IT WORKS -->
+<section class="landing-section border-bottom" id="landingHowItWorks">
+  <div class="landing-container">
+    <div class="landing-section-header text-center mb-4">
+      <div class="editorial-eyebrow">■ 01 // WHY IT WORKS</div>
+      <h2 class="font-serif text-score-huge text-primary m-0" id="landingHowItWorksHeading" tabindex="-1">
+        Built on real proof
+      </h2>
+      <p class="text-secondary text-base mt-1 mb-0">
+        Every score points to exact lines in your resume and code.
+      </p>
+    </div>
+    <div class="landing-values-grid steps-3-grid">
+      <div class="step-liquid-card architectural-card p-4">
+        <div class="font-mono text-xs font-bold text-accent mb-1">[ VAL.01 ]</div>
+        <h3 class="text-lg text-primary font-serif mb-1">Line-by-Line Proof</h3>
+        <p class="text-sm text-secondary lh-relaxed m-0">
+          See the exact resume lines behind every score.
+        </p>
+      </div>
+      <div class="step-liquid-card architectural-card p-4">
+        <div class="font-mono text-xs font-bold text-accent mb-1">[ VAL.02 ]</div>
+        <h3 class="text-lg text-primary font-serif mb-1">Clear Skill Gaps</h3>
+        <p class="text-sm text-secondary lh-relaxed m-0">
+          Find missing skills ranked by hiring impact.
+        </p>
+      </div>
+      <div class="step-liquid-card architectural-card p-4">
+        <div class="font-mono text-xs font-bold text-accent mb-1">[ VAL.03 ]</div>
+        <h3 class="text-lg text-primary font-serif mb-1">Live Market Data</h3>
+        <p class="text-sm text-secondary lh-relaxed m-0">
+          Compare your profile against real open roles.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SEC. 02 // TOOLS -->
+<section class="landing-section border-bottom" id="landingTools">
+  <div class="landing-container">
+    <div class="landing-section-header text-center mb-4">
+      <div class="editorial-eyebrow">■ 02 // TOOLS</div>
+      <h2 class="font-serif text-score-huge text-primary m-0">
+        Everything in one workspace
+      </h2>
+      <p class="text-secondary text-base mt-1 mb-0">
+        Pick a tool and start immediately.
+      </p>
+    </div>
+    <div class="landing-tools-grid utility-suite-grid d-grid grid-3 gap-lg">
+      <a class="landing-tool-card utility-card card p-4" href="#/analyzer">
+        <div class="landing-tool-card-body">
+          <span class="font-mono text-xs text-accent font-bold">01</span>
+          <h3 class="text-md font-semibold text-primary mt-1 mb-1">Resume Analyzer</h3>
+          <p class="text-xs text-secondary lh-relaxed m-0">
+            Score your resume against any target role.
+          </p>
+        </div>
+        <span class="landing-tool-open-link font-mono text-xs text-accent mt-3">Open →</span>
+      </a>
+      <a class="landing-tool-card utility-card card p-4" href="#/builder">
+        <div class="landing-tool-card-body">
+          <span class="font-mono text-xs text-accent font-bold">02</span>
+          <h3 class="text-md font-semibold text-primary mt-1 mb-1">Resume Builder</h3>
+          <p class="text-xs text-secondary lh-relaxed m-0">
+            Auto-fill 10 clean templates. Export PDF or DOCX.
+          </p>
+        </div>
+        <span class="landing-tool-open-link font-mono text-xs text-accent mt-3">Open →</span>
+      </a>
+      <a class="landing-tool-card utility-card card p-4" href="#/ats">
+        <div class="landing-tool-card-body">
+          <span class="font-mono text-xs text-accent font-bold">03</span>
+          <h3 class="text-md font-semibold text-primary mt-1 mb-1">ATS Check</h3>
+          <p class="text-xs text-secondary lh-relaxed m-0">
+            Catch formatting issues and missing keywords early.
+          </p>
+        </div>
+        <span class="landing-tool-open-link font-mono text-xs text-accent mt-3">Open →</span>
+      </a>
+      <a class="landing-tool-card utility-card card p-4" href="#/roadmap">
+        <div class="landing-tool-card-body">
+          <span class="font-mono text-xs text-accent font-bold">04</span>
+          <h3 class="text-md font-semibold text-primary mt-1 mb-1">Skill Roadmap</h3>
+          <p class="text-xs text-secondary lh-relaxed m-0">
+            Follow a focused weekly plan to close gaps.
+          </p>
+        </div>
+        <span class="landing-tool-open-link font-mono text-xs text-accent mt-3">Open →</span>
+      </a>
+      <a class="landing-tool-card utility-card card p-4" href="#/interview">
+        <div class="landing-tool-card-body">
+          <span class="font-mono text-xs text-accent font-bold">05</span>
+          <h3 class="text-md font-semibold text-primary mt-1 mb-1">Mock Interview</h3>
+          <p class="text-xs text-secondary lh-relaxed m-0">
+            Practice role-specific questions with instant feedback.
+          </p>
+        </div>
+        <span class="landing-tool-open-link font-mono text-xs text-accent mt-3">Open →</span>
+      </a>
+      <a class="landing-tool-card utility-card card p-4" href="#/market">
+        <div class="landing-tool-card-body">
+          <span class="font-mono text-xs text-accent font-bold">06</span>
+          <h3 class="text-md font-semibold text-primary mt-1 mb-1">Job Market</h3>
+          <p class="text-xs text-secondary lh-relaxed m-0">
+            Browse live tech jobs and track applications.
+          </p>
+        </div>
+        <span class="landing-tool-open-link font-mono text-xs text-accent mt-3">Open →</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- SEC. 03 // PROOF ENGINE -->
+<section class="landing-section border-bottom" id="landingProof">
+  <div class="landing-container">
+    <div class="landing-proof-split precision-split-grid d-grid grid-2 gap-xl">
+      <div class="landing-proof-left">
+        <div class="editorial-eyebrow">■ 03 // PROOF ENGINE</div>
+        <h2 class="font-serif text-score-huge text-primary m-0 mb-2">
+          Facts, not vague AI advice.
+        </h2>
+        <p class="text-secondary text-base lh-relaxed mb-4">
+          We check your actual resume, GitHub repos, and live job listings.
+        </p>
+        <div class="d-flex gap-sm">
+          <a class="btn btn-primary btn-sm" href="#/analyzer">Check My Resume →</a>
+          <a class="btn btn-secondary btn-sm" href="#/github">Verify GitHub →</a>
+        </div>
+      </div>
+      <div class="landing-proof-cards">
+        <div class="proof-card card p-3 bg-card border">
+          <div class="d-flex items-start gap-3">
+            <span class="proof-tag-pill font-mono">[ RESUME ]</span>
+            <div>
+              <strong class="text-primary text-sm block mb-1">Exact Quotes</strong>
+              <p class="text-xs text-secondary lh-relaxed m-0">
+                Highlights what matched and what is missing.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="proof-card card p-3 bg-card border">
+          <div class="d-flex items-start gap-3">
+            <span class="proof-tag-pill font-mono">[ GITHUB ]</span>
+            <div>
+              <strong class="text-primary text-sm block mb-1">Code Proof</strong>
+              <p class="text-xs text-secondary lh-relaxed m-0">
+                Verifies your stack from real commits.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="proof-card card p-3 bg-card border">
+          <div class="d-flex items-start gap-3">
+            <span class="proof-tag-pill font-mono">[ SALARY ]</span>
+            <div>
+              <strong class="text-primary text-sm block mb-1">Role Benchmarks</strong>
+              <p class="text-xs text-secondary lh-relaxed m-0">
+                Shows how new skills lift your target pay.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer inside Unified Container -->
+<footer class="editorial-footer bg-card border-top">
+<div class="landing-container">
+<div class="d-grid grid-auto-fit gap-xl mb-4">
 <div>
 <div class="rail-brand mb-15">
 <svg class="brand-logo" width="28" height="28" viewBox="0 0 200 200" aria-hidden="true"><use href="#cm-logo"/></svg>
 <span class="brand-name text-md font-bold text-primary ml-1">CareerMatch AI</span>
 </div>
 <p class="text-sm text-secondary m-0">
-                    Evidence-grounded career intelligence for engineering students.
-                  </p>
+  Evidence-grounded career intelligence for engineering students.
+</p>
 </div>
 <div>
 <div class="font-mono text-xs uppercase text-tertiary tracking-wide mb-15 font-semibold">Product</div>
 <ul class="list-unstyled p-0 m-0 d-flex flex-col gap-sm text-sm">
 <li><a class="text-secondary link-muted" href="#/analyzer">Resume Analyzer</a></li>
-<li><a class="text-secondary link-muted" href="#/ats">ATS Check &amp; Simulator</a></li>
-<li><a class="text-secondary link-muted" href="#/roadmap">Adaptive Roadmap</a></li>
-<li><a class="text-secondary link-muted" href="#/market">Live Job Market</a></li>
+<li><a class="text-secondary link-muted" href="#/ats">ATS Check</a></li>
+<li><a class="text-secondary link-muted" href="#/roadmap">Skill Roadmap</a></li>
+<li><a class="text-secondary link-muted" href="#/market">Live Jobs</a></li>
 <li><a class="text-secondary link-muted" href="#/interview">Mock Interview</a></li>
 </ul>
 </div>
 <div>
 <div class="font-mono text-xs uppercase text-tertiary tracking-wide mb-15 font-semibold">Resources</div>
 <ul class="list-unstyled p-0 m-0 d-flex flex-col gap-sm text-sm">
-<li><a class="text-secondary link-muted" href="#/readiness">How Scoring Works (PRI)</a></li>
-<li><a class="text-secondary link-muted" href="#/market">Data Sources &amp; Coverage</a></li>
-<li><a class="text-secondary link-muted" href="#/github">Code Evidence &amp; Proof</a></li>
+<li><a class="text-secondary link-muted" href="#/readiness">Readiness Score (PRI)</a></li>
+<li><a class="text-secondary link-muted" href="#/market">Data Sources</a></li>
+<li><a class="text-secondary link-muted" href="#/github">GitHub Check</a></li>
 <li><a class="text-high link-muted" href="/api/health" rel="noopener" target="_blank">● System Health: Operational</a></li>
 </ul>
 </div>
@@ -476,7 +655,7 @@
 </ul>
 </div>
 </div>
-<div class="border-top max-w-wide mx-auto d-flex flex-wrap gap-md text-xs text-tertiary flex-between">
+<div class="border-top pt-3 d-flex flex-wrap gap-md text-xs text-tertiary flex-between">
 <div>
   <span>&copy; <span id="landingCopyrightYear">2026</span> CareerMatch AI. All rights reserved.</span>
 </div>
@@ -486,6 +665,7 @@
   <a class="text-tertiary link-muted" href="#/terms">Terms</a>
   <span aria-hidden="true">&middot;</span>
   <a class="text-tertiary link-muted" href="#/cookies">Cookies</a>
+</div>
 </div>
 </div>
 </footer>
@@ -744,6 +924,10 @@
 <div class="text-xs text-tertiary mt-05" id="parsedResumeDegree"></div>
 <div class="d-flex flex-wrap gap-xs mt-1" id="parsedSkillBadges"></div>
 <div class="mt-1 text-xs text-secondary d-flex gap-md flex-wrap" id="parsedMetaRow"></div>
+<div class="mt-2 pt-2 border-top d-flex justify-between items-center">
+  <span class="text-xs text-tertiary">Ready to design &amp; format?</span>
+  <a class="btn btn-primary btn-sm" href="#/builder" id="analyzerOpenBuilderBtn">Improve &amp; Format in Resume Builder →</a>
+</div>
 </div>
 </div>
 </div>
@@ -878,6 +1062,9 @@
 </div>
 </div>
 <div class="d-flex gap-sm">
+<a class="btn btn-primary btn-sm" href="#/builder" id="reportImproveInBuilderBtn">
+  Improve in Resume Builder →
+</a>
 <button class="btn btn-secondary btn-sm" id="shareScorecardBtn" type="button">
                     Share Scorecard
                   </button>
@@ -1081,9 +1268,9 @@
 <div class="card mb-3">
 <div class="card-header">
 <div>
-<h2 class="text-xl m-0">ATS Resume Audit &amp; Optimization</h2>
+<h2 class="text-xl m-0">ATS Resume Audit</h2>
 <p class="text-sm text-tertiary">
-                    4-Pillar Parser Compliance Audit (Format, Keywords, Impact, Length)
+                    Audit parser compliance, find missing keywords, and optimize resume impact.
                   </p>
 </div>
 <div class="d-flex gap-sm">
@@ -1117,6 +1304,466 @@
 </div>
 </section>
 <!-- ==================================================================
+               VIEW 5B: AI RESUME BUILDER & TEMPLATE STUDIO (#/builder)
+               ================================================================== -->
+<section class="view-panel" hidden="" id="view-builder">
+<div class="card mb-3">
+<div class="card-header flex-wrap gap-2">
+<div>
+<h2 class="text-xl m-0 flex-row items-center gap-2">
+  <span>Resume Builder</span>
+  <span class="score-pill score-pill-green text-xs">10 Verified Templates</span>
+</h2>
+<p class="text-sm text-tertiary mb-0">
+  Build ATS-friendly resumes with live preview and instant PDF or DOCX export.
+</p>
+</div>
+<div class="d-flex gap-sm items-center flex-wrap">
+<button class="btn btn-secondary btn-sm" id="builderStartScratchBtn" type="button">
+  Start from Scratch
+</button>
+<div class="dropdown-wrapper" style="position:relative;">
+  <button class="btn btn-secondary btn-sm" id="builderLoadDemoDropdownBtn" type="button">
+    Load Test Profile ▾
+  </button>
+  <div class="dropdown-menu hidden" id="builderLoadDemoDropdownMenu" style="position:absolute; right:0; top:100%; z-index:var(--z-dropdown, 100); min-width:220px; background:var(--bg-overlay, #ffffff); border:1px solid var(--border-medium); border-radius:var(--r-md); box-shadow:var(--overlay-shadow); padding:6px; margin-top:4px;">
+    <button class="btn btn-ghost btn-sm w-100 text-left mb-1" id="builderLoadFresherBtn" type="button">
+      🎓 Indian Fresher (IIT Bombay)
+    </button>
+    <button class="btn btn-ghost btn-sm w-100 text-left mb-1" id="builderLoadSdeBtn" type="button">
+      💼 Software Engineer (Razorpay)
+    </button>
+    <button class="btn btn-ghost btn-sm w-100 text-left" id="builderLoadDsBtn" type="button">
+      🔬 Data Scientist (IISc / Zomato)
+    </button>
+  </div>
+</div>
+<!-- Consolidated Export Action Bar (Task 6 Item 1) -->
+<div class="bld-export-action-bar d-flex gap-xs items-center" id="builderExportActionBar">
+  <button class="btn btn-primary btn-sm" id="builderDownloadBtn" type="button">
+    Download PDF
+  </button>
+  <button class="btn btn-secondary btn-sm" id="builderDownloadDocxBtn" type="button">
+    Download DOCX
+  </button>
+  <button class="btn btn-secondary btn-sm" id="builderSaveAccountBtn" type="button" title="Save to logged-in profile">
+    Save to Profile
+  </button>
+  <button id="builderGenerateBtn" class="visually-hidden" aria-hidden="true" tabindex="-1" type="button"></button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Sync Banner (when analyzer has a parsed resume available) -->
+<div id="builderSyncBanner" class="card p-3 mb-3 bg-sunken border-subtle hidden d-flex justify-between items-center text-xs">
+  <div class="d-flex items-center gap-2">
+    <span class="score-pill score-pill-blue text-xs">New Resume Detected</span>
+    <span class="text-secondary" id="builderSyncBannerText">A newly analyzed resume is available.</span>
+  </div>
+  <div class="d-flex gap-2">
+    <button type="button" class="btn btn-primary btn-xs" id="builderSyncResumeBtn">Sync into Builder</button>
+    <button type="button" class="btn btn-ghost btn-xs text-secondary" id="builderDismissSyncBtn">Dismiss</button>
+  </div>
+</div>
+
+<!-- Progress / Status Messages -->
+<div id="builderGenerationStatus" class="hidden mb-3"></div>
+
+<!-- ==============================================================
+     SECTION 1: LANDING & UPLOAD MODE (#builderLandingSection)
+     ============================================================== -->
+<div id="builderLandingSection">
+  <div id="builderCarouselLanding" class="mb-4"></div>
+  <h3 class="text-lg font-semibold mb-2">Already have a resume? Import it instead</h3>
+  <div class="grid-2 gap-md mb-4">
+    <!-- Upload Card -->
+    <div class="card p-4 flex-col justify-between">
+      <div>
+        <h3 class="text-lg font-semibold mb-2">Upload Existing Resume</h3>
+        <p class="text-sm text-secondary mb-3">
+          Upload your existing PDF, DOCX, or text resume. Our parser will extract your contact info, education, skills, projects, and work experience into an editable profile.
+        </p>
+        <div class="upload-dropzone p-4 text-center cursor-pointer mb-3" id="builderUploadDropzone" tabindex="0" role="button" aria-label="Upload Resume File">
+          <input type="file" id="builderFileInput" accept=".pdf,.docx,.txt" class="hidden" />
+          <svg fill="none" height="36" stroke="currentColor" stroke-width="1.5" viewbox="0 0 24 24" width="36" class="text-tertiary mb-2 mx-auto"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+          <div class="text-sm font-semibold text-primary mb-1">Drag &amp; drop your resume here, or browse</div>
+          <div class="text-xs text-tertiary mb-3">PDF, DOCX, or TXT (Max 5 MB)</div>
+          <button type="button" class="btn btn-secondary btn-sm" id="builderChooseFileBtn">Choose File</button>
+        </div>
+
+        <details class="text-xs text-secondary">
+          <summary class="cursor-pointer font-semibold py-1">Or paste plain resume text</summary>
+          <div class="mt-2">
+            <textarea id="builderPastedInput" rows="4" class="input w-100 text-xs mb-2" placeholder="Paste your raw resume text here (minimum 20 characters)..."></textarea>
+            <button type="button" class="btn btn-secondary btn-sm" id="builderParsePasteBtn">Parse Pasted Text</button>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <!-- Scratch / Presets Card -->
+    <div class="card p-4 flex-col justify-between">
+      <div>
+        <h3 class="text-lg font-semibold mb-2">Start Fresh or Test Demos</h3>
+        <p class="text-sm text-secondary mb-3">
+          No existing resume on hand? Build a high-impact profile from scratch, or load a pre-populated fictional profile tailored for the Indian hiring market.
+        </p>
+        <div class="flex-col gap-2 mb-4">
+          <button type="button" class="btn btn-secondary text-left p-3 w-100 flex-row items-center justify-between" id="builderLandingScratchBtn">
+            <div>
+              <div class="font-semibold text-sm">Create from Blank Canvas</div>
+              <div class="text-xs text-tertiary">Step-by-step guidance across all essential sections</div>
+            </div>
+            <span>→</span>
+          </button>
+          <button type="button" class="btn btn-secondary text-left p-3 w-100 flex-row items-center justify-between" id="builderLandingFresherBtn">
+            <div>
+              <div class="font-semibold text-sm">Load Indian Graduate &amp; Fresher Profile</div>
+              <div class="text-xs text-tertiary">B.Tech IIT Bombay · Projects &amp; CGPA focused (No exp required)</div>
+            </div>
+            <span>→</span>
+          </button>
+          <button type="button" class="btn btn-secondary text-left p-3 w-100 flex-row items-center justify-between" id="builderLandingSdeBtn">
+            <div>
+              <div class="font-semibold text-sm">Load Software Engineer Profile</div>
+              <div class="text-xs text-tertiary">4 yrs SDE · Razorpay &amp; Swiggy · Microservices &amp; Kafka</div>
+            </div>
+            <span>→</span>
+          </button>
+          <button type="button" class="btn btn-secondary text-left p-3 w-100 flex-row items-center justify-between" id="builderLandingDsBtn">
+            <div>
+              <div class="font-semibold text-sm">Load Data Scientist Profile</div>
+              <div class="text-xs text-tertiary">IISc Bangalore · Zomato Labs · RAG, PyTorch &amp; Publications</div>
+            </div>
+            <span>→</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Extraction Loading State -->
+  <div id="builderExtractionProgress" class="card p-4 text-center bg-sunken hidden">
+    <div class="spinner mb-2 mx-auto" style="width:28px;height:28px;" aria-hidden="true"></div>
+    <div class="text-sm font-semibold text-primary" id="builderExtractionMsg">Extracting resume information...</div>
+    <div class="text-xs text-secondary mt-1">Detecting contact details, degrees, projects, skills, and work experience.</div>
+  </div>
+</div>
+
+<!-- ==============================================================
+     SECTION 2: WORKSPACE & TEMPLATE STUDIO (#builderWorkspaceSection)
+     ============================================================== -->
+<div id="builderWorkspaceSection" class="hidden">
+  <!-- Mobile & Tablet Segmented View Toggle (< 1100px) -->
+  <div class="builder-mobile-view-toggle mb-3" id="builderMobileViewToggle" role="tablist" aria-label="Builder View Selection">
+    <button type="button" class="btn btn-sm btn-primary bld-view-toggle-btn active" data-bld-view="editor">Edit Details</button>
+    <button type="button" class="btn btn-sm btn-ghost bld-view-toggle-btn" data-bld-view="preview">Live Preview</button>
+    <button type="button" class="btn btn-sm btn-ghost bld-view-toggle-btn" data-bld-view="templates">Templates</button>
+  </div>
+
+  <div class="builder-workspace-grid">
+    <!-- Left Column: Profile Editor -->
+    <div class="builder-editor-pane card">
+      <div class="card-header pb-2">
+        <div>
+          <h3 class="text-md font-semibold m-0">Resume Profile Editor</h3>
+          <p class="text-xs text-tertiary mb-0">Changes update the live preview instantly.</p>
+        </div>
+        <div class="flex-row gap-1">
+          <button type="button" class="btn btn-ghost btn-xs text-secondary" id="builderResetBtn">Start Over</button>
+        </div>
+      </div>
+
+      <!-- Editor Section Tabs -->
+      <div class="builder-tabs-bar">
+        <button type="button" class="builder-tab-btn active" data-tab="personal">Personal</button>
+        <button type="button" class="builder-tab-btn" data-tab="summary">Summary</button>
+        <button type="button" class="builder-tab-btn" data-tab="experience">Experience</button>
+        <button type="button" class="builder-tab-btn" data-tab="education">Education</button>
+        <button type="button" class="builder-tab-btn" data-tab="projects">Projects</button>
+        <button type="button" class="builder-tab-btn" data-tab="skills">Skills</button>
+        <button type="button" class="builder-tab-btn" data-tab="languages">Languages</button>
+        <button type="button" class="builder-tab-btn" data-tab="certs">Certs &amp; Awards</button>
+        <button type="button" class="builder-tab-btn" data-tab="references">Refs &amp; Hobbies</button>
+        <button type="button" class="builder-tab-btn" data-tab="additional">Additional</button>
+      </div>
+
+      <!-- Editor Forms Container -->
+      <form id="builderEditorForm" class="card-body p-3 overflow-y-auto" style="max-height: 680px;">
+        <!-- Tab 1: Personal Info -->
+        <div id="builderPane_personal" class="builder-form-pane">
+          <div class="bld-photo-row">
+            <div class="bld-photo-preview" id="bldPhotoPreview">Photo</div>
+            <div>
+              <input type="file" id="bldPhotoInput" accept="image/*" class="hidden" />
+              <button type="button" class="btn btn-secondary btn-xs" id="bldPhotoBtn">Upload photo</button>
+              <button type="button" class="btn btn-ghost btn-xs text-secondary hidden" id="bldPhotoRemoveBtn">Remove</button>
+              <div class="text-xs text-tertiary mt-1" id="bldPhotoHint">Optional — rendered by templates with a photo slot (Corporate Accent, Timeline Studio, Emerald Sidebar). Other templates use clean text-only headers for ATS fidelity.</div>
+            </div>
+          </div>
+          <div class="mb-2">
+            <label class="text-xs font-semibold text-secondary">Professional Title / Headline</label>
+            <input type="text" id="bldHeadline" data-field="personalInfo.headline" class="input input-sm" placeholder="Senior Backend Engineer · Distributed Systems" />
+          </div>
+          <div class="grid-2 gap-2 mb-2">
+            <div>
+              <label class="text-xs font-semibold text-secondary">Full Name *</label>
+              <input type="text" id="bldFullName" data-field="personalInfo.full_name" class="input input-sm" placeholder="Aarav Sharma" required />
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-secondary">Email Address *</label>
+              <input type="email" id="bldEmail" data-field="personalInfo.email" class="input input-sm" placeholder="aarav.sharma@example.com" />
+            </div>
+          </div>
+          <div class="grid-2 gap-2 mb-2">
+            <div>
+              <label class="text-xs font-semibold text-secondary">Phone Number *</label>
+              <input type="tel" id="bldPhone" data-field="personalInfo.phone" class="input input-sm" placeholder="+91 98765 43210" />
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-secondary">City / Location</label>
+              <input type="text" id="bldCity" data-field="personalInfo.city" class="input input-sm" placeholder="Bengaluru, Karnataka" />
+            </div>
+          </div>
+          <div class="grid-3 gap-2 mb-2">
+            <div>
+              <label class="text-xs text-secondary">Street / Postal Address</label>
+              <input type="text" id="bldAddress" data-field="personalInfo.address" class="input input-sm" placeholder="Indiranagar, Bengaluru" />
+            </div>
+            <div>
+              <label class="text-xs text-secondary">Date of Birth</label>
+              <input type="text" id="bldDob" data-field="personalInfo.dob" class="input input-sm" placeholder="15 Aug 1998" />
+            </div>
+            <div>
+              <label class="text-xs text-secondary">Nationality</label>
+              <input type="text" id="bldNationality" data-field="personalInfo.nationality" class="input input-sm" placeholder="Indian" />
+            </div>
+          </div>
+          <div class="grid-3 gap-2">
+            <div>
+              <label class="text-xs text-secondary">LinkedIn URL</label>
+              <input type="text" id="bldLinkedIn" data-field="personalInfo.linkedin" class="input input-sm" placeholder="https://linkedin.com/in/..." />
+            </div>
+            <div>
+              <label class="text-xs text-secondary">GitHub URL</label>
+              <input type="text" id="bldGitHub" data-field="personalInfo.github" class="input input-sm" placeholder="https://github.com/..." />
+            </div>
+            <div>
+              <label class="text-xs text-secondary">Portfolio URL</label>
+              <input type="text" id="bldPortfolio" data-field="personalInfo.portfolio" class="input input-sm" placeholder="https://..." />
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Professional Summary -->
+        <div id="builderPane_summary" class="builder-form-pane hidden">
+          <label class="text-xs font-semibold text-secondary mb-1 d-block">Professional Summary or Career Objective (Optional)</label>
+          <textarea id="bldSummary" data-field="summary" rows="5" class="input input-sm w-100" placeholder="Motivated software engineer with experience building scalable backend microservices..."></textarea>
+          <div class="text-xs text-tertiary mt-1">Tip: Keep this to 2-3 focused sentences. Will be cleanly omitted if left blank.</div>
+        </div>
+
+        <!-- Tab 3: Work Experience -->
+        <div id="builderPane_experience" class="builder-form-pane hidden">
+          <div class="flex-row justify-between items-center mb-2">
+            <span class="text-xs font-semibold text-secondary">Work &amp; Internship Experience</span>
+            <button type="button" class="btn btn-secondary btn-xs" id="builderAddExpBtn">+ Add Experience</button>
+          </div>
+          <div id="builderExperienceList"></div>
+        </div>
+
+        <!-- Tab 4: Education -->
+        <div id="builderPane_education" class="builder-form-pane hidden">
+          <div class="flex-row justify-between items-center mb-2">
+            <span class="text-xs font-semibold text-secondary">Degrees &amp; Institutions</span>
+            <button type="button" class="btn btn-secondary btn-xs" id="builderAddEduBtn">+ Add Education</button>
+          </div>
+          <div id="builderEducationList"></div>
+        </div>
+
+        <!-- Tab 5: Projects -->
+        <div id="builderPane_projects" class="builder-form-pane hidden">
+          <div class="flex-row justify-between items-center mb-2">
+            <span class="text-xs font-semibold text-secondary">Academic &amp; Technical Projects</span>
+            <button type="button" class="btn btn-secondary btn-xs" id="builderAddProjBtn">+ Add Project</button>
+          </div>
+          <div id="builderProjectsList"></div>
+        </div>
+
+        <!-- Tab 6: Skills -->
+        <div id="builderPane_skills" class="builder-form-pane hidden">
+          <label class="text-xs font-semibold text-secondary mb-1 d-block">Technical Skills (Comma separated quick entry)</label>
+          <textarea id="bldSkillsInput" data-field="technicalSkills" rows="3" class="input input-sm w-100 mb-2" placeholder="Python, FastAPI, SQL, React, Node.js, PostgreSQL, Docker, AWS, Git, Linux"></textarea>
+          <div class="text-xs text-tertiary mb-3">Templates categorize skills automatically into Languages, Frameworks, Databases, and Tools.</div>
+          <div class="flex-row justify-between items-center mb-2">
+            <span class="text-xs font-semibold text-secondary">Detailed Skills with Proficiency</span>
+            <button type="button" class="btn btn-secondary btn-xs" id="builderAddSkillBtn">+ Add Detailed Skill</button>
+          </div>
+          <div id="builderSkillsList"></div>
+        </div>
+
+        <!-- Tab 7: Languages -->
+        <div id="builderPane_languages" class="builder-form-pane hidden">
+          <div class="flex-row justify-between items-center mb-2">
+            <span class="text-xs font-semibold text-secondary">Languages Known</span>
+            <button type="button" class="btn btn-secondary btn-xs" id="builderAddLangBtn">+ Add Language</button>
+          </div>
+          <div id="builderLangList" class="mb-3"></div>
+        </div>
+
+        <!-- Tab 8: Certifications & Achievements -->
+        <div id="builderPane_certs" class="builder-form-pane hidden">
+          <div class="flex-row justify-between items-center mb-2">
+            <span class="text-xs font-semibold text-secondary">Certifications</span>
+            <button type="button" class="btn btn-secondary btn-xs" id="builderAddCertBtn">+ Add Cert</button>
+          </div>
+          <div id="builderCertList" class="mb-3"></div>
+
+          <div class="flex-row justify-between items-center mb-2">
+            <span class="text-xs font-semibold text-secondary">Honors &amp; Achievements</span>
+            <button type="button" class="btn btn-secondary btn-xs" id="builderAddAchBtn">+ Add Achievement</button>
+          </div>
+          <div id="builderAchList"></div>
+        </div>
+
+        <!-- Tab 9: References & Hobbies -->
+        <div id="builderPane_references" class="builder-form-pane hidden">
+          <div class="flex-row justify-between items-center mb-2">
+            <span class="text-xs font-semibold text-secondary">Professional References</span>
+            <button type="button" class="btn btn-secondary btn-xs" id="builderAddRefBtn">+ Add Reference</button>
+          </div>
+          <div id="builderRefList" class="mb-3"></div>
+
+          <div class="mb-2">
+            <label class="text-xs font-semibold text-secondary">Hobbies &amp; Personal Interests</label>
+            <textarea id="bldHobbiesInput" data-field="hobbies" rows="2" class="input input-sm w-100" placeholder="Competitive Chess, Open Source Contributing, Marathon Running..."></textarea>
+            <div class="text-xs text-tertiary mt-1">Rendered cleanly in templates supporting personal details.</div>
+          </div>
+        </div>
+
+        <!-- Tab 10: Additional Information -->
+        <div id="builderPane_additional" class="builder-form-pane hidden">
+          <div class="mb-3">
+            <label class="text-xs font-semibold text-secondary">Research Interests (comma separated)</label>
+            <input type="text" id="bldResearchInput" data-field="researchInterests" class="input input-sm" placeholder="Distributed Systems, Large Language Models, Optimization" />
+          </div>
+          <div class="flex-row justify-between items-center mb-2">
+            <span class="text-xs font-semibold text-secondary">Publications</span>
+            <button type="button" class="btn btn-secondary btn-xs" id="builderAddPubBtn">+ Add Publication</button>
+          </div>
+          <div id="builderPubList"></div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Right Column: Template switcher & Live A4 Preview -->
+    <div class="builder-preview-pane">
+      <div class="card p-3 mb-2 bld-toolbar">
+        <div class="bld-tpl-chip bld-inline">
+          <span class="text-xs text-tertiary">Template</span>
+          <b id="builderActiveTemplateName">Editorial Serif</b>
+          <span id="builderActiveTemplateBadge" class="score-pill score-pill-green text-xs">ATS High</span>
+          <button type="button" class="btn btn-secondary btn-xs" id="builderChangeTplBtn" aria-expanded="false">Change template</button>
+        </div>
+        <div class="bld-inline">
+          <span id="builderPageCount" class="bld-pagecount text-tertiary">1 page</span>
+          <select id="builderZoomSelect" class="input input-sm" style="width: 104px;" aria-label="Preview zoom">
+            <option value="fit" selected>Fit width</option>
+            <option value="1">100%</option>
+            <option value="0.85">85%</option>
+            <option value="0.7">70%</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card p-2 mb-2 bld-inline items-center gap-2" id="builderThemeControlsCard">
+        <div id="builderThemeColorRow" class="d-flex items-center gap-2 flex-wrap">
+          <span class="text-xs text-tertiary" style="white-space:nowrap;">Accent colour</span>
+          <div class="bld-swatches" id="builderSwatches"></div>
+          <label class="d-flex items-center gap-1 cursor-pointer text-xs text-secondary mb-0" title="Custom color picker">
+            <input type="color" id="builderCustomColorPicker" class="bld-color-picker" value="#2563A6" style="width:28px;height:24px;padding:0;border:1px solid var(--border-medium);border-radius:4px;cursor:pointer;" />
+            <span>Custom</span>
+          </label>
+          <button type="button" class="btn btn-ghost btn-xs text-secondary" id="builderResetColorBtn">Reset</button>
+        </div>
+        <span id="builderMonochromeBadge" class="score-pill score-pill-gray text-xs hidden">Classic Monochrome Layout</span>
+        <span class="text-xs text-tertiary" id="builderAtsNote" style="margin-left:auto;"></span>
+      </div>
+
+      <!-- Collapsible template gallery & filter bar -->
+      <div id="builderWorkspaceGallery" class="bld-gallery-panel hidden card p-3 mb-2">
+        <div class="d-flex justify-between items-center mb-3 flex-wrap gap-2">
+          <div class="d-flex gap-1 flex-wrap" id="builderTemplateFilterBar">
+            <button type="button" class="btn btn-sm btn-primary bld-filter-btn" data-filter="all">All (10)</button>
+            <button type="button" class="btn btn-sm btn-ghost bld-filter-btn" data-filter="classic">ATS &amp; Classic</button>
+            <button type="button" class="btn btn-sm btn-ghost bld-filter-btn" data-filter="modern">Modern &amp; Editorial</button>
+            <button type="button" class="btn btn-sm btn-ghost bld-filter-btn" data-filter="twocol">Two-Column</button>
+            <button type="button" class="btn btn-sm btn-ghost bld-filter-btn" data-filter="photo">With Photo</button>
+          </div>
+          <button type="button" class="btn btn-ghost btn-xs" id="builderCloseGalleryBtn">✕ Close</button>
+        </div>
+        <div id="builderTemplateGrid" class="bld-template-grid"></div>
+      </div>
+
+      <!-- Live A4 Canvas Container -->
+      <div class="builder-preview-viewport" id="builderPreviewViewport">
+        <div id="builderPreviewPaper" class="bld-sheet-wrap">
+          <div id="builderLivePreviewDoc"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<iframe id="builderPrintFrame" class="visually-hidden" style="position:fixed;right:0;bottom:0;width:0;height:0;border:0;" title="Print Frame"></iframe>
+
+<!-- ==============================================================
+     CONFIRMATION MODAL (#builderConfirmModal)
+     ============================================================== -->
+<div id="builderConfirmModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="builderModalTitle">
+  <div class="modal-dialog card p-4" style="max-width: 580px; margin: 6vh auto; border-radius: var(--r-lg); box-shadow: var(--overlay-shadow);">
+    <div class="flex-row justify-between items-center mb-3">
+      <h3 class="text-lg font-semibold m-0" id="builderModalTitle">Confirm Resume Generation</h3>
+      <button type="button" class="btn btn-ghost btn-sm" id="builderModalCloseBtn" aria-label="Close modal">✕</button>
+    </div>
+
+    <div class="card p-3 mb-3 bg-sunken">
+      <div class="grid-2 gap-2 text-xs">
+        <div>
+          <span class="text-tertiary">Selected Template:</span>
+          <div class="font-semibold text-primary" id="builderModalTemplateName">Modern ATS Professional</div>
+        </div>
+        <div>
+          <span class="text-tertiary">Candidate Name:</span>
+          <div class="font-semibold text-primary" id="builderModalCandidateName">Aarav Sharma</div>
+        </div>
+      </div>
+      <div class="text-xs mt-2">
+        <span class="text-tertiary">Contact Info:</span>
+        <div class="text-secondary" id="builderModalContact">aarav@example.com · +91 98765 43210</div>
+      </div>
+    </div>
+
+    <!-- Errors & Warnings -->
+    <div id="builderModalErrors" class="hidden"></div>
+    <div id="builderModalWarnings" class="hidden"></div>
+
+    <div class="mb-4">
+      <div class="text-xs font-semibold text-secondary mb-1">Included Resume Sections:</div>
+      <ul id="builderModalIncludedSections" class="mb-0 pl-3"></ul>
+    </div>
+
+    <div class="flex-row justify-between items-center pt-2 border-top">
+      <button type="button" class="btn btn-secondary btn-sm" id="builderModalChangeTplBtn">Change Template</button>
+      <div class="flex-row gap-2">
+        <button type="button" class="btn btn-ghost btn-sm" id="builderModalEditBtn">Edit Details</button>
+        <button type="button" class="btn btn-primary btn-sm" id="builderModalConfirmBtn">Confirm &amp; Download PDF</button>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+<!-- ==================================================================
                VIEW 6: ADAPTIVE ROADMAP (#/roadmap)
                ================================================================== -->
 <section class="view-panel" hidden="" id="view-roadmap">
@@ -1124,7 +1771,8 @@
 <div class="card-header">
 <div>
 <h2 class="text-xl m-0">Adaptive Learning Roadmap</h2>
-<span class="score-pill high" id="adapProgressBadge">Stage 1 Active</span>
+<p class="text-sm text-tertiary m-0">Track milestone deliverables, verify skills with quizzes, and close gaps.</p>
+<span class="score-pill high mt-05" id="adapProgressBadge">Stage 1 Active</span>
 </div>
 <button class="btn btn-secondary btn-sm" id="regenerateAdaptiveRoadmapBtn" type="button">
                   Regenerate Roadmap
@@ -1180,9 +1828,9 @@
 <section class="view-panel" hidden="" id="view-planner">
 <div class="planner-header-card d-flex flex-between align-center flex-wrap gap-md mb-3">
 <div>
-<h2 class="text-xl m-0 font-serif text-primary">Weekly Study Planner &amp; Milestones</h2>
+<h2 class="text-xl m-0 font-serif text-primary">Weekly Study Planner</h2>
 <p class="text-sm text-secondary m-0">
-Derived from your verified roadmap and skill gaps. Structured daily deliverables.
+Schedule targeted study sessions and track daily milestone completion.
 </p>
 </div>
 <div class="d-flex gap-xs align-center">
@@ -1248,8 +1896,8 @@ Derived from your verified roadmap and skill gaps. Structured daily deliverables
 <div>
 <h2 class="text-xl m-0">Mock Interview</h2>
 <span class="text-sm text-tertiary">
-                    Practice with instant rubric evaluation
-                  </span>
+  Practice realistic interview questions with instant rubric scoring and feedback.
+</span>
 </div>
 <div class="d-flex items-center gap-sm">
 <select class="form-select text-xs w-auto" id="interviewRoundSelect" required="">
@@ -1339,10 +1987,10 @@ Derived from your verified roadmap and skill gaps. Structured daily deliverables
 <div class="card mb-3">
 <div class="card-header">
 <div>
-<h2 class="text-xl m-0">Skill Lab</h2>
-<span class="text-sm text-tertiary">
-                    4 MCQs and code challenge
-                  </span>
+<h2 class="text-xl m-0">Technical Skill Lab</h2>
+<p class="text-sm text-tertiary m-0">
+                    Validate core engineering concepts with timed quizzes and coding challenges.
+                  </p>
 </div>
 <div class="d-flex items-center gap-sm">
 <select class="form-select text-xs w-auto" id="asmtTopicSelect" required="">
@@ -1425,10 +2073,10 @@ Derived from your verified roadmap and skill gaps. Structured daily deliverables
 <div class="card mb-3">
 <div class="card-header">
 <div>
-<h2 class="text-xl m-0">GitHub Proof &amp; Portfolio Analyzer</h2>
-<span class="text-sm text-tertiary">
-                    Verify code evidence, repository commit history, and documentation quality
-                  </span>
+<h2 class="text-xl m-0">GitHub Portfolio Analyzer</h2>
+<p class="text-sm text-tertiary m-0">
+                    Verify repository commits, code evidence, and documentation quality.
+                  </p>
 </div>
 <div class="d-flex gap-sm">
 <input class="form-input text-xs w-180" id="githubUsernameInput" placeholder="GitHub username (e.g. torvalds)" type="text"/>
@@ -1487,10 +2135,10 @@ Derived from your verified roadmap and skill gaps. Structured daily deliverables
 <div class="card mb-3">
 <div class="card-header d-flex flex-between align-center flex-wrap gap-sm">
 <div>
-<h2 class="text-xl m-0 font-serif text-primary">Live Job Market Intelligence</h2>
-<span class="text-sm text-tertiary">
-Verified openings across Indian tech hubs and remote engineering teams
-</span>
+<h2 class="text-xl m-0 font-serif text-primary">Live Job Market</h2>
+<p class="text-sm text-tertiary m-0">
+Explore verified engineering openings with live skill and salary benchmarks.
+</p>
 </div>
 <div class="d-flex gap-xs align-center">
 <button class="btn btn-secondary btn-sm" id="jobsExportCsvBtn" type="button">Download CSV</button>
@@ -1599,9 +2247,9 @@ Verified openings across Indian tech hubs and remote engineering teams
 <section class="view-panel" hidden="" id="view-tracker">
 <div class="card-header bg-transparent border-none p-0">
 <div>
-<h2 class="text-xl m-0">Application Kanban Tracker</h2>
+<h2 class="text-xl m-0">Application Tracker</h2>
 <p class="text-sm text-secondary">
-                  Track application pipeline status, per-job match percentages, and interview stages.
+                  Track job applications across submission, interview, and offer stages.
                 </p>
 </div>
 <a class="btn btn-secondary btn-sm" href="#/market">
@@ -1620,9 +2268,9 @@ Verified openings across Indian tech hubs and remote engineering teams
 <div class="card-header">
 <div>
 <h2 class="text-xl m-0">Career Paths</h2>
-<span class="text-sm text-tertiary">
-                    Bridges and salary benchmarks
-                  </span>
+<p class="text-sm text-tertiary m-0">
+                    Compare transition bridges, skill requirements, and market salary curves.
+                  </p>
 </div>
 <div class="d-flex gap-sm">
 <select class="form-select text-xs w-auto" id="careerPrimaryRoleSelect">
@@ -1673,10 +2321,10 @@ Verified openings across Indian tech hubs and remote engineering teams
 <div class="card mb-3">
 <div class="card-header">
 <div>
-<h2 class="text-xl m-0">Placement Readiness</h2>
-<span class="text-sm text-tertiary" id="priCandidateHeader">
+<h2 class="text-xl m-0">Placement Readiness Index</h2>
+<p class="text-sm text-tertiary m-0" id="priCandidateHeader">
                     Candidate Profile
-                  </span>
+                  </p>
 </div>
 <button class="btn btn-secondary btn-sm" id="recalcPriBtn" type="button">
                   Recalculate Index
@@ -1762,9 +2410,9 @@ Verified openings across Indian tech hubs and remote engineering teams
 <div class="d-flex flex-wrap gap-md flex-between">
 <div>
 <h2 class="font-serif text-xl text-primary">Career Profile</h2>
-<span class="text-sm text-secondary">
-                      Canonical candidate profile
-                    </span>
+<p class="text-sm text-secondary m-0">
+                      Manage verified personal details, education history, work experience, and target roles.
+                    </p>
 </div>
 <div class="d-flex items-center gap-sm">
 <button class="btn btn-secondary btn-sm" id="profImportResumeBtn" type="button">
@@ -1913,9 +2561,9 @@ Verified openings across Indian tech hubs and remote engineering teams
 <section class="view-panel" hidden="" id="view-settings">
 <div class="max-w-narrow mx-auto d-flex flex-col gap-lg">
 <div class="card glass-panel p-3">
-<h2 class="font-serif text-xl">Settings &amp; Workspace Management</h2>
+<h2 class="font-serif text-xl">Workspace Settings</h2>
 <p class="text-sm text-secondary">
-                  Configure theme, backups, and privacy.
+                  Configure interface themes, export workspace data, and manage account privacy.
                 </p>
 <div class="d-flex flex-col gap-lg">
 <div class="d-flex border-bottom flex-between">

@@ -191,20 +191,34 @@ class JobMarketService:
         try:
             conn = get_connection()
             cursor = conn.cursor()
-            # Check for recently cached jobs (less than 24 hours old)
-            cursor.execute(
-                """
-                SELECT id, title, company_name, location, work_mode, experience_level,
-                       salary_range, role_category, required_skills_json, preferred_skills_json,
-                       description_summary, apply_url, data_source, posted_at, fetched_at
-                FROM job_listings
-                ORDER BY fetched_at DESC
-                LIMIT ?;
-                """,
-                (limit,),
-            )
+            q_clean = query.strip() if query else ""
+            if q_clean and q_clean.lower() not in ("all", "all roles"):
+                cursor.execute(
+                    """
+                    SELECT id, title, company_name, location, work_mode, experience_level,
+                           salary_range, role_category, required_skills_json, preferred_skills_json,
+                           description_summary, apply_url, data_source, posted_at, fetched_at
+                    FROM job_listings
+                    WHERE title LIKE ? OR role_category LIKE ?
+                    ORDER BY fetched_at DESC
+                    LIMIT ?;
+                    """,
+                    (f"%{q_clean}%", f"%{q_clean}%", limit),
+                )
+            else:
+                cursor.execute(
+                    """
+                    SELECT id, title, company_name, location, work_mode, experience_level,
+                           salary_range, role_category, required_skills_json, preferred_skills_json,
+                           description_summary, apply_url, data_source, posted_at, fetched_at
+                    FROM job_listings
+                    ORDER BY fetched_at DESC
+                    LIMIT ?;
+                    """,
+                    (limit,),
+                )
             rows = cursor.fetchall()
-            if not rows or len(rows) < 3:
+            if not rows or len(rows) < 1:
                 return None
 
             jobs = []

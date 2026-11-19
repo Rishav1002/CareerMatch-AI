@@ -15,13 +15,14 @@ import { githubModule } from "./modules/github.js";
 import { marketModule } from "./modules/market.js";
 import { careerModule } from "./modules/career.js";
 import { priModule } from "./modules/pri.js";
+import { builderModule } from "./modules/builder.js";
 
 export const ROUTE_REGISTRY = {
   landing: {
     id: "landing",
     hash: "#/landing",
     panelId: "view-landing",
-    title: "Field Guide & Overview",
+    title: "CareerMatch AI",
     requiresResume: false,
     group: "overview",
     loader: null,
@@ -30,7 +31,7 @@ export const ROUTE_REGISTRY = {
     id: "dashboard",
     hash: "#/dashboard",
     panelId: "view-dashboard",
-    title: "Placement Readiness Dashboard",
+    title: "Overview",
     requiresResume: false,
     group: "overview",
     loader: () => dashboardModule.load(),
@@ -39,7 +40,7 @@ export const ROUTE_REGISTRY = {
     id: "analyzer",
     hash: "#/analyzer",
     panelId: "view-analyzer",
-    title: "Resume & Job Match Analyzer",
+    title: "Resume Analyzer",
     requiresResume: false,
     group: "diagnose",
     loader: () => analyzerModule.load(),
@@ -48,16 +49,25 @@ export const ROUTE_REGISTRY = {
     id: "ats",
     hash: "#/ats",
     panelId: "view-ats",
-    title: "ATS Resume Simulator & Optimizer",
+    title: "ATS Check",
     requiresResume: true,
     group: "diagnose",
     loader: () => atsModule.load(),
+  },
+  builder: {
+    id: "builder",
+    hash: "#/builder",
+    panelId: "view-builder",
+    title: "Resume Builder",
+    requiresResume: false,
+    group: "diagnose",
+    loader: () => builderModule.load(),
   },
   readiness: {
     id: "readiness",
     hash: "#/readiness",
     panelId: "view-pri",
-    title: "Placement Readiness Index (PRI)",
+    title: "Readiness Score",
     requiresResume: true,
     group: "diagnose",
     loader: () => priModule.load(),
@@ -66,7 +76,7 @@ export const ROUTE_REGISTRY = {
     id: "roadmap",
     hash: "#/roadmap",
     panelId: "view-roadmap",
-    title: "Adaptive Learning Roadmap",
+    title: "Skill Roadmap",
     requiresResume: true,
     group: "prepare",
     loader: () => roadmapModule.load(),
@@ -75,7 +85,7 @@ export const ROUTE_REGISTRY = {
     id: "planner",
     hash: "#/planner",
     panelId: "view-planner",
-    title: "Weekly Study Planner",
+    title: "Weekly Planner",
     requiresResume: false,
     group: "prepare",
     loader: () => {
@@ -88,7 +98,7 @@ export const ROUTE_REGISTRY = {
     id: "interview",
     hash: "#/interview",
     panelId: "view-interview",
-    title: "AI Mock Interview Simulator",
+    title: "Mock Interview",
     requiresResume: true,
     group: "prepare",
     loader: () => interviewModule.load(),
@@ -97,7 +107,7 @@ export const ROUTE_REGISTRY = {
     id: "skills",
     hash: "#/skills",
     panelId: "view-assessment",
-    title: "AI Skill Assessment Lab",
+    title: "Skill Check",
     requiresResume: false,
     group: "prepare",
     loader: () => assessmentModule.load(),
@@ -106,7 +116,7 @@ export const ROUTE_REGISTRY = {
     id: "github",
     hash: "#/github",
     panelId: "view-github",
-    title: "GitHub Skill Verification",
+    title: "GitHub Check",
     requiresResume: false,
     group: "prove",
     loader: () => githubModule.load(),
@@ -115,7 +125,7 @@ export const ROUTE_REGISTRY = {
     id: "report",
     hash: "#/report",
     panelId: "view-report",
-    title: "Career Report & Evidence Ledger",
+    title: "Match Report",
     requiresResume: true,
     group: "prove",
     loader: () => reportModule.load(),
@@ -124,7 +134,7 @@ export const ROUTE_REGISTRY = {
     id: "market",
     hash: "#/market",
     panelId: "view-jobs",
-    title: "Live Job Market Intelligence",
+    title: "Live Jobs",
     requiresResume: false,
     group: "decide",
     loader: () => marketModule.load(),
@@ -133,7 +143,7 @@ export const ROUTE_REGISTRY = {
     id: "compare",
     hash: "#/compare",
     panelId: "view-career",
-    title: "Role Benchmark & Salary Intelligence",
+    title: "Role Compare",
     requiresResume: false,
     group: "decide",
     loader: () => careerModule.load(),
@@ -142,7 +152,7 @@ export const ROUTE_REGISTRY = {
     id: "tracker",
     hash: "#/tracker",
     panelId: "view-tracker",
-    title: "Application Pipeline Tracker",
+    title: "Job Tracker",
     requiresResume: false,
     group: "decide",
     loader: () => {
@@ -155,7 +165,7 @@ export const ROUTE_REGISTRY = {
     id: "profile",
     hash: "#/profile",
     panelId: "view-profile",
-    title: "Student Career Profile",
+    title: "Profile",
     requiresResume: false,
     group: "account",
     loader: () => {
@@ -168,7 +178,7 @@ export const ROUTE_REGISTRY = {
     id: "login",
     hash: "#/login",
     panelId: "view-login",
-    title: "Sign In or Register",
+    title: "Sign In",
     requiresResume: false,
     group: "auth",
     loader: null,
@@ -177,7 +187,7 @@ export const ROUTE_REGISTRY = {
     id: "settings",
     hash: "#/settings",
     panelId: "view-settings",
-    title: "Settings & Data Privacy",
+    title: "Settings",
     requiresResume: false,
     group: "account",
     loader: null,
@@ -235,6 +245,9 @@ export const ROUTE_ALIASES = {
   proof: "github",
   overview: "dashboard",
   account: "profile",
+  "resume-builder": "builder",
+  "template-studio": "builder",
+  templates: "builder",
 };
 
 function escapeHtml(str) {
@@ -353,6 +366,7 @@ export class Router {
     marketModule.init();
     careerModule.init();
     priModule.init();
+    builderModule.init();
 
     if (!window.location.hash || window.location.hash === "#" || window.location.hash === "#/") {
       window.location.hash = "#/landing";

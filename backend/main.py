@@ -28,6 +28,7 @@ import logging
 import time
 import mimetypes
 import os
+import re
 import subprocess
 import traceback
 import uuid
@@ -40,7 +41,11 @@ from fastapi.responses import FileResponse, JSONResponse  # type: ignore
 from fastapi.staticfiles import StaticFiles  # type: ignore
 from starlette.concurrency import run_in_threadpool
 
-from backend.ai_service import generate_career_intelligence, is_configured as is_ai_configured
+from backend.ai_service import (
+    extract_structured_resume_with_gemini,
+    generate_career_intelligence,
+    is_configured as is_ai_configured,
+)
 from backend.career_modules import (
     DEFAULT_PRI_WEIGHTS,
     analyze_github_portfolio,
@@ -109,6 +114,14 @@ from backend.resume_parser import (
     parse_resume_text_to_profile,
     sanitize_plain_text,
     sanitize_short_field,
+)
+from backend.resume_builder_service import (
+    FICTIONAL_TEST_PROFILES,
+    TEMPLATES_METADATA,
+    ResumeDocxGenerator,
+    ResumePdfGenerator,
+    get_template_by_id,
+    validate_resume_profile,
 )
 from backend.roles_catalog import get_roles_by_category, get_roles_catalog
 
@@ -753,6 +766,241 @@ async def api_update_skills(
         return handle_update_skills_payload(body, owner_id=owner_id)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
+
+
+# ============================================================================
+# AI RESUME BUILDER & TEMPLATE STUDIO ENDPOINTS
+# ============================================================================
+
+@app.get("/api/builder/templates")
+async def api_builder_templates() -> Dict[str, Any]:
+    """Return catalog of all 8 original resume templates and their metadata."""
+    return {"templates": TEMPLATES_METADATA}
+
+
+@app.get("/api/builder/sample-profiles")
+async def api_builder_sample_profiles() -> Dict[str, Any]:
+    """Return 3 canonical fictional test profiles (Fresher, Software Engineer, Data Scientist)."""
+    return {"profiles": FICTIONAL_TEST_PROFILES}
+
+
+@app.post("/api/builder/parse")
+async def api_builder_parse(
+    request: Request,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    """
+    Parse uploaded file (PDF/DOCX/TXT) or pasted text into normalized builder profile.
+    Stateless / session-isolated: does not overwrite existing career profile or scores.
+    """
+    owner_id, _ = owner_info
+    allowed, retry = rate_limiter.is_allowed(f"builder_parse_{owner_id}", max_requests=20, window_seconds=60)
+    if not allowed:
+        raise HTTPException(status_code=429, detail=f"Rate limit reached. Please wait {retry}s.")
+
+    try:
+        body = await request.json()
+        filename = sanitize_short_field(body.get("filename", "Uploaded_Resume.pdf"), 120)
+        base64_data = body.get("base64Data", "")
+        pasted_text = body.get("pastedText", "")
+
+        if base64_data:
+            if "," in base64_data:
+                base64_data = base64_data.split(",", 1)[1]
+            raw_bytes = base64.b64decode(base64_data)
+            extracted_text = extract_text_from_file_bytes(filename, raw_bytes)
+        elif pasted_text and len(str(pasted_text).strip()) >= 20:
+            extracted_text = sanitize_plain_text(str(pasted_text), 50000)
+            filename = "Pasted_Resume.txt"
+        else:
+            raise ValueError("Please upload a PDF, DOCX, or TXT file or paste at least 20 characters of resume text.")
+
+        profile = parse_resume_text_to_profile(extracted_text, filename)
+        if is_ai_configured():
+            try:
+                ai_structured = extract_structured_resume_with_gemini(extracted_text)
+                if ai_structured and isinstance(ai_structured, dict):
+                    if ai_structured.get("personalInfo"):
+                        for k, v in ai_structured["personalInfo"].items():
+                            if v and str(v).strip():
+                                profile["personalInfo"][k] = v
+                                if k == "full_name":
+                                    profile["basics"]["name"] = v
+                    if ai_structured.get("summary") and len(str(ai_structured["summary"]).strip()) >= 15:
+                        profile["summary"] = str(ai_structured["summary"]).strip()
+                    if ai_structured.get("workExperience") and len(ai_structured["workExperience"]) > 0:
+                        profile["workExperience"] = ai_structured["workExperience"]
+                        profile["experience"] = ai_structured["workExperience"]
+                    if ai_structured.get("education") and len(ai_structured["education"]) > 0:
+                        profile["education"] = ai_structured["education"]
+                    if ai_structured.get("projects") and len(ai_structured["projects"]) > 0:
+                        profile["projects"] = ai_structured["projects"]
+                    if ai_structured.get("technicalSkills") and len(ai_structured["technicalSkills"]) > 0:
+                        for s in ai_structured["technicalSkills"]:
+                            if s not in profile["skills"]["technical"]:
+                                profile["skills"]["technical"].append(s)
+                                profile["technicalSkills"].append(s)
+                    profile["extractionSource"] = "ai"
+            except Exception as ai_err:
+                logger.info("AI structured resume parse skipped, keeping deterministic parse: %s", ai_err)
+
+        val = validate_resume_profile(profile, body.get("templateId", "modern_ats"))
+        return {
+            "profile": profile,
+            "validation": val,
+            "filename": filename,
+            "source": "upload" if base64_data else "pasted",
+        }
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        logger.error("Builder resume parsing error: %s", exc)
+        raise HTTPException(status_code=500, detail=f"Failed to parse resume: {exc}")
+
+
+@app.post("/api/builder/validate")
+async def api_builder_validate(request: Request) -> Dict[str, Any]:
+    """Validate normalized profile data against template requirements."""
+    try:
+        body = await request.json()
+        profile = body.get("profile", {})
+        template_id = body.get("templateId", "modern_ats")
+        result = validate_resume_profile(profile, template_id)
+        return result
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=f"Validation failed: {exc}")
+
+
+@app.post("/api/builder/generate")
+async def api_builder_generate(
+    request: Request,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Response:
+    """
+    Generate high-fidelity A4 PDF resume and return download stream.
+    Guest & Logged-In support, strict validation check, safe filename.
+    """
+    owner_id, _ = owner_info
+    allowed, retry = rate_limiter.is_allowed(f"builder_gen_{owner_id}", max_requests=25, window_seconds=60)
+    if not allowed:
+        raise HTTPException(status_code=429, detail=f"Generation rate limit reached. Please wait {retry}s.")
+
+    try:
+        body = await request.json()
+        profile = body.get("profile", {})
+        template_id = body.get("templateId", "modern_ats")
+
+        # Confirm validation before generating
+        val = validate_resume_profile(profile, template_id)
+        if not val["valid"]:
+            raise ValueError(f"Resume validation failed: {'; '.join(val['errors'])}")
+
+        gen = ResumePdfGenerator(profile, template_id)
+        pdf_bytes = await run_in_threadpool(gen.build_pdf_bytes)
+
+        # Sanitize candidate name for filename
+        raw_name = val.get("candidateName", "Candidate")
+        clean_name = re.sub(r"[^A-Za-z0-9_\- ]", "", raw_name).strip().replace(" ", "_") or "Candidate"
+        download_filename = f"{clean_name}_Resume.pdf"
+
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f'attachment; filename="{download_filename}"',
+                "Access-Control-Expose-Headers": "Content-Disposition",
+                "X-Resume-Template": template_id,
+            },
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        logger.error("Builder PDF generation error: %s", exc)
+        raise HTTPException(status_code=500, detail=f"Failed to generate resume PDF: {exc}")
+
+
+@app.post("/api/builder/generate-docx")
+async def api_builder_generate_docx(
+    request: Request,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Response:
+    """
+    Generate styled, ATS-friendly Word document (.docx) and return download stream.
+    Guest & Logged-In support, strict validation check, safe filename.
+    """
+    owner_id, _ = owner_info
+    allowed, retry = rate_limiter.is_allowed(f"builder_docx_{owner_id}", max_requests=25, window_seconds=60)
+    if not allowed:
+        raise HTTPException(status_code=429, detail=f"Generation rate limit reached. Please wait {retry}s.")
+
+    try:
+        body = await request.json()
+        profile = body.get("profile", {})
+        template_id = body.get("templateId", "editorial_serif")
+        accent_color = body.get("accentColor")
+
+        val = validate_resume_profile(profile, template_id)
+        if not val["valid"]:
+            raise ValueError(f"Resume validation failed: {'; '.join(val['errors'])}")
+
+        gen = ResumeDocxGenerator(profile, template_id, accent_color)
+        docx_bytes = await run_in_threadpool(gen.build_docx_bytes)
+
+        raw_name = val.get("candidateName", "Candidate")
+        clean_name = re.sub(r"[^A-Za-z0-9_\- ]", "", raw_name).strip().replace(" ", "_") or "Candidate"
+        download_filename = f"{clean_name}_Resume.docx"
+
+        return Response(
+            content=docx_bytes,
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            headers={
+                "Content-Disposition": f'attachment; filename="{download_filename}"',
+                "Access-Control-Expose-Headers": "Content-Disposition",
+                "X-Resume-Template": template_id,
+            },
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        logger.error("Builder DOCX generation error: %s", exc)
+        raise HTTPException(status_code=500, detail=f"Failed to generate resume DOCX: {exc}")
+
+
+@app.post("/api/builder/save-to-profile")
+async def api_builder_save_to_profile(
+    request: Request,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    """
+    Explicit user action: save builder profile data to the logged-in student account.
+    Requires authenticated session; does not alter readiness scores or test histories.
+    """
+    owner_id, is_auth = owner_info
+    if not is_auth:
+        raise HTTPException(status_code=401, detail="Authentication required to save profile to account.")
+
+    body = await request.json()
+    profile = body.get("profile", {})
+
+    pinfo = profile.get("personalInfo", {})
+    name = pinfo.get("full_name") or profile.get("contact", {}).get("name", "")
+    email = pinfo.get("email") or profile.get("contact", {}).get("email", "")
+
+    # Update student profile safely
+    profile_payload = {
+        "fullName": name,
+        "email": email,
+        "githubUsername": re.sub(r"^https?://(?:www\.)?github\.com/", "", pinfo.get("github", "")).strip("/"),
+        "linkedinUrl": pinfo.get("linkedin", ""),
+    }
+    edu = profile.get("education", [])
+    if edu:
+        profile_payload["educationDegree"] = edu[0].get("degree", "")
+        profile_payload["institution"] = edu[0].get("institution", "")
+        profile_payload["graduationYear"] = edu[0].get("year", "")
+
+    updated = update_student_profile(profile_payload, user_id=owner_id)
+    return {"status": "ok", "message": "Resume profile saved to account.", "studentProfile": updated}
 
 
 @app.put("/api/roadmap/progress")

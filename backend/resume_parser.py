@@ -107,8 +107,97 @@ SECTION_HEADERS = {
     "ACHIEVEMENTS",
     "AWARDS",
     "SUMMARY",
+    "PROFESSIONAL SUMMARY",
+    "CAREER OBJECTIVE",
     "OBJECTIVE",
+    "PUBLICATIONS",
+    "PUBLICATIONS & RESEARCH",
+    "RESEARCH EXPERIENCE",
+    "RESEARCH INTERESTS",
+    "LANGUAGES",
+    "REFERENCES",
+    "HOBBIES",
 }
+
+CANONICAL_SECTION_PATTERNS: List[Tuple[str, re.Pattern]] = [
+    (
+        "SUMMARY",
+        re.compile(
+            r"^(?:(?:\d+|[ivx]+|[a-z])[\.\)]\s*)?(?:professional\s+summary|career\s+summary|executive\s+summary|summary|profile|about\s+me|career\s+objective|objective)$",
+            re.I,
+        ),
+    ),
+    (
+        "EXPERIENCE",
+        re.compile(
+            r"^(?:(?:\d+|[ivx]+|[a-z])[\.\)]\s*)?(?:work\s+experience|professional\s+experience|employment\s+history|career\s+history|work\s+history|internships\s*&\s*work\s+experience|internships|experience|practical\s+experience|relevant\s+experience)$",
+            re.I,
+        ),
+    ),
+    (
+        "EDUCATION",
+        re.compile(
+            r"^(?:(?:\d+|[ivx]+|[a-z])[\.\)]\s*)?(?:academic\s+background|academic\s+history|educational\s+background|qualifications|academics|degrees|education)$",
+            re.I,
+        ),
+    ),
+    (
+        "PROJECTS",
+        re.compile(
+            r"^(?:(?:\d+|[ivx]+|[a-z])[\.\)]\s*)?(?:academic\s*&\s*personal\s+projects|personal\s+projects|key\s+projects|academic\s+projects|selected\s+projects|technical\s+projects|portfolio|projects)$",
+            re.I,
+        ),
+    ),
+    (
+        "SKILLS",
+        re.compile(
+            r"^(?:(?:\d+|[ivx]+|[a-z])[\.\)]\s*)?(?:technical\s+skills|core\s+competencies|areas\s+of\s+expertise|technologies|tech\s+stack|technical\s+proficiencies|technical\s+strengths|key\s+skills|skills\s*&\s*proficiencies|skills\s*&\s*abilities|tools\s*&\s*technologies|tools|skills)$",
+            re.I,
+        ),
+    ),
+    (
+        "CERTIFICATIONS",
+        re.compile(
+            r"^(?:(?:\d+|[ivx]+|[a-z])[\.\)]\s*)?(?:certifications\s*&\s*licenses|licenses\s*&\s*certifications|certifications|certificates|licenses|courses|credentials)$",
+            re.I,
+        ),
+    ),
+    (
+        "ACHIEVEMENTS",
+        re.compile(
+            r"^(?:(?:\d+|[ivx]+|[a-z])[\.\)]\s*)?(?:honors\s*&\s*awards|awards\s*&\s*achievements|achievements|awards|honors|accomplishments|recognition)$",
+            re.I,
+        ),
+    ),
+    (
+        "LANGUAGES",
+        re.compile(
+            r"^(?:(?:\d+|[ivx]+|[a-z])[\.\)]\s*)?(?:spoken\s+languages|language\s+proficiencies|languages)$",
+            re.I,
+        ),
+    ),
+    (
+        "PUBLICATIONS",
+        re.compile(
+            r"^(?:(?:\d+|[ivx]+|[a-z])[\.\)]\s*)?(?:publications\s*&\s*research|research\s+publications|publications|papers|research\s+experience|research\s+interests|research)$",
+            re.I,
+        ),
+    ),
+    (
+        "REFERENCES",
+        re.compile(
+            r"^(?:(?:\d+|[ivx]+|[a-z])[\.\)]\s*)?(?:references|referees)$",
+            re.I,
+        ),
+    ),
+    (
+        "HOBBIES",
+        re.compile(
+            r"^(?:(?:\d+|[ivx]+|[a-z])[\.\)]\s*)?(?:extracurricular\s+activities|extracurriculars|volunteering|volunteer\s+work|hobbies|interests)$",
+            re.I,
+        ),
+    ),
+]
 
 
 def has_whole_word(text_lower: str, alias: str) -> bool:
@@ -238,20 +327,96 @@ def _extract_docx_bytes(file_bytes: bytes) -> str:
 
 def _is_section_header(line: str) -> str:
     """Return normalized section name if the line is a resume section heading, else ''."""
-    cleaned = re.sub(r"[:\-–—*#]+", "", line).strip().upper()
-    if cleaned in SECTION_HEADERS:
-        if "EDUCATION" in cleaned:
+    if not line:
+        return ""
+    stripped = line.strip()
+    if not stripped or len(stripped) > 55:
+        return ""
+
+    # Strip leading roman numerals, numbers, letters, bullets, hashes
+    cleaned = re.sub(r"^(?:[ivxlcdm]+[\.\)]\s*|[a-z][\.\)]\s*|\d+[\.\)]\s*)", "", stripped, flags=re.I)
+    cleaned = re.sub(r"^[#*•·▪❖♦~–—\-\|\s\d\.\(\)]+", "", cleaned)
+    cleaned = re.sub(r"[:\-–—*#|\s]+$", "", cleaned).strip()
+    if not cleaned:
+        return ""
+
+    words = cleaned.split()
+    if not (1 <= len(words) <= 6):
+        return ""
+
+    verbs = {
+        "developed",
+        "built",
+        "architected",
+        "managed",
+        "created",
+        "engineered",
+        "maintained",
+        "designed",
+        "worked",
+        "reduced",
+        "increased",
+    }
+    if any(w.lower() in verbs for w in words):
+        return ""
+
+    cleaned_upper = cleaned.upper()
+    if cleaned_upper in SECTION_HEADERS:
+        if "EDUCATION" in cleaned_upper or "ACADEMIC" in cleaned_upper:
             return "EDUCATION"
-        if "SKILL" in cleaned:
+        if "SKILL" in cleaned_upper or "COMPETENC" in cleaned_upper or "TECH" in cleaned_upper:
             return "SKILLS"
-        if "EXPERIENCE" in cleaned or "INTERNSHIP" in cleaned:
+        if "EXPERIENCE" in cleaned_upper or "INTERNSHIP" in cleaned_upper or "EMPLOYMENT" in cleaned_upper or "WORK" in cleaned_upper:
             return "EXPERIENCE"
-        if "PROJECT" in cleaned:
+        if "PROJECT" in cleaned_upper or "PORTFOLIO" in cleaned_upper:
             return "PROJECTS"
-        if "CERTIF" in cleaned:
+        if "CERTIF" in cleaned_upper or "LICENSE" in cleaned_upper:
             return "CERTIFICATIONS"
-        if "ACHIEVEMENT" in cleaned or "AWARD" in cleaned:
+        if "ACHIEVEMENT" in cleaned_upper or "AWARD" in cleaned_upper or "HONOR" in cleaned_upper:
             return "ACHIEVEMENTS"
+        if "SUMMARY" in cleaned_upper or "OBJECTIVE" in cleaned_upper or "PROFILE" in cleaned_upper or "ABOUT" in cleaned_upper:
+            return "SUMMARY"
+        if "PUBLICAT" in cleaned_upper or "PAPER" in cleaned_upper:
+            return "PUBLICATIONS"
+        if "RESEARCH" in cleaned_upper:
+            return "RESEARCH"
+        if "LANG" in cleaned_upper:
+            return "LANGUAGES"
+        if "REFERENCE" in cleaned_upper:
+            return "REFERENCES"
+        if "HOBB" in cleaned_upper or "INTEREST" in cleaned_upper or "EXTRACURRICULAR" in cleaned_upper or "VOLUNTEER" in cleaned_upper:
+            return "HOBBIES"
+
+    for sec_name, pattern in CANONICAL_SECTION_PATTERNS:
+        if pattern.match(cleaned):
+            return sec_name
+
+    u = cleaned_upper
+    if "EDUCATION" in u or "ACADEMIC" in u or "QUALIFICATION" in u or "DEGREE" in u:
+        return "EDUCATION"
+    if "SKILL" in u or "COMPETENC" in u or "TECH" in u or "TOOL" in u:
+        return "SKILLS"
+    if "EXPERIENCE" in u or "INTERNSHIP" in u or "EMPLOYMENT" in u or "WORK" in u:
+        return "EXPERIENCE"
+    if "PROJECT" in u or "PORTFOLIO" in u:
+        return "PROJECTS"
+    if "CERTIF" in u or "LICENSE" in u or "CREDENTIAL" in u:
+        return "CERTIFICATIONS"
+    if "ACHIEVEMENT" in u or "AWARD" in u or "HONOR" in u:
+        return "ACHIEVEMENTS"
+    if "SUMMARY" in u or "OBJECTIVE" in u or "PROFILE" in u or "ABOUT" in u:
+        return "SUMMARY"
+    if "PUBLICAT" in u or "PAPER" in u:
+        return "PUBLICATIONS"
+    if "RESEARCH" in u:
+        return "RESEARCH"
+    if "LANG" in u:
+        return "LANGUAGES"
+    if "REFERENCE" in u:
+        return "REFERENCES"
+    if "HOBB" in u or "INTEREST" in u or "EXTRACURRICULAR" in u or "VOLUNTEER" in u:
+        return "HOBBIES"
+
     return ""
 
 
@@ -260,6 +425,7 @@ def parse_resume_text_to_profile(raw_text: str, filename: str = "Uploaded_Resume
     Parse raw resume text into a structured Candidate Profile.
     Preserves abbreviations like 'B.Tech', leaves missing fields blank instead of
     hardcoding defaults, extracts work experience, and ignores section headers.
+    Guarantees zero cross-section bleed into summary, education, experience, or projects.
     """
     clean_text = sanitize_plain_text(raw_text, 50000)
     raw_lines = [line.strip() for line in clean_text.splitlines() if line.strip()]
@@ -267,7 +433,7 @@ def parse_resume_text_to_profile(raw_text: str, filename: str = "Uploaded_Resume
     # Split into clean content lines (without splitting on '.' so "B.Tech" stays "B.Tech")
     content_lines: List[str] = []
     for line in raw_lines:
-        stripped = re.sub(r"^[\s•·\-*]+", "", line).strip()
+        stripped = re.sub(r"^[\s•·\-*▪❖♦~]+", "", line).strip()
         if stripped:
             content_lines.append(stripped)
 
@@ -281,21 +447,35 @@ def parse_resume_text_to_profile(raw_text: str, filename: str = "Uploaded_Resume
             if 2 <= len(candidate_name.split()) <= 5:
                 break
 
-    # 2. Contact details (email, phone, location — leave blank if not found)
+    # 2. Contact details (email, phone, location, online profiles — leave blank if not found)
     email_match = re.search(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}", clean_text)
-    phone_match = re.search(r"(?:\+?\d{1,3}[\s-]?)?\(?\d{3,5}\)?[\s.-]?\d{3,5}[\s.-]?\d{3,5}", clean_text)
+    phone_match = re.search(r"(?:Phone:\s*)?(\+?\d[\d\s\-\(\).]{8,18}\d)", clean_text, flags=re.I)
+    phone_str = phone_match.group(1).strip() if phone_match else ""
     loc_match = re.search(r"Location:\s*([^|\n]+)", clean_text, flags=re.I)
     location_str = loc_match.group(1).strip() if loc_match else ""
+
+    linkedin_m = re.search(r"(?:https?://)?(?:www\.)?linkedin\.com/in/([A-Za-z0-9_-]+)", clean_text, flags=re.I)
+    github_m = re.search(r"(?:https?://)?(?:www\.)?github\.com/([A-Za-z0-9_-]+)", clean_text, flags=re.I)
+    portfolio_m = re.search(r"(?:https?://)?([A-Za-z0-9_-]+\.(?:dev|me|app|io|tech|online|github\.io)(?:/[A-Za-z0-9_.-]+)?)", clean_text, flags=re.I)
+    linkedin_url = linkedin_m.group(0).strip() if linkedin_m else ""
+    github_url = github_m.group(0).strip() if github_m else ""
+    portfolio_url = portfolio_m.group(0).strip() if portfolio_m else ""
 
     # 3. Group lines by section heading
     sections: Dict[str, List[str]] = {
         "HEADER": [],
+        "SUMMARY": [],
         "EDUCATION": [],
         "SKILLS": [],
         "EXPERIENCE": [],
         "PROJECTS": [],
         "CERTIFICATIONS": [],
         "ACHIEVEMENTS": [],
+        "PUBLICATIONS": [],
+        "RESEARCH": [],
+        "LANGUAGES": [],
+        "REFERENCES": [],
+        "HOBBIES": [],
     }
     current_sec = "HEADER"
     for line in raw_lines:
@@ -303,7 +483,8 @@ def parse_resume_text_to_profile(raw_text: str, filename: str = "Uploaded_Resume
         if sec:
             current_sec = sec
             continue
-        sections[current_sec].append(line)
+        if current_sec in sections:
+            sections[current_sec].append(line)
 
     # 4. Detect Technical Skills using whole-word regex matching
     lower_text = clean_text.lower()
@@ -317,7 +498,7 @@ def parse_resume_text_to_profile(raw_text: str, filename: str = "Uploaded_Resume
                 # Find the best non-header line that proves this skill
                 evidence_line = next(
                     (
-                        re.sub(r"^[\s•·\-*]+", "", ln).strip()
+                        re.sub(r"^[\s•·\-*▪❖♦~]+", "", ln).strip()
                         for ln in raw_lines
                         if not _is_section_header(ln) and has_whole_word(ln.lower(), alias)
                     ),
@@ -334,86 +515,191 @@ def parse_resume_text_to_profile(raw_text: str, filename: str = "Uploaded_Resume
             detected_soft.append(soft)
 
     # 6. Extract Education (preserving "B.Tech", real institution, real year, real score)
-    education: List[Dict[str, str]] = []
+    education: List[Dict[str, Any]] = []
     edu_degree_pattern = re.compile(
-        r"\b(B\.?\s*Tech|M\.?\s*Tech|B\.?\s*E\.?|M\.?\s*E\.?|B\.?\s*Sc|M\.?\s*Sc|BCA|MCA|MBA|Ph\.?\s*D|Bachelor|Master)\b",
+        r"\b(B\.?\s*Tech|M\.?\s*Tech|B\.?\s*E\.?|M\.?\s*E\.?|B\.?\s*Sc|M\.?\s*Sc|B\.?\s*S\.?|M\.?\s*S\.?|BCA|MCA|MBA|Ph\.?\s*D|Bachelor|Master|Associate|Diploma|High\s+School)\b",
         flags=re.I,
     )
-    edu_Pool = sections["EDUCATION"] if sections["EDUCATION"] else content_lines
+    edu_Pool = sections["EDUCATION"] if sections["EDUCATION"] else [ln for ln in content_lines if edu_degree_pattern.search(ln)]
     score_str = ""
     for ln in edu_Pool:
         cgpa_m = re.search(r"(?:CGPA|GPA|Percentage|Score)\s*[:\-]?\s*([\d.]+\s*(?:/\s*[\d.]+|%)?)", ln, flags=re.I)
         if cgpa_m:
             score_str = cgpa_m.group(1).strip()
+            break
 
     for ln in edu_Pool:
-        clean_ln = re.sub(r"^[\s•·\-*]+", "", ln).strip()
+        clean_ln = re.sub(r"^[\s•·\-*▪❖♦~]+", "", ln).strip()
+        if not clean_ln or _is_section_header(clean_ln):
+            continue
         if edu_degree_pattern.search(clean_ln):
             year_m = re.search(r"\(?\b((?:19|20)\d{2}\s*[–\-—to]+\s*(?:19|20)?\d{2,4}|(?:19|20)\d{2})\b\)?", clean_ln)
             year_val = year_m.group(1).strip() if year_m else ""
-            # Remove year parenthetical from line to split degree vs institution
             line_no_year = re.sub(r"\(\s*" + re.escape(year_val) + r"\s*\)", "", clean_ln).strip() if year_val else clean_ln
-            parts = [p.strip() for p in re.split(r"\s*[—–\-|]\s*", line_no_year, maxsplit=1) if p.strip()]
+            parts = [p.strip() for p in re.split(r"\s*[—–\-|]\s*", line_no_year) if p.strip()]
             degree_val = parts[0] if parts else clean_ln
             inst_val = parts[1] if len(parts) > 1 else ""
+            loc_val = parts[2] if len(parts) > 2 else ""
+
+            item_score = score_str
+            item_cgpa_m = re.search(r"(?:CGPA|GPA|Percentage|Score)\s*[:\-]?\s*([\d.]+\s*(?:/\s*[\d.]+|%)?)", clean_ln, flags=re.I)
+            if item_cgpa_m:
+                item_score = item_cgpa_m.group(1).strip()
+
             education.append(
                 {
                     "degree": degree_val[:120],
                     "institution": inst_val[:120],
+                    "location": loc_val[:80],
                     "year": year_val,
-                    "score": score_str,
+                    "start_date": "",
+                    "end_date": year_val,
+                    "score": item_score,
+                    "gpa": item_score,
+                    "bullets": [],
                 }
             )
 
-    # 7. Extract Work Experience (role, company, duration, highlights)
+    # 7. Extract Work Experience (role, company, duration, highlights/bullets)
     work_experience: List[Dict[str, Any]] = []
-    current_exp: Dict[str, Any] = {}
+    current_exp: Optional[Dict[str, Any]] = None
+
+    date_range_regex = re.compile(
+        r"\(?\b(?:(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s*)?(?:19|20)\d{2}\s*(?:–|-|—|to)\s*(?:Present|Current|Ongoing|(?:(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s*)?(?:19|20)\d{2})\b\)?",
+        re.I,
+    )
+
     for ln in sections["EXPERIENCE"]:
-        is_bullet = bool(re.match(r"^[\s]*[•·\-*]\s+", ln))
-        clean_ln = re.sub(r"^[\s•·\-*]+", "", ln).strip()
-        if not is_bullet and len(clean_ln) > 8:
+        if _is_section_header(ln):
+            continue
+        is_bullet = bool(re.match(r"^[\s]*[•·\-*▪❖♦~–]\s+", ln))
+        clean_ln = re.sub(r"^[\s•·\-*▪❖♦~–]+", "", ln).strip()
+        if not clean_ln:
+            continue
+
+        date_match = date_range_regex.search(clean_ln)
+        has_common_role_keyword = bool(
+            re.search(
+                r"\b(engineer|developer|intern|lead|manager|analyst|architect|consultant|specialist|designer|scientist|associate|officer|director|founder|co-founder)\b",
+                clean_ln,
+                re.I,
+            )
+        )
+
+        is_header_line = (not is_bullet and (date_match is not None or has_common_role_keyword or "|" in clean_ln or "—" in clean_ln or "–" in clean_ln))
+
+        if is_header_line and not (current_exp and len(clean_ln.split()) > 14 and not date_match):
             if current_exp:
                 work_experience.append(current_exp)
-            date_m = re.search(r"\(([^()]*\b(?:19|20)\d{2}[^()]*)\)", clean_ln)
-            duration_val = date_m.group(1).strip() if date_m else ""
-            header_no_date = clean_ln[: date_m.start()].strip() if date_m else clean_ln
-            parts = [p.strip() for p in re.split(r"\s*[—–\-|]\s*", header_no_date, maxsplit=1) if p.strip()]
-            work_experience_role = parts[0] if parts else header_no_date
-            work_experience_company = parts[1] if len(parts) > 1 else ""
+
+            duration_val = date_match.group(0).strip("()") if date_match else ""
+            header_no_date = clean_ln
+            if date_match:
+                header_no_date = (clean_ln[: date_match.start()] + " " + clean_ln[date_match.end() :]).strip()
+
+            parts = [p.strip() for p in re.split(r"\s*[—–\-|]\s*", header_no_date) if p.strip()]
+            role_val = parts[0] if parts else header_no_date
+            company_val = parts[1] if len(parts) > 1 else ""
+            loc_val = parts[2] if len(parts) > 2 else ""
+
+            if has_common_role_keyword and len(parts) > 1:
+                if not re.search(r"\b(engineer|developer|intern|lead|manager|analyst|architect|consultant|specialist|designer|scientist|associate)\b", role_val, re.I) and re.search(
+                    r"\b(engineer|developer|intern|lead|manager|analyst|architect|consultant|specialist|designer|scientist|associate)\b", company_val, re.I
+                ):
+                    role_val, company_val = company_val, role_val
+
             current_exp = {
-                "role": work_experience_role[:100],
-                "company": work_experience_company[:100],
+                "role": role_val[:100],
+                "company": company_val[:100],
+                "location": loc_val[:80],
+                "start_date": "",
+                "end_date": duration_val[:60],
                 "duration": duration_val[:60],
+                "overview": "",
                 "highlights": [],
+                "bullets": [],
             }
-        elif is_bullet and current_exp:
-            current_exp["highlights"].append(clean_ln[:220])
+        else:
+            if current_exp is not None:
+                sub_bullets = [b.strip() for b in re.split(r"[\r\n]+|[•·▪❖♦]\s*", clean_ln) if b.strip()]
+                for b in sub_bullets:
+                    current_exp["highlights"].append(b[:240])
+                    current_exp["bullets"].append(b[:240])
+            elif not work_experience:
+                current_exp = {
+                    "role": clean_ln[:100],
+                    "company": "",
+                    "location": "",
+                    "start_date": "",
+                    "end_date": "",
+                    "duration": "",
+                    "overview": "",
+                    "highlights": [],
+                    "bullets": [],
+                }
     if current_exp:
         work_experience.append(current_exp)
 
-    # 8. Extract Academic & Personal Projects
+    # 8. Extract Projects
     projects: List[Dict[str, Any]] = []
-    current_proj: Dict[str, Any] = {}
+    current_proj: Optional[Dict[str, Any]] = None
     proj_source = sections["PROJECTS"]
     if proj_source:
         for ln in proj_source:
-            is_bullet = bool(re.match(r"^[\s]*[•·\-*]\s+", ln))
-            clean_ln = re.sub(r"^[\s•·\-*]+", "", ln).strip()
-            if not is_bullet:
+            if _is_section_header(ln):
+                continue
+            is_bullet = bool(re.match(r"^[\s]*[•·\-*▪❖♦~–]\s+", ln))
+            clean_ln = re.sub(r"^[\s•·\-*▪❖♦~–]+", "", ln).strip()
+            if not clean_ln:
+                continue
+
+            gh_match = re.search(r"(https?://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)", clean_ln, re.I)
+            demo_match = re.search(r"(https?://[A-Za-z0-9_.-]+\.[A-Za-z]{2,}(?:/[A-Za-z0-9_.-]*)*)", clean_ln, re.I)
+            date_m = re.search(r"\(?\b((?:19|20)\d{2}\s*[–\-—to]+\s*(?:19|20)?\d{2,4}|(?:19|20)\d{2})\b\)?", clean_ln)
+
+            # If the line is purely an external URL and we already have an active project, attach it directly
+            if (re.match(r"^https?://", clean_ln) or re.match(r"^github\.com/", clean_ln)) and current_proj:
+                if gh_match and not current_proj["github_link"]:
+                    current_proj["github_link"] = gh_match.group(1)
+                elif demo_match and not current_proj["live_link"]:
+                    current_proj["live_link"] = demo_match.group(1)
+                continue
+
+            if not is_bullet and (len(clean_ln.split()) <= 10 or ":" in clean_ln or "|" in clean_ln or "—" in clean_ln or "–" in clean_ln):
                 if current_proj:
                     projects.append(current_proj)
                 title_clean = re.sub(r"^(?:\d+[\.\)]\s*)?(?:Project\s*:\s*)?", "", clean_ln, flags=re.I).strip()
+                parts = [p.strip() for p in re.split(r"\s*[|—–]\s*", title_clean) if p.strip()]
+                p_title = parts[0] if parts else title_clean
+                p_stack = parts[1] if len(parts) > 1 else ""
+
+                matched_stack = [sk for sk in detected_skills if has_whole_word(clean_ln.lower(), sk.lower())]
                 current_proj = {
-                    "title": title_clean[:90],
-                    "techStack": [sk for sk in detected_skills if has_whole_word(clean_ln.lower(), sk.lower())],
+                    "title": p_title[:90],
+                    "name": p_title[:90],
+                    "techStack": matched_stack,
+                    "tech_stack": p_stack or ", ".join(matched_stack),
+                    "dates": date_m.group(1).strip() if date_m else "",
+                    "github_link": gh_match.group(1) if gh_match else "",
+                    "live_link": demo_match.group(1) if demo_match and (not gh_match or demo_match.group(1) != gh_match.group(1)) else "",
                     "description": "",
+                    "bullets": [],
                 }
-            elif is_bullet and current_proj:
+            elif current_proj:
+                sub_bullets = [b.strip() for b in re.split(r"[\r\n]+|[•·▪❖♦]\s*", clean_ln) if b.strip()]
+                for b in sub_bullets:
+                    current_proj["bullets"].append(b[:240])
                 desc = (current_proj["description"] + " " + clean_ln).strip()
                 current_proj["description"] = desc[:240]
+                if gh_match and not current_proj["github_link"]:
+                    current_proj["github_link"] = gh_match.group(1)
                 for sk in detected_skills:
                     if sk not in current_proj["techStack"] and has_whole_word(clean_ln.lower(), sk.lower()):
                         current_proj["techStack"].append(sk)
+                        if current_proj["tech_stack"]:
+                            current_proj["tech_stack"] += f", {sk}"
+                        else:
+                            current_proj["tech_stack"] = sk
         if current_proj:
             projects.append(current_proj)
     else:
@@ -425,20 +711,26 @@ def parse_resume_text_to_profile(raw_text: str, filename: str = "Uploaded_Resume
                 projects.append(
                     {
                         "title": ln[:65] + ("..." if len(ln) > 65 else ""),
+                        "name": ln[:65] + ("..." if len(ln) > 65 else ""),
                         "techStack": matched_stack,
+                        "tech_stack": ", ".join(matched_stack),
+                        "dates": "",
+                        "github_link": "",
+                        "live_link": "",
                         "description": ln[:220],
+                        "bullets": [ln[:220]],
                     }
                 )
                 if len(projects) >= 3:
                     break
 
-    # 9. Extract Certifications (never treat section headers like "CERTIFICATIONS" as a certificate)
+    # 9. Extract Certifications
     certifications: List[str] = []
     if sections["CERTIFICATIONS"]:
         for ln in sections["CERTIFICATIONS"]:
             if _is_section_header(ln):
                 continue
-            clean_cert = re.sub(r"^[\s•·\-*]+", "", ln).strip()
+            clean_cert = re.sub(r"^[\s•·\-*▪❖♦~]+", "", ln).strip()
             if len(clean_cert) >= 5:
                 certifications.append(clean_cert[:120])
     else:
@@ -455,26 +747,66 @@ def parse_resume_text_to_profile(raw_text: str, filename: str = "Uploaded_Resume
     if ach_src:
         for ln in ach_src:
             if not _is_section_header(ln) and len(ln.strip()) >= 5:
-                achievements.append(re.sub(r"^[\s•·\-*]+", "", ln).strip()[:140])
+                achievements.append(re.sub(r"^[\s•·\-*▪❖♦~]+", "", ln).strip()[:140])
     else:
         for ln in content_lines:
             if any(k in ln.lower() for k in ["hackathon", "first place", "runner-up", "ranked top", "scholarship", "dean's list"]):
                 if not _is_section_header(ln) and len(ln.strip()) >= 10:
-                    achievements.append(re.sub(r"^[\s•·\-*]+", "", ln).strip()[:140])
+                    achievements.append(re.sub(r"^[\s•·\-*▪❖♦~]+", "", ln).strip()[:140])
                 if len(achievements) >= 3:
                     break
 
-    summary_text = (
-        f"Detected {len(detected_skills)} technical skills, {len(projects)} projects, "
-        f"and {len(work_experience)} experience entries."
-    )
+    # 11. Extract Summary (Preventing Cross-Section Bleed)
+    summary_candidates: List[str] = []
+    if sections["SUMMARY"]:
+        summary_candidates = sections["SUMMARY"]
+    elif sections["HEADER"]:
+        for ln in sections["HEADER"]:
+            if "@" in ln or "linkedin.com" in ln.lower() or "github.com" in ln.lower() or "http" in ln.lower():
+                continue
+            if re.search(r"\b\d{3}[-.]?\d{3}[-.]?\d{4}\b", ln) or re.search(r"\+\d{1,3}\s*\d+", ln):
+                continue
+            if edu_degree_pattern.search(ln):
+                continue
+            if len(ln.split()) >= 4 and not re.match(r"^[\s•·\-*▪❖♦~]+", ln):
+                if ln.strip().lower() != candidate_name.lower():
+                    summary_candidates.append(ln)
+
+    valid_summary_sentences: List[str] = []
+    date_year_pattern = re.compile(r"\b(?:19|20)\d{2}\b")
+    for ln in summary_candidates:
+        clean_ln = re.sub(r"^[\s•·\-*▪❖♦~]+", "", ln).strip()
+        if not clean_ln or len(clean_ln) < 10 or _is_section_header(clean_ln):
+            continue
+        if "@" in clean_ln or "http" in clean_ln.lower() or "github.com" in clean_ln.lower() or "linkedin.com" in clean_ln.lower():
+            continue
+        if edu_degree_pattern.search(clean_ln):
+            continue
+        if date_year_pattern.search(clean_ln) and len(clean_ln) < 30:
+            continue
+        if clean_ln.count(",") >= 4 and (len(clean_ln.split()) / (clean_ln.count(",") + 1)) < 2.5:
+            continue
+        valid_summary_sentences.append(clean_ln)
+
+    user_summary = " ".join(valid_summary_sentences).strip()
+    sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", user_summary) if s.strip()]
+    if sentences:
+        summary_text = " ".join(sentences[:5]).strip()[:500]
+    else:
+        summary_text = (
+            f"Detected {len(detected_skills)} technical skills, {len(projects)} projects, "
+            f"and {len(work_experience)} experience entries."
+        )
 
     basics_obj = {
         "name": candidate_name,
         "email": email_match.group(0) if email_match else "",
-        "phone": phone_match.group(0) if phone_match else "",
+        "phone": phone_str,
         "location": location_str,
-        "confidence": 0.95 if (email_match or phone_match) else 0.70,
+        "linkedin": linkedin_url,
+        "github": github_url,
+        "portfolio": portfolio_url,
+        "confidence": 0.95 if (email_match or phone_str) else 0.70,
     }
 
     skills_obj = {
@@ -493,6 +825,85 @@ def parse_resume_text_to_profile(raw_text: str, filename: str = "Uploaded_Resume
         "achievements": 0.85 if achievements else 0.50,
     }
 
+    extracted_pubs = [
+        {"title": re.sub(r"^[\s•·\-*]+", "", ln).strip(), "publisher": "", "year": "", "link": ""}
+        for ln in sections.get("PUBLICATIONS", [])
+        if len(ln.strip()) >= 5
+    ]
+    extracted_langs = [
+        re.sub(r"^[\s•·\-*]+", "", ln).strip()
+        for ln in sections.get("LANGUAGES", [])
+        if len(ln.strip()) >= 2
+    ]
+    extracted_research = [
+        re.sub(r"^[\s•·\-*]+", "", ln).strip()
+        for ln in sections.get("RESEARCH", [])
+        if len(ln.strip()) >= 3
+    ]
+
+    # Enrich education items with canonical keys
+    for ed in education:
+        if "bullets" not in ed:
+            ed["bullets"] = [ed["coursework"]] if ed.get("coursework") else []
+        if "gpa" not in ed:
+            ed["gpa"] = ed.get("score", "")
+        if "start_date" not in ed:
+            ed["start_date"] = ""
+        if "end_date" not in ed:
+            ed["end_date"] = ed.get("year", "")
+        if "location" not in ed:
+            ed["location"] = ""
+
+    # Enrich work experience items with canonical keys
+    for exp_item in work_experience:
+        if "bullets" not in exp_item:
+            exp_item["bullets"] = list(exp_item.get("highlights", []))
+        if "overview" not in exp_item:
+            exp_item["overview"] = ""
+        if "start_date" not in exp_item:
+            exp_item["start_date"] = ""
+        if "end_date" not in exp_item:
+            exp_item["end_date"] = exp_item.get("duration", "")
+        if "location" not in exp_item:
+            exp_item["location"] = ""
+
+    # Enrich projects items with canonical keys
+    for pr in projects:
+        if "name" not in pr:
+            pr["name"] = pr.get("title", "")
+        if "tech_stack" not in pr:
+            pr["tech_stack"] = ", ".join(pr.get("techStack", []))
+        if "dates" not in pr:
+            pr["dates"] = ""
+        if "github_link" not in pr:
+            pr["github_link"] = ""
+        if "live_link" not in pr:
+            pr["live_link"] = ""
+        if "bullets" not in pr:
+            pr["bullets"] = [pr["description"]] if pr.get("description") else []
+
+    dob_m = re.search(r"(?:DOB|Date of Birth|Birth Date)\s*[:\-]?\s*([0-9]{1,2}[/\-.][0-9]{1,2}[/\-.][0-9]{2,4}|[A-Za-z]+\s+\d{1,2},?\s+\d{4})", clean_text, flags=re.I)
+    dob_str = dob_m.group(1).strip() if dob_m else ""
+    nat_m = re.search(r"(?:Nationality|Citizenship)\s*[:\-]?\s*([A-Za-z]+)", clean_text, flags=re.I)
+    nat_str = nat_m.group(1).strip() if nat_m else ""
+    addr_m = re.search(r"(?:Address)\s*[:\-]?\s*([^\n]+)", clean_text, flags=re.I)
+    addr_str = addr_m.group(1).strip() if addr_m else (location_str or "")
+
+    headline_str = ""
+    if work_experience and work_experience[0].get("role"):
+        headline_str = work_experience[0]["role"]
+    elif education and education[0].get("degree"):
+        headline_str = education[0]["degree"]
+
+    structured_langs = [
+        {"name": l, "proficiency": "Fluent", "level": 90} for l in extracted_langs
+    ]
+    hobbies_list = [
+        re.sub(r"^[\s•·\-*]+", "", ln).strip()
+        for ln in (sections.get("HOBBIES") or sections.get("INTERESTS") or [])
+        if len(ln.strip()) >= 3 and not _is_section_header(ln)
+    ]
+
     return {
         "id": f"res-{uuid.uuid4().hex[:10]}",
         "filename": sanitize_short_field(filename, 100),
@@ -509,6 +920,32 @@ def parse_resume_text_to_profile(raw_text: str, filename: str = "Uploaded_Resume
         "certifications": certifications,
         "achievements": achievements,
         "confidenceFlags": confidence_flags,
+        # AI Resume Builder Normalized Structure
+        "personalInfo": {
+            "full_name": candidate_name,
+            "headline": headline_str,
+            "email": email_match.group(0) if email_match else "",
+            "phone": phone_str,
+            "location": location_str,
+            "address": addr_str,
+            "city": location_str,
+            "linkedin": linkedin_url,
+            "github": github_url,
+            "portfolio": portfolio_url,
+            "dob": dob_str,
+            "nationality": nat_str,
+            "photo_data_url": "",
+        },
+        "languages": structured_langs,
+        "references": [],
+        "hobbies": hobbies_list,
+        "publications": extracted_pubs,
+        "additionalInfo": {
+            "languages_known": extracted_langs,
+            "research_interests": extracted_research,
+            "publications": extracted_pubs,
+            "extracurriculars": [],
+        },
         # Backward-compatible fields
         "contact": basics_obj,
         "technicalSkills": detected_skills,

@@ -18,6 +18,7 @@ import { askAiAdvisor } from "./components/askAi.js";
 import { LandingCarousel } from "./components/landingCarousel.js";
 import { profileManager } from "./components/profileManager.js";
 import { authManager } from "./components/authManager.js";
+import { builderModule } from "./modules/builder.js";
 import { attachSpecularHighlight } from "./motion.js";
 
 export function bindOnce(el, event, handler) {
@@ -48,6 +49,7 @@ function initApp() {
     ["askAiAdvisor", () => askAiAdvisor.init()],
     ["profileManager", () => profileManager.init()],
     ["authManager", () => authManager.init()],
+    ["builderModule", () => builderModule.init()],
     ["landingCarousel", () => {
       const carouselEl = document.getElementById("landingCarouselBg");
       if (carouselEl) {
@@ -164,7 +166,10 @@ function attachShellListeners() {
   }
 
   // Unified Theme Toggle Helper
-  function toggleAppTheme() {
+  function toggleAppTheme(evt) {
+    if (evt && evt.currentTarget && typeof evt.currentTarget.blur === "function") {
+      evt.currentTarget.blur();
+    }
     const current = document.documentElement.getAttribute("data-theme") || "light";
     const next = current === "dark" ? "light" : "dark";
     document.documentElement.setAttribute("data-theme", next);
