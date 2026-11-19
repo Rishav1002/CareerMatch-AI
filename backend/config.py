@@ -17,7 +17,15 @@ APP_ENV: str = os.environ.get("APP_ENV", "development").strip().lower()
 
 GEMINI_API_KEY: str = os.environ.get("GEMINI_API_KEY", "").strip()
 GEMINI_MODEL: str = os.environ.get("GEMINI_MODEL", "gemini-1.5-flash").strip() or "gemini-1.5-flash"
-DATABASE_PATH: str = os.environ.get("DATABASE_PATH", os.path.join(ROOT_DIR, "careermatch.db")).strip()
+def _get_default_database_path() -> str:
+    # On Vercel / AWS Lambda / read-only serverless containers, /var/task is read-only.
+    # Route SQLite to temp dir (e.g. /tmp on Linux/Vercel) so database writes do not fail.
+    if os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME"):
+        import tempfile
+        return os.path.join(tempfile.gettempdir(), "careermatch.db")
+    return os.path.join(ROOT_DIR, "careermatch.db")
+
+DATABASE_PATH: str = os.environ.get("DATABASE_PATH", _get_default_database_path()).strip()
 DATABASE_URL: str = os.environ.get("DATABASE_URL", "").strip()
 
 # Neon Managed Better Auth configuration
@@ -37,7 +45,11 @@ GUEST_DATA_TTL_DAYS: int = int(os.environ.get("GUEST_DATA_TTL_DAYS", "30"))
 # Production environment safety guard: refuse to start with insecure secret
 if APP_ENV == "production":
     if not JWT_SECRET or JWT_SECRET == "careermatch-ai-2-dev-secret-key-change-in-prod" or len(JWT_SECRET) < 32:
-        raise RuntimeError(
-            "FATAL: Production mode (APP_ENV=production) requires a secure, non-default "
-            "JWT_SECRET of at least 32 characters. Please set JWT_SECRET in environment variables."
-        )
+        if os.environ.get("VERCEL"):
+            import secrets
+            JWT_SECRET = secrets.token_hex(32)
+        else:
+            raise RuntimeError(
+                "FATAL: Production mode (APP_ENV=production) requires a secure, non-default "
+                "JWT_SECRET of at least 32 characters. Please set JWT_SECRET in environment variables."
+            )

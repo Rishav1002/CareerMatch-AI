@@ -140,8 +140,11 @@ def seed_initial_sqlite_data() -> None:
     init_db()
 
 
-# Initialize database on module load
-seed_initial_sqlite_data()
+# Initialize database on module load with graceful error handling
+try:
+    seed_initial_sqlite_data()
+except Exception as exc:
+    logger.warning("Initial database seeding warning (will retry on first request): %s", exc)
 
 
 # ============================================================================

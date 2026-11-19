@@ -194,15 +194,27 @@ def get_connection() -> Any:
             "PostgreSQL/Neon connection failed after 3 attempts; refusing to fall back to SQLite."
         ) from last_error
 
-    if is_production:
+    if is_production and not (db_url or os.environ.get("VERCEL")):
         raise RuntimeError(
-            "DATABASE_URL is required in production. Configure the Neon PostgreSQL URL in Render."
+            "DATABASE_URL is required in production. Configure the Neon PostgreSQL URL in Render or Vercel."
         )
 
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA foreign_keys = ON;")
-    return conn
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA foreign_keys = ON;")
+        return conn
+    except (sqlite3.OperationalError, PermissionError) as exc:
+        import tempfile
+        fallback_path = os.path.join(tempfile.gettempdir(), "careermatch.db")
+        if DB_PATH != fallback_path:
+            import logging
+            logging.getLogger(__name__).warning("Primary DB_PATH %s failed (%s), falling back to %s", DB_PATH, exc, fallback_path)
+            conn = sqlite3.connect(fallback_path)
+            conn.row_factory = sqlite3.Row
+            conn.execute("PRAGMA foreign_keys = ON;")
+            return conn
+        raise exc
 
 
 def init_db() -> None:
