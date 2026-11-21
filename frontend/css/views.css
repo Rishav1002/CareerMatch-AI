@@ -1983,3 +1983,948 @@
     line-height: 1.25;
   }
 }
+
+/* ==========================================================================
+   ROUND 3 VIEWS: LANDING PROOF, DASHBOARD HERO, ASSESSMENT & BUILDER SCROLL
+   ========================================================================== */
+/* Landing 3-metric proof strip */
+.landing-proof-strip {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+.landing-proof-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+/* Landing Proof Engine cards: proper gap between badge and heading */
+.proof-card-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+@media (max-width: 520px) {
+  .proof-card-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+/* Redesigned Dashboard PRI Hero Card */
+.pri-hero-redesigned {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 24px;
+  align-items: center;
+  padding: 24px !important;
+}
+
+.pri-gauge-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pri-hero-redesigned .gauge-container {
+  width: 124px;
+  height: 124px;
+  flex-shrink: 0;
+}
+
+.pri-hero-redesigned .gauge-value {
+  font-size: 1.65rem;
+  line-height: 1.1;
+}
+
+.pri-hero-redesigned .gauge-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.pri-greeting-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+}
+
+.pri-tier-pill {
+  border-radius: 999px !important;
+  font-size: 0.72rem !important;
+  padding: 3px 10px !important;
+}
+
+.pri-mini-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.pri-mini-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  min-width: 0;
+}
+
+.pri-mini-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.pri-mini-val {
+  font-size: 1.05rem;
+  color: var(--text-primary);
+}
+
+@media (max-width: 640px) {
+  .pri-hero-redesigned {
+    grid-template-columns: 1fr;
+    text-align: center;
+    padding: 18px 16px !important;
+    gap: 16px;
+  }
+
+  .pri-hero-redesigned .gauge-container {
+    width: 112px;
+    height: 112px;
+    margin: 0 auto;
+  }
+
+  .pri-greeting-row {
+    justify-content: center;
+  }
+
+  .pri-hero-cta .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Hiring Company Benchmarks mobile container safety */
+#view-jobs .ledger-table-wrapper {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.market-role-title {
+  font-weight: 500;
+  line-height: 1.35;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.market-ctc-cell {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Skill Assessment clean mobile code editor & option tiles */
+.asmt-code-editor {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  font-size: 0.8rem !important;
+  line-height: 1.5;
+  white-space: pre;
+  overflow-x: auto;
+  tab-size: 4;
+}
+
+.asmt-option-label {
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.asmt-option-label:has(input:checked) {
+  border-color: var(--brand-accent) !important;
+  background: var(--brand-subtle, rgba(184, 77, 43, 0.08)) !important;
+}
+
+#asmtTestCasesList code,
+#asmtCodingPrompt code {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* Resume Builder: Eliminate mobile scroll traps so users can scroll anywhere smoothly */
+@media (max-width: 960px) {
+  #builderEditorForm {
+    max-height: none !important;
+    overflow-y: visible !important;
+  }
+
+  .bld-template-grid {
+    max-height: none !important;
+    overflow-y: visible !important;
+  }
+
+  .tpl-viewport {
+    touch-action: pan-y !important;
+  }
+}
+
+/* ==========================================================================
+   ROUND 4 DESIGN SYSTEM: FULL-WIDTH LANDING, SKILL CHIPS, BRANCHING ROADMAP,
+   FIXED-HEIGHT BUILDER EDITOR, IDE ASSESSMENT, CALM CAREER BRIDGE, SETTINGS & AUTH
+   ========================================================================== */
+
+/* 1. Landing Page: Full-width desktop canvas + Fixed Floating Topbar */
+#view-landing {
+  padding-top: 66px;
+}
+
+.landing-container {
+  max-width: 1440px !important;
+  width: 100%;
+  padding: 0 clamp(18px, 3vw, 48px) !important;
+}
+
+.landing-topbar {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 480;
+  height: 66px;
+  display: flex;
+  align-items: center;
+  background: color-mix(in srgb, var(--bg-card) 86%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border-subtle);
+  box-shadow: 0 2px 14px rgba(15, 23, 42, 0.04);
+}
+
+.landing-topbar-inner {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 clamp(14px, 3vw, 48px);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+}
+
+.landing-brand-left {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.landing-nav-links {
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.landing-nav-link {
+  padding: 7px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.landing-nav-link:hover {
+  background: var(--bg-sunken);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.landing-topbar-right {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 1080px) {
+  .landing-nav-links {
+    display: none !important;
+  }
+  .landing-topbar-inner {
+    grid-template-columns: auto 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  #view-landing {
+    padding-top: 60px;
+  }
+  .landing-topbar {
+    height: 60px;
+  }
+  .landing-topbar #landingOpenAppBtn {
+    display: none;
+  }
+  .landing-theme-segmented .theme-seg-btn {
+    padding: 4px 7px;
+    font-size: 0.7rem;
+  }
+}
+
+/* Hide compact mobile search icon strictly on desktop (>768px) */
+@media (min-width: 769px) {
+  .topbar-search-icon-btn {
+    display: none !important;
+  }
+}
+
+/* 2. Cohesive Skill Chips (.tag, .tag-match, .tag-gap, .tag-partial) */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.25;
+  background: var(--bg-sunken);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+  transition: transform 0.14s ease, border-color 0.14s ease, box-shadow 0.14s ease;
+}
+
+.tag-match {
+  background: color-mix(in srgb, var(--score-high, #15803d) 10%, var(--bg-card));
+  color: var(--score-high, #15803d);
+  border-color: color-mix(in srgb, var(--score-high, #15803d) 28%, transparent);
+}
+
+.tag-gap {
+  background: color-mix(in srgb, var(--score-low, #dc2626) 9%, var(--bg-card));
+  color: var(--score-low, #dc2626);
+  border-color: color-mix(in srgb, var(--score-low, #dc2626) 28%, transparent);
+}
+
+.tag-partial {
+  background: color-mix(in srgb, var(--score-mid, #d97706) 11%, var(--bg-card));
+  color: var(--score-mid, #b45309);
+  border-color: color-mix(in srgb, var(--score-mid, #d97706) 30%, transparent);
+}
+
+button.tag:hover,
+.skill-learn-trigger:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+
+/* 4. Resume Profile Editor: Consistent fixed height & sleek layout */
+.builder-editor-pane {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-md);
+}
+
+.builder-tabs-bar {
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px;
+  background: var(--bg-sunken);
+  border-bottom: 1px solid var(--border-subtle);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.builder-tabs-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.builder-tab-btn {
+  flex: 0 0 auto;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.builder-tab-btn.active {
+  background: var(--bg-card);
+  color: var(--brand-accent);
+  border-color: var(--border-medium);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+@media (min-width: 961px) {
+  #builderEditorForm {
+    height: 620px;
+    min-height: 620px;
+    max-height: 620px;
+    overflow-y: auto;
+    padding: 18px !important;
+  }
+}
+
+/* 5. Branching Skill Roadmap (roadmap.sh-inspired with live progress spine) */
+.rm-branch-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.rm-progress-header {
+  padding: 14px 16px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.rm-legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.rm-legend-dot.is-done { background: var(--score-high, #15803d); }
+.rm-legend-dot.is-current { background: var(--brand-accent, #b84d2b); box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-accent) 25%, transparent); }
+.rm-legend-dot.is-upcoming { background: var(--border-medium, #cbd5e1); }
+
+.rm-master-track {
+  width: 100%;
+  height: 8px;
+  background: var(--border-subtle);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.rm-master-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--score-high, #15803d), var(--brand-accent, #b84d2b));
+  border-radius: 999px;
+  transition: width 0.35s ease;
+}
+
+.rm-tree-canvas {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+  padding: 16px 0;
+}
+
+.rm-central-spine {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  transform: translateX(-50%);
+  background: var(--border-subtle);
+  border-radius: 999px;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.rm-central-spine-fill {
+  width: 100%;
+  background: linear-gradient(180deg, var(--score-high, #15803d), var(--brand-accent, #b84d2b));
+  border-radius: 999px;
+  transition: height 0.4s ease;
+}
+
+.rm-stage-row {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 210px minmax(0, 1fr);
+  align-items: center;
+  gap: 0;
+}
+
+.rm-hub-col {
+  display: flex;
+  justify-content: center;
+  padding: 0 10px;
+}
+
+.rm-hub-node {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--border-medium);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+.rm-hub-node.is-done {
+  border-color: var(--score-high, #15803d);
+  background: color-mix(in srgb, var(--score-high, #15803d) 8%, var(--bg-card));
+}
+
+.rm-hub-node.is-current {
+  border-color: var(--brand-accent, #b84d2b);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand-accent) 18%, transparent), 0 6px 18px rgba(184, 77, 43, 0.18);
+  animation: rmPulse 2.4s infinite;
+}
+
+@keyframes rmPulse {
+  0%, 100% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-accent) 16%, transparent); }
+  50% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--brand-accent) 8%, transparent); }
+}
+
+.rm-hub-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-bottom: 4px;
+}
+
+.rm-hub-node.is-current .rm-hub-status-tag {
+  color: var(--brand-accent);
+  font-weight: 700;
+}
+
+.rm-hub-node.is-done .rm-hub-status-tag {
+  color: var(--score-high);
+  font-weight: 700;
+}
+
+.rm-hub-skill {
+  font-weight: 700;
+  font-size: 0.92rem;
+  margin-bottom: 8px;
+  overflow-wrap: break-word;
+}
+
+.rm-hub-bar {
+  height: 5px;
+  background: var(--bg-sunken);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.rm-hub-bar-fill {
+  height: 100%;
+  background: var(--score-high, #15803d);
+  transition: width 0.3s ease;
+}
+
+.rm-branch-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rm-branch-leaf {
+  display: flex;
+  align-items: center;
+}
+
+.rm-side-left {
+  flex-direction: row-reverse;
+}
+
+.rm-side-right {
+  flex-direction: row;
+}
+
+.rm-connector {
+  width: 28px;
+  height: 0;
+  flex-shrink: 0;
+  border-top: 2px dotted var(--border-medium);
+}
+
+.rm-branch-leaf.is-done .rm-connector {
+  border-top-style: solid;
+  border-top-color: var(--score-high, #15803d);
+}
+
+.rm-branch-leaf.is-current .rm-connector {
+  border-top-color: var(--brand-accent, #b84d2b);
+}
+
+.rm-leaf-card {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg-sunken);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.rm-branch-leaf.is-done .rm-leaf-card {
+  border-color: color-mix(in srgb, var(--score-high, #15803d) 45%, transparent);
+  background: color-mix(in srgb, var(--score-high, #15803d) 6%, var(--bg-card));
+}
+
+.rm-branch-leaf.is-current .rm-leaf-card {
+  border-color: color-mix(in srgb, var(--brand-accent) 45%, transparent);
+  background: var(--bg-card);
+}
+
+.rm-check-btn {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  border-radius: 6px;
+  border: 1.5px solid var(--border-medium);
+  background: var(--bg-card);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.rm-check-btn.checked {
+  background: var(--score-high, #15803d);
+  border-color: var(--score-high, #15803d);
+}
+
+.rm-leaf-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+}
+
+.rm-leaf-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-bottom: 3px;
+}
+
+.rm-leaf-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.35;
+  overflow-wrap: break-word;
+}
+
+.rm-leaf-title.done {
+  text-decoration: line-through;
+  opacity: 0.68;
+}
+
+.rm-leaf-cta {
+  font-size: 0.72rem;
+  color: var(--brand-accent);
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+@media (max-width: 860px) {
+  .rm-central-spine {
+    left: 16px;
+    transform: none;
+  }
+  .rm-stage-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding-left: 34px;
+  }
+  .rm-hub-col {
+    order: -1;
+    padding: 0;
+  }
+  .rm-side-left {
+    flex-direction: row;
+  }
+  .rm-connector {
+    width: 16px;
+  }
+}
+
+/* 7. Skill Assessment IDE Dark Code Editor & Syntax Colors */
+.asmt-ide-card {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-sunken);
+  overflow: hidden;
+}
+
+.asmt-ide-prompt-head {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.asmt-ide-prompt-head code {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  background: #1e293b;
+  color: #e2e8f0;
+}
+
+.ide-tok-fn { color: #38bdf8 !important; }
+.ide-tok-param { color: #fbbf24 !important; }
+.ide-tok-kw { color: #c084fc !important; }
+.ide-tok-str { color: #4ade80 !important; }
+
+.asmt-ide-shell {
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+.asmt-ide-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 14px;
+  background: #1e293b;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ide-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.ide-dot-r { background: #ef4444; }
+.ide-dot-y { background: #f59e0b; }
+.ide-dot-g { background: #22c55e; }
+
+.ide-filename {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  color: #cbd5e1;
+  margin-left: 6px;
+}
+
+.ide-lang-badge {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.16);
+  color: #7dd3fc;
+}
+
+.asmt-ide-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: none;
+  outline: none;
+  resize: vertical;
+  padding: 14px 16px;
+  background: #0f172a;
+  color: #e2e8f0;
+  caret-color: #38bdf8;
+  font-family: var(--font-mono, "JetBrains Mono", monospace);
+  font-size: 0.84rem;
+  line-height: 1.6;
+  tab-size: 4;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.asmt-testcases-panel {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-subtle);
+  font-size: 0.78rem;
+}
+
+.asmt-tc-row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
+  color: var(--text-secondary);
+}
+
+.asmt-tc-row code {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+.ide-tc-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--brand-accent);
+}
+
+/* 9. Calm Career Bridge Polish */
+#view-career #careerRoleACard,
+#view-career #careerRoleBCard {
+  padding: 20px !important;
+  border-radius: var(--radius-md);
+}
+
+#view-career #careerBridgeBody > div > div {
+  padding: 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+/* 10. Settings Page Redesign + Polished Segmented Theme Switcher */
+.settings-shell {
+  max-width: 720px;
+  width: 100%;
+}
+
+.settings-page-head {
+  padding: 4px 2px 8px;
+}
+
+.settings-card {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 18px 20px;
+}
+
+.settings-row-info {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.settings-row-title {
+  font-size: 0.94rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 3px;
+}
+
+/* Polished consistent theme segmented pill */
+.theme-segmented {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  gap: 2px;
+}
+
+.theme-seg-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 5px 11px;
+  border-radius: calc(var(--radius-sm) - 2px);
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.theme-seg-btn:hover {
+  color: var(--text-primary);
+}
+
+.theme-seg-btn.active {
+  background: var(--brand-accent);
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(184, 77, 43, 0.28);
+}
+
+/* 11. Right-Aligned Login / Signup Page */
+.view-panel.active.auth-right-layout {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(20px, 4vw, 48px);
+}
+
+.auth-split-shell {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 440px);
+  gap: clamp(24px, 5vw, 72px);
+  align-items: center;
+}
+
+.auth-editorial-aside {
+  max-width: 440px;
+}
+
+.auth-split-shell .auth-glass-card {
+  width: 100%;
+  margin: 0;
+  justify-self: end;
+  border-radius: var(--radius-lg);
+}
+
+@media (max-width: 860px) {
+  .auth-split-shell {
+    grid-template-columns: 1fr;
+    max-width: 440px;
+  }
+  .auth-editorial-aside {
+    display: none;
+  }
+  .auth-split-shell .auth-glass-card {
+    justify-self: stretch;
+  }
+}

@@ -422,6 +422,31 @@ def _is_section_header(line: str) -> str:
     return ""
 
 
+
+_DECORATIVE_LINE_RE = re.compile(r"^[\s\-_=~*•·—–|.+#/\\:;]+$")
+
+
+def _is_decorative_line(line: str) -> bool:
+    """Return True if a line consists only of hyphens, borders, bullets, or symbols."""
+    s = (line or "").strip()
+    if not s:
+        return True
+    if _DECORATIVE_LINE_RE.match(s):
+        return True
+    alnum_count = sum(1 for ch in s if ch.isalnum())
+    return alnum_count < 2
+
+
+def _strip_edge_symbols(text: str) -> str:
+    """Clean stray leading/trailing divider dashes or symbols from parsed fields."""
+    if not text:
+        return ""
+    cleaned = re.sub(r"[-_=~—–]{3,}", " ", str(text))
+    cleaned = re.sub(r"^[\s•·\-–—|:=_*]+", "", cleaned)
+    cleaned = re.sub(r"[\s•·\-–—|:=_*]+$", "", cleaned)
+    return re.sub(r"\s{2,}", " ", cleaned).strip()
+
+
 def parse_resume_text_to_profile(raw_text: str, filename: str = "Uploaded_Resume.pdf") -> Dict[str, Any]:
     """
     Parse raw resume text into a structured Candidate Profile.
@@ -914,12 +939,12 @@ def parse_resume_text_to_profile(raw_text: str, filename: str = "Uploaded_Resume
         "extractionSource": "template",
         # Structured Schema (Section 13 G)
         "basics": basics_obj,
-        "summary": summary_text,
+        "summary": _strip_edge_symbols(summary_text),
         "skills": skills_obj,
         "education": education,
         "experience": work_experience,
-        "projects": projects,
-        "certifications": certifications,
+        "projects": [p for p in projects if not _is_decorative_line(p.get("title", "") or p.get("name", ""))],
+        "certifications": [_strip_edge_symbols(c) for c in certifications if not _is_decorative_line(c)],
         "achievements": achievements,
         "confidenceFlags": confidence_flags,
         # AI Resume Builder Normalized Structure

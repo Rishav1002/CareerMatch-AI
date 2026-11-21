@@ -895,6 +895,11 @@
   animation: fadeIn var(--transition-normal);
 }
 
+.view-panel[hidden],
+.view-panel:not(.active) {
+  display: none !important;
+}
+
 .view-panel.active {
   display: block;
 }
@@ -1653,5 +1658,118 @@ body,
   .ask-ai-fab svg {
     width: 20px;
     height: 20px;
+  }
+}
+
+/* ==========================================================================
+   ROUND 3 LAYOUT: STICKY LANDING TOPBAR, PROFILE THEME SWITCHER & MOBILE SEARCH
+   ========================================================================== */
+.landing-topbar {
+  position: sticky !important;
+  top: 0;
+  z-index: 420;
+  background: var(--bg-overlay, rgba(251, 249, 245, 0.88));
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.topbar-search-icon-btn {
+  display: none;
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  min-height: 38px;
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+  .topbar-search-icon-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .landing-topbar .landing-container {
+    padding: 10px 14px;
+    gap: 8px;
+  }
+
+  .landing-topbar .brand-name {
+    font-size: 0.95rem;
+  }
+
+  .landing-topbar .btn-sm {
+    padding: 6px 10px;
+    font-size: 0.78rem;
+  }
+}
+
+.avatar-theme-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 14px;
+}
+
+.theme-segmented {
+  display: inline-flex;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+  gap: 2px;
+}
+
+.theme-seg-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.theme-seg-btn.active {
+  background: var(--bg-card);
+  color: var(--brand-accent);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+/* Mobile stacked table labels (fixes Career Salary Matrix & Hiring Company Benchmarks) */
+@media (max-width: 640px) {
+  .ledger-table td[data-label] {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    text-align: right;
+    white-space: normal !important;
+    word-break: break-word;
+  }
+
+  .ledger-table td[data-label]::before {
+    content: attr(data-label);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-tertiary);
+    text-align: left;
+    flex-shrink: 0;
+  }
+
+  .ledger-table td.market-company-cell {
+    display: flex !important;
+  }
+
+  .ledger-table td.market-company-cell > div {
+    align-items: flex-end;
+    text-align: right;
   }
 }

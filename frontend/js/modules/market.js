@@ -172,19 +172,19 @@ export class MarketModule {
         .map(
           (cm) => `
           <tr>
-            <td class="market-company-cell" style="vertical-align: top;">
+            <td data-label="Company" class="market-company-cell" style="vertical-align: top;">
               <div class="d-flex flex-col gap-xxs" style="min-width: 0; max-width: 100%;">
                 <strong class="text-primary">${escapeHtml(cm.companyName)}</strong>
                 ${cm.location ? `<small class="text-tertiary font-mono text-xxs" style="white-space: normal; word-break: break-word;">${escapeHtml(cm.location)}</small>` : ""}
               </div>
             </td>
-            <td style="vertical-align: top;">
-              <div class="line-clamp-2" title="${escapeHtml(cm.roleTitle)}" style="font-weight: 500; line-height: 1.35;">${escapeHtml(cm.roleTitle)}</div>
+            <td data-label="Role" style="vertical-align: top;">
+              <div class="market-role-title" title="${escapeHtml(cm.roleTitle)}">${escapeHtml(cm.roleTitle)}</div>
             </td>
-            <td class="tabular-nums font-mono text-xxs" style="white-space: nowrap; vertical-align: top;">
+            <td data-label="CTC Range" class="tabular-nums font-mono text-xxs market-ctc-cell" style="vertical-align: top;">
               ${escapeHtml(cm.salaryRange)}
             </td>
-            <td style="text-align: right; white-space: nowrap; vertical-align: top;">
+            <td data-label="Match" class="market-match-cell" style="vertical-align: top;">
               <span class="tag tag-match font-semibold tabular-nums">${store.get("activeResume") ? `${Math.round(cm.candidateMatchPct)}%` : "—"}</span>
             </td>
           </tr>

@@ -189,12 +189,12 @@ export class CareerModule {
         .map(
           (m) => `
           <tr>
-            <td><strong>${escapeHtml(m.roleTitle)}</strong></td>
-            <td><strong class="tabular-nums" style="color:${hasResume ? "var(--score-high)" : "var(--text-tertiary)"};">${hasResume ? `${Math.round(m.candidateMatchScore)}%` : "—"}</strong></td>
-            <td class="tabular-nums">₹${m.indiaEntryLPA}L</td>
-            <td class="tabular-nums">₹${m.indiaMidLPA}L</td>
-            <td class="tabular-nums">₹${m.indiaSeniorLPA}L</td>
-            <td class="tabular-nums" style="color:var(--brand-accent);font-weight:600;">${escapeHtml(m.demandGrowthYoY)}</td>
+            <td data-label="Role"><strong>${escapeHtml(m.roleTitle)}</strong></td>
+            <td data-label="Your Match"><strong class="tabular-nums" style="color:${hasResume ? "var(--score-high)" : "var(--text-tertiary)"};">${hasResume ? `${Math.round(m.candidateMatchScore)}%` : "—"}</strong></td>
+            <td data-label="0–2 Yrs (India)" class="tabular-nums">₹${m.indiaEntryLPA}L</td>
+            <td data-label="2–5 Yrs (India)" class="tabular-nums">₹${m.indiaMidLPA}L</td>
+            <td data-label="5+ Yrs (India)" class="tabular-nums">₹${m.indiaSeniorLPA}L</td>
+            <td data-label="Growth" class="tabular-nums" style="color:var(--brand-accent);font-weight:600;">${escapeHtml(m.demandGrowthYoY)}</td>
           </tr>
         `
         )

@@ -10,7 +10,7 @@ class Store {
     this.subscribers = new Map();
 
     const hasLS = typeof localStorage !== "undefined" && localStorage !== null;
-    const savedTheme = storage.getPref("theme", null) || (hasLS ? localStorage.getItem("cm_theme") : null) || "light";
+    const savedTheme = (hasLS ? localStorage.getItem("cm_theme_pref") : null) || storage.getPref("theme", null) || "auto";
     const savedToken = hasLS ? (localStorage.getItem("cm_jwt_token") || localStorage.getItem("cm:v1:token") || localStorage.getItem("careermatch_jwt_token") || "") : "";
     if (hasLS) {
       try {
@@ -94,11 +94,16 @@ class Store {
         storage.setScope(value?.id || null);
       }
       if (key === "theme") {
-        storage.setPref("theme", value);
-        localStorage.setItem("cm_theme", value);
-        localStorage.setItem("theme", value);
-        document.documentElement.setAttribute("data-theme", value);
-        document.documentElement.style.colorScheme = value;
+        const pref = (value === "light" || value === "dark" || value === "auto") ? value : "auto";
+        const prefersDark = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+        const resolved = pref === "auto" ? (prefersDark ? "dark" : "light") : pref;
+        storage.setPref("theme", pref);
+        localStorage.setItem("cm_theme_pref", pref);
+        localStorage.setItem("cm_theme", resolved);
+        localStorage.setItem("theme", resolved);
+        document.documentElement.setAttribute("data-theme", resolved);
+        document.documentElement.setAttribute("data-theme-pref", pref);
+        document.documentElement.style.colorScheme = resolved;
       }
       if (key === "trackerJobs") storage.setPref("trackerJobs", value);
       if (key === "plannerTasks") storage.setPref("plannerTasks", value);

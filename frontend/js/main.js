@@ -30,10 +30,32 @@ export function bindOnce(el, event, handler) {
 }
 
 function initApp() {
-  // 1. Initialize Theme from store or system
-  const savedTheme = store.get("theme") || "light";
-  document.documentElement.setAttribute("data-theme", savedTheme);
-  document.documentElement.style.colorScheme = savedTheme;
+  // 1. Initialize Theme (Auto default adapts to browser/OS theme)
+  function applyThemePreference(pref) {
+    const normalized = (pref === "light" || pref === "dark" || pref === "auto") ? pref : "auto";
+    const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const resolved = normalized === "auto" ? (prefersDark ? "dark" : "light") : normalized;
+    document.documentElement.setAttribute("data-theme", resolved);
+    document.documentElement.setAttribute("data-theme-pref", normalized);
+    document.documentElement.style.colorScheme = resolved;
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (metaTheme) metaTheme.setAttribute("content", resolved === "dark" ? "#121417" : "#FBF9F5");
+    document.querySelectorAll("[data-theme-choice]").forEach((btn) => {
+      const active = btn.getAttribute("data-theme-choice") === normalized;
+      btn.classList.toggle("active", active);
+      btn.setAttribute("aria-pressed", String(active));
+    });
+  }
+  const initialThemePref = store.get("theme") || "auto";
+  applyThemePreference(initialThemePref);
+  store.subscribe("theme", (pref) => applyThemePreference(pref));
+  if (window.matchMedia) {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const onSysThemeChange = () => {
+      if ((store.get("theme") || "auto") === "auto") applyThemePreference("auto");
+    };
+    if (mq.addEventListener) mq.addEventListener("change", onSysThemeChange);
+  }
 
   // 2. Initialize Components safely with per-component try/catch
   const components = [
@@ -163,26 +185,58 @@ function attachShellListeners() {
         avatarBtn.setAttribute("aria-expanded", "false");
       }
     });
+    avatarDropdown.querySelectorAll("a.avatar-menu-item, button.avatar-menu-item").forEach((item) => {
+      item.addEventListener("click", () => {
+        avatarDropdown.classList.remove("open");
+        avatarBtn.setAttribute("aria-expanded", "false");
+      });
+    });
   }
 
-  // Unified Theme Toggle Helper
+  // Unified Theme Toggle Helper (Auto / Light / Dark)
   function toggleAppTheme(evt) {
     if (evt && evt.currentTarget && typeof evt.currentTarget.blur === "function") {
       evt.currentTarget.blur();
     }
     const current = document.documentElement.getAttribute("data-theme") || "light";
     const next = current === "dark" ? "light" : "dark";
-    document.documentElement.setAttribute("data-theme", next);
-    document.documentElement.style.colorScheme = next;
     store.set("theme", next);
-    try {
-      localStorage.setItem("cm_theme", next);
-      localStorage.setItem("theme", next);
-    } catch (e) {}
-    const metaTheme = document.querySelector('meta[name="theme-color"]');
-    if (metaTheme) {
-      metaTheme.setAttribute("content", next === "dark" ? "#121417" : "#FBF9F5");
+    applyThemePreference(next);
+  }
+
+  // Delegated theme selector across Landing, Profile dropdown, and Settings
+  document.addEventListener("click", (evt) => {
+    const btn = evt.target.closest("[data-theme-choice]");
+    if (!btn) return;
+    evt.preventDefault();
+    evt.stopPropagation();
+    const choice = btn.getAttribute("data-theme-choice") || "auto";
+    store.set("theme", choice);
+    applyThemePreference(choice);
+    if (avatarDropdown && avatarDropdown.contains(btn)) {
+      avatarDropdown.classList.remove("open");
+      avatarBtn?.setAttribute("aria-expanded", "false");
     }
+  });
+
+  // Auth page Back button
+  const authBackBtn = document.getElementById("authBackBtn");
+  if (authBackBtn) {
+    bindOnce(authBackBtn, "click", () => {
+      if (window.history.length > 1 && document.referrer) {
+        window.history.back();
+      } else {
+        window.location.hash = "#/landing";
+      }
+    });
+  }
+
+  // Topbar mobile/compact search trigger opens Command Palette
+  const topbarSearchBtn = document.getElementById("topbarSearchTriggerBtn");
+  if (topbarSearchBtn) {
+    bindOnce(topbarSearchBtn, "click", () => {
+      document.getElementById("cmdPaletteTrigger")?.click();
+    });
   }
 
   // Theme Toggle Buttons (guarded with bindOnce to prevent double-toggling)

@@ -135,6 +135,38 @@ export class AnalyzerModule {
       });
     }
 
+    // Live Weight Sliders (Mandatory, Preferred, Projects) + Reset
+    const syncWeightSliders = () => {
+      const mEl = document.getElementById("weightMandatoryInput");
+      const pEl = document.getElementById("weightPreferredInput");
+      const prEl = document.getElementById("weightProjectsInput");
+      const mVal = document.getElementById("weightMandatoryVal");
+      const pVal = document.getElementById("weightPreferredVal");
+      const prVal = document.getElementById("weightProjectsVal");
+      if (mEl && mVal) mVal.textContent = `${mEl.value}%`;
+      if (pEl && pVal) pVal.textContent = `${pEl.value}%`;
+      if (prEl && prVal) prVal.textContent = `${prEl.value}%`;
+    };
+    ["weightMandatoryInput", "weightPreferredInput", "weightProjectsInput"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener("input", syncWeightSliders);
+        el.addEventListener("change", syncWeightSliders);
+      }
+    });
+    const resetWeightsBtn = document.getElementById("resetWeightsBtn");
+    if (resetWeightsBtn) {
+      resetWeightsBtn.addEventListener("click", () => {
+        const defaults = { weightMandatoryInput: 50, weightPreferredInput: 30, weightProjectsInput: 20 };
+        Object.entries(defaults).forEach(([id, v]) => {
+          const el = document.getElementById(id);
+          if (el) el.value = String(v);
+        });
+        syncWeightSliders();
+      });
+    }
+    syncWeightSliders();
+
     // Don't save checkbox
     const dontSaveCheck = document.getElementById("dontSaveCheckbox");
     if (dontSaveCheck) {
@@ -385,11 +417,21 @@ export class AnalyzerModule {
     this.hideError();
 
     try {
+      const wMand = Number(document.getElementById("weightMandatoryInput")?.value ?? 50);
+      const wPref = Number(document.getElementById("weightPreferredInput")?.value ?? 30);
+      const wProj = Number(document.getElementById("weightProjectsInput")?.value ?? 20);
+      const wTotal = Math.max(1, wMand + wPref + wProj);
+
       const data = await api.post("/api/analyze", {
         resume,
         roleTitle: targetRole,
         goalCompany,
         customJdText: customJd,
+        weights: {
+          mandatory: +(wMand / wTotal).toFixed(2),
+          preferred: +(wPref / wTotal).toFixed(2),
+          projects: +(wProj / wTotal).toFixed(2),
+        },
         dontSave,
       });
 

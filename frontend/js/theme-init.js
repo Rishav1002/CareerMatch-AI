@@ -1,16 +1,15 @@
 /**
  * CareerMatch AI: Pre-paint Theme Initializer
- * Runs synchronously in <head> to prevent FOUC (flash of unstyled content)
- * Reads localStorage and prefers-color-scheme, applying data-theme immediately.
+ * Supports "auto" (default, follows browser/OS prefers-color-scheme), "light", and "dark".
  */
 (function () {
   try {
-    var saved = localStorage.getItem("cm_theme") || localStorage.getItem("theme");
+    var pref = localStorage.getItem("cm_theme_pref") || localStorage.getItem("cm_theme") || "auto";
+    if (pref !== "light" && pref !== "dark" && pref !== "auto") pref = "auto";
     var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-    var theme = saved ? saved : (prefersDark ? "dark" : "light");
-    document.documentElement.setAttribute("data-theme", theme);
-    document.documentElement.style.colorScheme = theme;
-  } catch (e) {
-    // Graceful degradation if localStorage is inaccessible
-  }
+    var resolved = pref === "auto" ? (prefersDark ? "dark" : "light") : pref;
+    document.documentElement.setAttribute("data-theme", resolved);
+    document.documentElement.setAttribute("data-theme-pref", pref);
+    document.documentElement.style.colorScheme = resolved;
+  } catch (e) {}
 })();

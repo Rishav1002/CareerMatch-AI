@@ -30,6 +30,14 @@ import {
 } from "./resumeTemplates.js";
 import { TemplateCarousel } from "../components/templateCarousel.js";
 
+
+function cleanParsedText(val) {
+  if (!val) return "";
+  const s = String(val).replace(/[-_=~—–]{3,}/g, " ").replace(/^[\s•·\-–—|:=_*]+|[\s•·\-–—|:=_*]+$/g, "").replace(/\s{2,}/g, " ").trim();
+  const alnum = (s.match(/[a-zA-Z0-9]/g) || []).length;
+  return alnum >= 2 ? s : "";
+}
+
 function formatBytes(bytes) {
   if (!bytes || bytes <= 0) return "0 B";
   const k = 1024;

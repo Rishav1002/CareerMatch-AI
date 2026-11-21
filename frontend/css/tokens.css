@@ -37,15 +37,16 @@
   --scrim: rgba(255, 255, 255, 0.88);
 
   /* Radius Scale */
-  --r-sm: 10px;
-  --r-md: 14px;
-  --r-lg: 20px;
-  --r-xl: 28px;
+  --r-xs: 6px;
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 22px;
   --radius-xs: 6px;
-  --radius-sm: var(--r-sm);
-  --radius-md: var(--r-md);
-  --radius-lg: var(--r-lg);
-  --radius-xl: var(--r-xl);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
 
   /* Background Grid Pattern */
   --bg-pattern: radial-gradient(circle, rgba(30, 27, 24, 0.055) 1px, transparent 1px);
@@ -142,10 +143,10 @@
   /* ==========================================================================
      SURFACE DEPTH & SHADOWS (Tactile Editorial)
      ========================================================================== */
-  --radius-xs: 2px;
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
   --radius-full: 9999px;
 
   --shadow-hairline: 0 1px 2px rgba(30, 27, 24, 0.05);
@@ -269,7 +270,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
+  :root:not([data-theme="light"]):not([data-theme="dark"]) {
     --bg-canvas: #0E1015;
     --bg-card: rgba(22, 24, 30, 0.6);
     --bg-raised: rgba(30, 34, 42, 0.75);

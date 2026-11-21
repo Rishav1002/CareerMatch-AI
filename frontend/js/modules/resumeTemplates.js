@@ -633,8 +633,9 @@ const LAYOUTS = {
       </header>
 
       ${vm.summary ? `
+        <div class="rt-ed-sec-heading">PROFILE</div>
         <div class="rt-ed-row">
-          <div class="rt-ed-rail"><span class="rt-ed-rail-label">PROFILE</span></div>
+          <div class="rt-ed-rail"></div>
           <div class="rt-ed-content"><p class="rt-ed-p">${esc(vm.summary)}</p></div>
         </div>
       ` : ""}
