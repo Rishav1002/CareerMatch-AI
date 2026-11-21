@@ -159,20 +159,23 @@ export class TemplateCarousel {
   layout(animate) {
     const vw = this.viewport.clientWidth;
     if (!vw) return; // hidden — will be laid out again when shown (ResizeObserver)
+    const gap = vw < 520 ? 16 : GAP;
     const baseW = this.opts.compact
-      ? (vw >= 600 ? 176 : 132)
-      : (vw >= 1100 ? 316 : vw >= 760 ? 250 : vw >= 520 ? 200 : 150);
-    const actW = Math.round(baseW * 1.21);
+      ? (vw >= 600 ? 176 : Math.min(180, Math.round(vw * 0.56)))
+      : (vw >= 1100 ? 316 : vw >= 760 ? 250 : vw >= 520 ? 200 : Math.min(220, Math.round(vw * 0.62)));
+    const actW = vw < 520
+      ? Math.min(Math.round(vw * 0.74), Math.round(baseW * 1.18))
+      : Math.round(baseW * 1.21);
     const kBase = baseW / PAGE_W;
     const kAct = actW / PAGE_W;
 
     this.track.style.setProperty("--k-base", kBase.toFixed(5));
     this.track.style.setProperty("--k-act", kAct.toFixed(5));
-    this.track.style.setProperty("--gap", `${GAP}px`);
-    this.viewport.style.setProperty("--tpl-h", `${Math.round(actW * (PAGE_H / PAGE_W)) + (this.opts.compact ? 84 : 96)}px`);
+    this.track.style.setProperty("--gap", `${gap}px`);
+    this.viewport.style.setProperty("--tpl-h", `${Math.round(actW * (PAGE_H / PAGE_W)) + (this.opts.compact ? 88 : 104)}px`);
 
     let center = 0;
-    for (let i = 0; i < this.index; i += 1) center += baseW + GAP;
+    for (let i = 0; i < this.index; i += 1) center += baseW + gap;
     center += actW / 2;
     const x = vw / 2 - center;
 

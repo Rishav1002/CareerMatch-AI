@@ -21,14 +21,14 @@
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&amp;family=Noto+Sans+Devanagari:wght@400;500;600;700&amp;family=Noto+Serif+Devanagari:wght@600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700;800&amp;family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=Merriweather:ital,wght@0,400;0,700;1,400&amp;family=Oswald:wght@500;600&amp;family=Playfair+Display:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
 
   <!-- Tokenized Modular Stylesheets -->
-<link href="/frontend/css/tokens.css?v=20261119b" rel="stylesheet"/>
-<link href="/frontend/css/base.css?v=20261119b" rel="stylesheet"/>
-<link href="/frontend/css/layout.css?v=20261119b" rel="stylesheet"/>
-<link href="/frontend/css/components.css?v=20261119b" rel="stylesheet"/>
-<link href="/frontend/css/views.css?v=20261119b" rel="stylesheet"/>
-<link href="/frontend/css/styles.css?v=20261119b" rel="stylesheet"/>
-<link href="/frontend/css/resume-templates.css?v=20261119b" rel="stylesheet"/>
-<link href="/frontend/css/template-gallery.css?v=20261119b" rel="stylesheet"/>
+<link href="/frontend/css/tokens.css?v=20261121e" rel="stylesheet"/>
+<link href="/frontend/css/base.css?v=20261121e" rel="stylesheet"/>
+<link href="/frontend/css/layout.css?v=20261121e" rel="stylesheet"/>
+<link href="/frontend/css/components.css?v=20261121e" rel="stylesheet"/>
+<link href="/frontend/css/views.css?v=20261121e" rel="stylesheet"/>
+<link href="/frontend/css/styles.css?v=20261121e" rel="stylesheet"/>
+<link href="/frontend/css/resume-templates.css?v=20261121e" rel="stylesheet"/>
+<link href="/frontend/css/template-gallery.css?v=20261121e" rel="stylesheet"/>
 </head>
 <body>
 
@@ -364,7 +364,7 @@ Open Workspace →
           Know why your resume gets <em class="text-accent italic font-serif">shortlisted.</em>
         </h1>
         <p class="landing-lead text-secondary text-base mb-4">
-          Spot missing Skills, Fix ATS Issues and Rebuild Your Resume in minutes.
+          Spot missing Skills, Fix ATS issues and Rebuild your Resume in minutes.
         </p>
         <div class="landing-cta-row d-flex items-center gap-sm mb-3">
           <a class="btn btn-primary btn-lg" href="#/analyzer" id="landingAnalyzeCtaBtn">
@@ -421,7 +421,7 @@ Open Workspace →
           <div class="landing-telemetry-box mb-3">
             <div class="text-xs text-accent font-bold mb-1">■ EXACT PARSED PROOF</div>
             <div class="text-xs text-primary font-mono lh-relaxed">
-              "Architected Payments Settlement Pipeline processing 1.2M Transactions daily with sub-200ms Latency."
+              "Architected Payments Settlement Pipeline processing 1.2M Transactions daily with sub-200ms latency."
             </div>
           </div>
           <div class="grid-2 gap-2 text-xs font-mono">
@@ -572,7 +572,7 @@ Open Workspace →
       </div>
       <div class="landing-proof-cards">
         <div class="proof-card card p-3 bg-card border">
-          <div class="d-flex items-start gap-sm">
+          <div class="d-flex items-start gap-3">
             <span class="proof-tag-pill font-mono">[ RESUME ]</span>
             <div>
               <strong class="text-primary text-sm block mb-1">Exact Quotes</strong>
@@ -583,7 +583,7 @@ Open Workspace →
           </div>
         </div>
         <div class="proof-card card p-3 bg-card border">
-          <div class="d-flex items-start gap-sm">
+          <div class="d-flex items-start gap-3">
             <span class="proof-tag-pill font-mono">[ GITHUB ]</span>
             <div>
               <strong class="text-primary text-sm block mb-1">Code Proof</strong>
@@ -594,7 +594,7 @@ Open Workspace →
           </div>
         </div>
         <div class="proof-card card p-3 bg-card border">
-          <div class="d-flex items-start gap-sm">
+          <div class="d-flex items-start gap-3">
             <span class="proof-tag-pill font-mono">[ SALARY ]</span>
             <div>
               <strong class="text-primary text-sm block mb-1">Role Benchmarks</strong>
@@ -612,8 +612,8 @@ Open Workspace →
 <!-- Footer inside Unified Container -->
 <footer class="editorial-footer bg-card border-top">
 <div class="landing-container">
-<div class="d-grid grid-auto-fit gap-xl mb-4">
-<div>
+<div class="footer-columns-grid mb-4">
+<div class="footer-brand-col">
 <div class="rail-brand mb-15">
 <svg class="brand-logo" width="28" height="28" viewBox="0 0 200 200" aria-hidden="true"><use href="#cm-logo"/></svg>
 <span class="brand-name text-md font-bold text-primary ml-1">CareerMatch AI</span>
@@ -622,9 +622,9 @@ Open Workspace →
   Evidence-grounded career intelligence for engineering students.
 </p>
 </div>
-<div>
+<div class="footer-link-col">
 <div class="font-mono text-xs uppercase text-tertiary tracking-wide mb-15 font-semibold">Product</div>
-<ul class="list-unstyled p-0 m-0 d-flex flex-col gap-sm text-sm">
+<ul class="list-unstyled p-0 m-0 d-flex flex-col gap-xs text-sm">
 <li><a class="text-secondary link-muted" href="#/analyzer">Resume Analyzer</a></li>
 <li><a class="text-secondary link-muted" href="#/ats">ATS Check</a></li>
 <li><a class="text-secondary link-muted" href="#/roadmap">Skill Roadmap</a></li>
@@ -632,30 +632,19 @@ Open Workspace →
 <li><a class="text-secondary link-muted" href="#/interview">Mock Interview</a></li>
 </ul>
 </div>
-<div>
+<div class="footer-link-col">
 <div class="font-mono text-xs uppercase text-tertiary tracking-wide mb-15 font-semibold">Resources</div>
-<ul class="list-unstyled p-0 m-0 d-flex flex-col gap-sm text-sm">
+<ul class="list-unstyled p-0 m-0 d-flex flex-col gap-xs text-sm">
 <li><a class="text-secondary link-muted" href="#/readiness">Readiness Score (PRI)</a></li>
-<li><a class="text-secondary link-muted" href="#/market">Data Sources</a></li>
 <li><a class="text-secondary link-muted" href="#/github">GitHub Check</a></li>
-<li><a class="text-high link-muted" href="/api/health" rel="noopener" target="_blank">● System Health: Operational</a></li>
-</ul>
-</div>
-<div>
-<div class="font-mono text-xs uppercase text-tertiary tracking-wide mb-15 font-semibold">Company &amp; Legal</div>
-<ul class="list-unstyled p-0 m-0 d-flex flex-col gap-sm text-sm">
 <li><a class="text-secondary link-muted" href="https://github.com/Rishav1002/CareerMatch-AI" rel="noopener" target="_blank">GitHub Repository</a></li>
-<li><a class="text-secondary link-muted" href="#/privacy">Privacy Policy</a></li>
-<li><a class="text-secondary link-muted" href="#/terms">Terms of Service</a></li>
-<li><a class="text-secondary link-muted" href="#/cookies">Cookie &amp; Storage Policy</a></li>
+<li><a class="text-high link-muted" href="/api/health" rel="noopener" target="_blank">● System Health</a></li>
 </ul>
 </div>
 </div>
-<div class="border-top pt-3 d-flex flex-wrap gap-md text-xs text-tertiary flex-between">
-<div>
-  <span>&copy; <span id="landingCopyrightYear">2026</span> CareerMatch AI. All rights reserved.</span>
-</div>
-<div class="d-flex items-center gap-md">
+<div class="footer-bottom-bar border-top pt-3 d-flex flex-wrap gap-sm text-xs text-tertiary flex-between items-center">
+<span>&copy; <span id="landingCopyrightYear">2026</span> CareerMatch AI. All rights reserved.</span>
+<div class="d-flex items-center gap-sm flex-wrap">
   <a class="text-tertiary link-muted" href="#/privacy">Privacy</a>
   <span aria-hidden="true">&middot;</span>
   <a class="text-tertiary link-muted" href="#/terms">Terms</a>
@@ -1057,7 +1046,7 @@ Open Workspace →
 <span class="spotlight-kpi-val" id="spotProjectsScore">—</span>
 </div>
 </div>
-<div class="d-flex gap-sm">
+<div class="spotlight-actions d-flex gap-sm flex-wrap">
 <a class="btn btn-primary btn-sm" href="#/builder" id="reportImproveInBuilderBtn">
   Improve in Resume Builder →
 </a>
@@ -1072,155 +1061,39 @@ Open Workspace →
                   </button>
 </div>
 </div>
-<!-- Report Subtabs -->
-<div class="segmented-nav mb-3" role="tablist">
-<button class="tab-btn active" data-report-tab="sec-evidence" type="button">Evidence Ledger &amp; Gaps</button>
-<button class="tab-btn" data-report-tab="sec-roadmap" type="button">Learning Roadmap</button>
-<button class="tab-btn" data-report-tab="sec-simulator" type="button">What-If Score Simulator</button>
-<button class="tab-btn" data-report-tab="sec-diff" type="button">Version History &amp; Diff</button>
-<button class="tab-btn" data-report-tab="sec-roles" type="button">Role Comparisons</button>
-<button class="tab-btn" data-report-tab="sec-skills" type="button">Edit Skills</button>
-</div>
-<!-- Sub-tab 1: Evidence Ledger & Resume Proof Lines -->
-<div class="report-tab-panel" id="sec-evidence">
-<div class="d-grid grid-2 gap-lg">
-<div class="card">
-<div class="card-header">
-<h3>Job Requirements &amp; Skill Gap Matrix</h3>
-<input class="form-input text-xs badge-tag" id="evidenceSkillFilterInput" placeholder="Filter skills..." type="text"/>
-</div>
-<div class="card-body p-0">
-<div class="d-flex flex-col max-h-480 overflow-y-auto" id="evidenceReqList">
-<!-- Populated dynamically -->
-</div>
-</div>
-</div>
-<div class="card">
-<div class="card-header">
-<div>
-<h3>Resume Proof Line Viewer</h3>
-<span class="text-xs text-tertiary" id="evidenceResumeFilename">uploaded_resume.pdf</span>
-</div>
-<button class="btn btn-ghost btn-sm text-xs" id="clearEvidenceHighlightBtn" type="button">
-                        Clear Highlights
-                      </button>
-</div>
-<div class="card-body">
-<div class="resume-viewer-box" id="resumeViewerLines">
-<!-- Line-by-line resume with interactive highlight markers -->
-</div>
-</div>
-</div>
-</div>
-</div>
-<!-- Sub-tab 2: Roadmap Tree -->
-<div class="report-tab-panel" hidden="" id="sec-roadmap">
-<div class="d-grid grid-2-1 gap-lg">
-<div class="card">
-<div class="card-header">
-<h3>Adaptive Milestone Path</h3>
-</div>
-<div class="card-body">
-<div class="d-flex flex-col gap-md" id="roadmapTreeContainer">
-<!-- SVG / Tree path nodes -->
-</div>
-<div class="mt-3" id="roadmapStagesContainer"></div>
-</div>
-</div>
-<div class="card" id="nodeInspectorPanel">
-<div class="card-header">
-<h3 id="inspSkillTitle">Node Inspector</h3>
-<span class="status-badge status-matched" id="inspStatusBadge">Active</span>
-</div>
-<div class="card-body">
-<div class="text-tertiary text-sm text-center" id="nodeInspectorEmpty">
-                        Click any milestone node to view learning material, courses, and time estimates.
-                      </div>
-<div class="hidden" id="nodeInspectorContent">
-<div class="score-pill mb-1" id="inspPhaseBadge">Phase 1</div>
-<p class="text-sm text-secondary" id="inspWhyText"></p>
-<div class="text-sm font-semibold" id="inspTaskText"></div>
-<div class="mt-15 border-top">
-<strong class="text-xs">Recommended Courses:</strong>
-<div class="mt-05">
-<a class="text-sm font-semibold d-block" href="javascript:void(0)" id="inspFreeCourseLink" rel="noopener noreferrer" target="_blank">
-<span id="inspFreeCourseTitle">Free Course</span>
-</a>
-<span class="text-xs text-tertiary" id="inspFreeCourseMeta"></span>
-</div>
-<div class="mt-1">
-<a class="text-sm font-semibold d-block" href="javascript:void(0)" id="inspPaidCourseLink" rel="noopener noreferrer" target="_blank">
-<span id="inspPaidCourseTitle">Paid Course</span>
-</a>
-<span class="text-xs text-tertiary" id="inspPaidCourseMeta"></span>
-</div>
-</div>
-<div class="mt-15 text-xs text-tertiary" id="inspTimeEstimate"></div>
-<ul class="hidden" id="inspSubtopicsList"></ul>
-<input class="hidden" id="inspCompleteCheckbox" type="checkbox"/>
-</div>
-</div>
-</div>
-</div>
-</div>
-<!-- Sub-tab 3: What-If Simulator -->
-<div class="report-tab-panel" hidden="" id="sec-simulator">
-<div class="card p-3">
-<div class="sim-grid">
-<div>
-<h3>Interactive Skill Gap Simulator</h3>
-<p class="text-sm mb-2">
-                        Check skills below to simulate how learning them will impact your overall placement score:
-                      </p>
-<div class="sim-skills-list" id="simSkillsChecklist">
-<!-- Checkboxes for missing/partial skills -->
-</div>
-</div>
-<div class="d-flex flex-col justify-center items-center bg-raised border-subtle rounded-sm p-3 text-center">
-<span class="font-mono text-xs text-tertiary uppercase">
-                        Projected Score
-                      </span>
-<div class="font-serif text-score-huge font-semibold lh-tight text-primary" id="simProjectedScore">
-                        83.2%
-                      </div>
-<div class="d-flex items-center gap-sm mb-15">
-<span class="text-sm text-secondary">Baseline: <strong id="simBaseScore">83.2%</strong></span>
-<span class="status-badge status-matched" id="simDeltaBadge">+0.0%</span>
-</div>
-<div class="progress-bar-track">
-<div class="progress-bar-fill high" id="simProgressBar"></div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<!-- Sub-tab 4: Resume Version History & Diff -->
-<div class="report-tab-panel" hidden="" id="sec-diff">
-<div id="resumeHistoryListContainer"></div>
-<div id="historyDiffContainer"></div>
-</div>
-<!-- Sub-tab 5: Role Comparisons -->
-<div class="report-tab-panel" hidden="" id="sec-roles">
-<div id="rolesComparisonGrid"></div>
-</div>
-<!-- Sub-tab 6: Edit Skills -->
-<div class="report-tab-panel" hidden="" id="sec-skills">
-<div class="card">
-<div class="card-header">
-<h3>Manual Resume Skill Adjustments</h3>
-</div>
-<div class="card-body">
-<p class="text-sm mb-2">
-                      Correct or add skills identified in your resume:
-                    </p>
-<div class="d-flex flex-wrap gap-sm mb-2" id="editableSkillsContainer"></div>
-<div class="d-flex gap-sm max-w-form">
-<input class="form-input" id="newSkillInput" placeholder="e.g. Apache Spark" type="text"/>
-<button class="btn btn-secondary btn-sm" id="addSkillBtn" type="button">Add Skill</button>
-<button class="btn btn-primary btn-sm" id="saveSkillsBtn" type="button">Save Changes</button>
-</div>
-</div>
-</div>
+<!-- Evidence Ledger & Skill Gap Matrix (Direct View — no redundant subtabs) -->
+<div class="report-evidence-grid" id="sec-evidence">
+  <div class="card report-matrix-card">
+    <div class="card-header">
+      <div>
+        <h3 class="m-0">Job Requirements &amp; Skill Gap Matrix</h3>
+        <p class="text-xs text-tertiary m-0">Click any skill to highlight proof or open courses &amp; projects</p>
+      </div>
+      <input class="form-input text-xs report-skill-filter" id="evidenceSkillFilterInput" placeholder="Filter skills..." type="text" aria-label="Filter skills"/>
+    </div>
+    <div class="card-body">
+      <div class="evidence-req-list" id="evidenceReqList">
+        <!-- Populated dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <div class="card report-proof-card">
+    <div class="card-header">
+      <div>
+        <h3 class="m-0">Resume Proof Line Viewer</h3>
+        <span class="text-xs text-tertiary" id="evidenceResumeFilename">uploaded_resume.pdf</span>
+      </div>
+      <button class="btn btn-ghost btn-sm text-xs hidden" id="clearEvidenceHighlightBtn" type="button">
+        Clear Highlights
+      </button>
+    </div>
+    <div class="card-body">
+      <div class="resume-viewer-box" id="resumeViewerLines">
+        <!-- Line-by-line resume with interactive highlight markers -->
+      </div>
+    </div>
+  </div>
 </div>
 <!-- Hidden compatibility elements referenced by legacy app.js -->
 <div class="hidden">
@@ -1261,42 +1134,100 @@ Open Workspace →
                VIEW 5: ATS RESUME SIMULATOR (#/ats)
                ================================================================== -->
 <section class="view-panel" hidden="" id="view-ats">
-<div class="card mb-3">
-<div class="card-header">
-<div>
-<h2 class="text-xl m-0">ATS Resume Audit</h2>
-<p class="text-sm text-tertiary">
-                    Audit parser compliance, find missing keywords, and optimize resume impact.
-                  </p>
-</div>
-<div class="d-flex gap-sm">
-<button class="btn btn-secondary btn-sm" id="runAtsAuditBtn" type="button">
-                    Re-Audit ATS
-                  </button>
-<button class="btn btn-primary btn-sm" id="downloadAtsResumeBtn" type="button">
-                    Download ATS Plain Text
-                  </button>
-</div>
-</div>
-<div class="card-body">
-<div class="d-grid gap-md mb-3" id="atsPillarKpis">
-<!-- 4 pillar KPI cards -->
-</div>
-<div class="d-grid grid-2 gap-lg">
-<div>
-<h4 class="text-base mb-1">Section-by-Section Audit</h4>
-<div class="d-flex flex-col gap-sm" id="atsSectionAuditList"></div>
-<h4 class="text-base">Formatting &amp; Parsing Checks</h4>
-<div class="d-flex flex-col gap-sm" id="atsFormattingChecksList"></div>
-</div>
-<div>
-<h4 class="text-base mb-1">Missing JD Keywords in Resume</h4>
-<div class="d-flex flex-wrap gap-xs mb-3" id="atsMissingKeywordsTags"></div>
-<h4 class="text-base mb-1">AI Bullet Rewrites (STAR Format)</h4>
-<div class="d-flex flex-col gap-sm" id="atsBulletRewritesContainer"></div>
-</div>
-</div>
-</div>
+<div class="ats-shell" id="atsContentContainer">
+  <!-- Header Card -->
+  <div class="card mb-3">
+    <div class="card-header">
+      <div>
+        <h2 class="text-xl m-0">ATS Resume Audit</h2>
+        <p class="text-sm text-tertiary m-0">
+          Audit parser compliance, spot missing keywords, and upgrade resume bullet impact.
+        </p>
+      </div>
+      <div class="d-flex gap-sm flex-wrap">
+        <button class="btn btn-secondary btn-sm" id="runAtsAuditBtn" type="button">
+          Re-Audit ATS
+        </button>
+        <button class="btn btn-primary btn-sm" id="downloadAtsResumeBtn" type="button">
+          Download ATS Plain Text
+        </button>
+      </div>
+    </div>
+    <div class="card-body">
+      <!-- Top Score Hero + 4-Pillar Breakdown -->
+      <div class="ats-overview-band" id="atsPillarKpis">
+        <!-- Populated dynamically by ats.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Separated 2-Column Diagnostic Cards -->
+  <div class="ats-workspace-grid">
+    <!-- Left Column: Parser & Structure Audits -->
+    <div class="ats-col d-flex flex-col gap-md">
+      <div class="card ats-section-card">
+        <div class="card-header">
+          <div>
+            <h3 class="text-base font-semibold m-0">Section-by-Section Audit</h3>
+            <p class="text-xs text-tertiary m-0">Core resume sections detected by ATS parsers</p>
+          </div>
+          <span class="score-pill text-xs" id="atsSectionSummaryBadge">Audit</span>
+        </div>
+        <div class="card-body">
+          <div class="d-flex flex-col gap-sm" id="atsSectionAuditList"></div>
+        </div>
+      </div>
+
+      <div class="card ats-section-card">
+        <div class="card-header">
+          <div>
+            <h3 class="text-base font-semibold m-0">Formatting &amp; Parsing Checks</h3>
+            <p class="text-xs text-tertiary m-0">Machine readability, dates, and layout compliance</p>
+          </div>
+          <span class="score-pill text-xs" id="atsFormatSummaryBadge">Checks</span>
+        </div>
+        <div class="card-body">
+          <div class="d-flex flex-col gap-sm" id="atsFormattingChecksList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Keywords & Bullet Upgrades -->
+    <div class="ats-col d-flex flex-col gap-md">
+      <div class="card ats-section-card">
+        <div class="card-header">
+          <div>
+            <h3 class="text-base font-semibold m-0">Keyword Alignment</h3>
+            <p class="text-xs text-tertiary m-0">Click any missing keyword to open courses &amp; projects</p>
+          </div>
+          <span class="score-pill text-xs" id="atsKeywordSummaryBadge">Keywords</span>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <div class="text-xs font-mono uppercase text-tertiary mb-1">Missing Role Keywords</div>
+            <div class="d-flex flex-wrap gap-xs" id="atsMissingKeywordsTags"></div>
+          </div>
+          <div class="pt-2 border-top">
+            <div class="text-xs font-mono uppercase text-tertiary mb-1">Matched Keywords in Resume</div>
+            <div class="d-flex flex-wrap gap-xs" id="atsMatchedKeywordsTags"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card ats-section-card">
+        <div class="card-header">
+          <div>
+            <h3 class="text-base font-semibold m-0">AI Bullet Rewrites (STAR Format)</h3>
+            <p class="text-xs text-tertiary m-0">Higher-impact phrasing grounded in your existing projects</p>
+          </div>
+          <span class="score-pill text-xs" id="atsRewriteCountBadge">Rewrites</span>
+        </div>
+        <div class="card-body">
+          <div class="d-flex flex-col gap-sm" id="atsBulletRewritesContainer"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 </section>
 <!-- ==================================================================
@@ -1371,35 +1302,13 @@ Open Workspace →
      ============================================================== -->
 <div id="builderLandingSection">
   <div id="builderCarouselLanding" class="mb-4"></div>
-  <h3 class="text-lg font-semibold mb-2">Already have a resume? Import it instead</h3>
-  <div class="grid-2 gap-md mb-4">
-    <!-- Upload Card -->
+  <div class="mb-4">
+    <!-- Scratch / Presets Card (Resume upload & parsing lives exclusively in Analyzer) -->
     <div class="card p-4 flex-col justify-between">
-      <div>
-        <h3 class="text-lg font-semibold mb-2">Upload Existing Resume</h3>
-        <p class="text-sm text-secondary mb-3">
-          Upload your existing PDF, DOCX, or text resume. Our parser will extract your contact info, education, skills, projects, and work experience into an editable profile.
-        </p>
-        <div class="upload-dropzone p-4 text-center cursor-pointer mb-3" id="builderUploadDropzone" tabindex="0" role="button" aria-label="Upload Resume File">
-          <input type="file" id="builderFileInput" accept=".pdf,.docx,.txt" class="hidden" />
-          <svg fill="none" height="36" stroke="currentColor" stroke-width="1.5" viewbox="0 0 24 24" width="36" class="text-tertiary mb-2 mx-auto"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-          <div class="text-sm font-semibold text-primary mb-1">Drag &amp; drop your resume here, or browse</div>
-          <div class="text-xs text-tertiary mb-3">PDF, DOCX, or TXT (Max 5 MB)</div>
-          <button type="button" class="btn btn-secondary btn-sm" id="builderChooseFileBtn">Choose File</button>
-        </div>
-
-        <details class="text-xs text-secondary">
-          <summary class="cursor-pointer font-semibold py-1">Or paste plain resume text</summary>
-          <div class="mt-2">
-            <textarea id="builderPastedInput" rows="4" class="input w-100 text-xs mb-2" placeholder="Paste your raw resume text here (minimum 20 characters)..."></textarea>
-            <button type="button" class="btn btn-secondary btn-sm" id="builderParsePasteBtn">Parse Pasted Text</button>
-          </div>
-        </details>
+      <div class="d-flex justify-between items-center flex-wrap gap-sm mb-3 pb-2 border-bottom">
+        <span class="text-xs text-secondary">Have an existing resume? Upload &amp; parse it in the Analyzer to auto-fill templates.</span>
+        <a href="#/analyzer" class="btn btn-secondary btn-xs">Upload in Analyzer →</a>
       </div>
-    </div>
-
-    <!-- Scratch / Presets Card -->
-    <div class="card p-4 flex-col justify-between">
       <div>
         <h3 class="text-lg font-semibold mb-2">Start Fresh or Test Demos</h3>
         <p class="text-sm text-secondary mb-3">
@@ -2220,19 +2129,7 @@ Explore verified engineering openings with live skill and salary benchmarks.
 <!-- Job Cards Grid -->
 <div class="d-grid grid-2 gap-md" id="jobsCardsGrid"></div>
 
-<!-- Legal Job Providers & Attribution Footnote -->
-<div class="mt-4 pt-3 border-top d-flex flex-between align-center flex-wrap gap-xs text-xs text-tertiary">
-<div>
-<span>Aggregated with legal timeouts from: </span>
-<a href="https://remotive.com" target="_blank" rel="noopener noreferrer" class="link-subtle">Remotive</a> · 
-<a href="https://www.arbeitnow.com" target="_blank" rel="noopener noreferrer" class="link-subtle">Arbeitnow</a> · 
-<a href="https://developer.adzuna.com" target="_blank" rel="noopener noreferrer" class="link-subtle">Adzuna</a> · 
-<a href="https://remoteok.com" target="_blank" rel="noopener noreferrer" class="link-subtle">RemoteOK</a> · 
-<a href="https://www.themuse.com" target="_blank" rel="noopener noreferrer" class="link-subtle">The Muse</a> · 
-<a href="https://himalayas.app" target="_blank" rel="noopener noreferrer" class="link-subtle">Himalayas</a>
-</div>
-<span id="jobsDataSourceLabel" class="font-mono text-xxs"></span>
-</div>
+<span id="jobsDataSourceLabel" class="hidden" aria-hidden="true"></span>
 <input id="jobUrlInput" type="hidden"/>
 </div>
 </div>
@@ -2297,10 +2194,11 @@ Explore verified engineering openings with live skill and salary benchmarks.
 <thead>
 <tr>
 <th>Role</th>
-<th>0-2 Yrs</th>
-<th>2-5 Yrs</th>
-<th>5+ Yrs</th>
-<th>Growth Outlook</th>
+<th>Your Match</th>
+<th>0-2 Yrs (India)</th>
+<th>2-5 Yrs (India)</th>
+<th>5+ Yrs (India)</th>
+<th>Growth</th>
 </tr>
 </thead>
 <tbody id="careerMatrixTableBody"></tbody>
@@ -2347,11 +2245,11 @@ Explore verified engineering openings with live skill and salary benchmarks.
 <div class="d-grid grid-2 gap-lg mb-3">
 <div class="card p-2 bg-high">
 <h4 class="text-sm text-high mb-05">Strengths</h4>
-<div class="text-sm" id="priStrengthsList"></div>
+<ul class="text-sm pri-bullet-list" id="priStrengthsList"></ul>
 </div>
 <div class="card p-2 bg-low">
 <h4 class="text-sm text-low mb-05">Action Items</h4>
-<div class="text-sm" id="priWeaknessesList"></div>
+<ul class="text-sm pri-bullet-list" id="priWeaknessesList"></ul>
 </div>
 </div>
 <!-- Custom Weight Tuning for PRI -->

@@ -172,9 +172,11 @@ export class MarketModule {
         .map(
           (cm) => `
           <tr>
-            <td style="white-space: nowrap; vertical-align: top;">
-              <strong class="text-primary">${escapeHtml(cm.companyName)}</strong>
-              ${cm.location ? `<br><small class="text-tertiary font-mono text-xxs">${escapeHtml(cm.location)}</small>` : ""}
+            <td class="market-company-cell" style="vertical-align: top;">
+              <div class="d-flex flex-col gap-xxs" style="min-width: 0; max-width: 100%;">
+                <strong class="text-primary">${escapeHtml(cm.companyName)}</strong>
+                ${cm.location ? `<small class="text-tertiary font-mono text-xxs" style="white-space: normal; word-break: break-word;">${escapeHtml(cm.location)}</small>` : ""}
+              </div>
             </td>
             <td style="vertical-align: top;">
               <div class="line-clamp-2" title="${escapeHtml(cm.roleTitle)}" style="font-weight: 500; line-height: 1.35;">${escapeHtml(cm.roleTitle)}</div>
@@ -183,7 +185,7 @@ export class MarketModule {
               ${escapeHtml(cm.salaryRange)}
             </td>
             <td style="text-align: right; white-space: nowrap; vertical-align: top;">
-              <span class="tag tag-match font-semibold tabular-nums">${Math.round(cm.candidateMatchPct)}%</span>
+              <span class="tag tag-match font-semibold tabular-nums">${store.get("activeResume") ? `${Math.round(cm.candidateMatchPct)}%` : "—"}</span>
             </td>
           </tr>
         `
@@ -197,11 +199,11 @@ export class MarketModule {
       cardsGrid.innerHTML = (data.jobs || [])
         .map(
           (j) => `
-          <div class="card p-3 d-flex flex-col flex-between mb-2 border-subtle">
-            <div>
-              <div class="d-flex flex-between align-center mb-1">
+          <div class="card job-opening-card p-3 d-flex flex-col justify-between mb-2 border-subtle">
+            <div class="job-opening-body">
+              <div class="d-flex justify-between items-center flex-wrap gap-xs mb-1">
                 <span class="badge-tag">${escapeHtml(j.workMode)} · ${escapeHtml(j.experienceLevel)}</span>
-                ${j.matchScore != null ? `<span class="tag tag-match tabular-nums font-semibold">${Math.round(j.matchScore)}% Match</span>` : ""}
+                ${j.matchScore != null && store.get("activeResume") ? `<span class="tag tag-match tabular-nums font-semibold">${Math.round(j.matchScore)}% Match</span>` : ""}
               </div>
               <h4 class="text-base font-semibold m-0 mb-1 text-primary">${escapeHtml(j.title)}</h4>
               <p class="text-xs text-secondary m-0 mb-1"><strong>${escapeHtml(j.companyName)}</strong> · ${escapeHtml(j.location)} · <span class="tabular-nums font-semibold text-accent">${escapeHtml(j.salaryRange)}</span></p>
@@ -213,12 +215,9 @@ export class MarketModule {
                 </div>
               ` : ""}
             </div>
-            <div class="d-flex flex-between align-center pt-2 border-top mt-2">
-              <small class="text-tertiary font-mono text-xxs">${escapeHtml(j.dataSource)}</small>
-              <div class="d-flex gap-xs align-center">
-                <button type="button" class="btn btn-secondary btn-sm" data-track-job="${encodeURIComponent(JSON.stringify(j))}">+ Track</button>
-                <a href="${escapeHtml(j.applyUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">Apply ↗</a>
-              </div>
+            <div class="job-opening-footer d-flex justify-end items-center gap-xs pt-2 border-top mt-2">
+              <button type="button" class="btn btn-secondary btn-sm" data-track-job="${encodeURIComponent(JSON.stringify(j))}">+ Track</button>
+              <a href="${escapeHtml(j.applyUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">Apply ↗</a>
             </div>
           </div>
         `
@@ -235,13 +234,14 @@ export class MarketModule {
             if (!exists) {
               const newJob = {
                 id: job.id || "job-" + Date.now(),
-                title: job.title,
-                company: job.companyName,
-                location: job.location,
-                stage: "wishlist",
-                salary: job.salaryRange,
-                match: job.matchScore || 0,
-                appliedDate: new Date().toISOString().split("T")[0],
+                role: job.title || "Target Role",
+                company: job.companyName || "Company",
+                location: job.location || "Remote",
+                column: "saved",
+                salary: job.salaryRange || "Competitive",
+                matchPct: job.matchScore != null ? Math.round(Number(job.matchScore)) : null,
+                dateAdded: new Date().toISOString().split("T")[0],
+                notes: "Added from Live Job Market",
               };
               currentTracker.push(newJob);
               store.set("trackerJobs", currentTracker);

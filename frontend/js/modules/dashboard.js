@@ -26,15 +26,13 @@ export class DashboardModule {
     }
 
 
-    // Subscribe to activeResume and analysisResult changes
-    store.subscribe("activeResume", () => {
-      if (store.get("currentView") === "dashboard") {
-        this.load();
-      }
-    });
-
-    store.subscribe("analysisResult", (res) => {
-      if (store.get("currentView") === "dashboard") this.load();
+    // Subscribe to activeResume, analysisResult, priData, atsResult, and jobsData changes
+    ["activeResume", "analysisResult", "priData", "atsResult", "jobsData"].forEach((key) => {
+      store.subscribe(key, () => {
+        if (store.get("currentView") === "dashboard") {
+          this.load();
+        }
+      });
     });
   }
 
@@ -42,20 +40,31 @@ export class DashboardModule {
     const resume = store.get("activeResume");
     const resumeId = resume?.id || null;
 
+    let dashData = null;
     try {
       const url = resumeId ? `/api/dashboard?resumeId=${encodeURIComponent(resumeId)}` : "/api/dashboard";
-      const headers = {};
-      const token = store.get("token");
-      if (token) headers["Authorization"] = `Bearer ${token}`;
-
-      const res = await fetch(url, { headers });
-      if (res.ok) {
-        const data = await res.json();
-        this.render(data);
-      } else {
-        this._renderFallback();
-      }
+      dashData = await api.get(url);
     } catch (_) {
+      dashData = null;
+    }
+
+    // If a resume is active and PRI data hasn't been fetched yet, fetch it so Dashboard shows live readiness
+    if (resume && !store.get("priData") && !this._fetchingPri) {
+      this._fetchingPri = true;
+      const targetRole = store.get("targetRole") || "Full Stack Developer";
+      api.post("/api/readiness/index", { resume, resumeId: resume.id, targetRole })
+        .then((pri) => {
+          if (pri && typeof pri.priScore === "number") {
+            store.set("priData", pri);
+          }
+        })
+        .catch(() => {})
+        .finally(() => { this._fetchingPri = false; });
+    }
+
+    if (dashData) {
+      this.render(dashData);
+    } else {
       this._renderFallback();
     }
   }
@@ -68,10 +77,28 @@ export class DashboardModule {
 
     const currentUser = store.get("currentUser");
     const isAuthenticated = Boolean(currentUser?.id && store.get("token"));
-    const totalResumesValue = Number(dash.totalResumes ?? 0);
-    const totalAnalysesValue = Number(dash.totalJobsCompared ?? 0);
-    const history = Array.isArray(dash.recentHistory) ? dash.recentHistory : [];
-    const hasAnalysis = totalAnalysesValue > 0 || history.length > 0;
+    const activeResume = store.get("activeResume");
+    const analysisResult = store.get("analysisResult");
+    const priData = store.get("priData");
+    const atsResult = store.get("atsResult");
+
+    // For unauthenticated guest sessions with no resume uploaded yet in this session,
+    // never show stale shared/previous guest DB records — start clean at 0 / — until upload.
+    const isFreshGuest = !isAuthenticated && !activeResume && !analysisResult;
+
+    const totalResumesValue = isFreshGuest
+      ? 0
+      : Math.max(isAuthenticated ? Number(dash.totalResumes ?? 0) : 0, activeResume ? 1 : 0);
+    const totalAnalysesValue = isFreshGuest
+      ? 0
+      : Math.max(isAuthenticated ? Number(dash.totalJobsCompared ?? 0) : 0, analysisResult?.matchResult ? 1 : 0);
+    const history = isAuthenticated && Array.isArray(dash.recentHistory) ? dash.recentHistory : [];
+    const hasAnalysis = !isFreshGuest && (totalAnalysesValue > 0 || history.length > 0 || Boolean(analysisResult?.matchResult));
+
+    const liveMatchScore = analysisResult?.matchResult?.overallScore;
+    const avgScoreNum = hasAnalysis
+      ? Math.round(Number(liveMatchScore ?? (isAuthenticated ? dash.averageCompatibilityScore : 0) ?? 0))
+      : null;
 
     const totalRes = document.getElementById("dashTotalResumes");
     if (totalRes) totalRes.textContent = String(totalResumesValue);
@@ -81,50 +108,92 @@ export class DashboardModule {
 
     const avgSc = document.getElementById("dashAvgScore");
     if (avgSc) {
-      avgSc.textContent = hasAnalysis
-        ? `${Math.round(Number(dash.averageCompatibilityScore ?? 0))}%`
-        : "—";
+      avgSc.textContent = avgScoreNum !== null ? `${avgScoreNum}%` : "—";
     }
 
     const readSt = document.getElementById("dashReadinessStatus");
     if (readSt) {
-      readSt.textContent = hasAnalysis
-        ? (dash.readinessStatus || "Analysis available")
-        : "Not calculated";
+      const statusText = isFreshGuest
+        ? "Not calculated"
+        : (priData?.readinessTier
+          || (hasAnalysis ? (dash.readinessStatus || (avgScoreNum >= 75 ? "Industry Ready" : avgScoreNum >= 50 ? "Developing" : "Skill Bridge Needed")) : (activeResume ? "Resume Uploaded" : "Not calculated")));
+      readSt.textContent = statusText;
     }
 
     const greeting = document.getElementById("dashCandidateGreeting");
     if (greeting) {
-      const name = currentUser?.fullName || currentUser?.name;
+      const name = currentUser?.fullName || currentUser?.name || activeResume?.contact?.name;
       greeting.textContent = name ? `Welcome, ${name}` : "Welcome to CareerMatch AI";
     }
 
-    // The dashboard API currently does not provide a verified PRI/ATS/market
-    // score contract. Never display hardcoded sample scores as real results.
+    const roleLabel = document.getElementById("ovTargetRoleLabel");
+    if (roleLabel) {
+      if (activeResume) {
+        const role = store.get("targetRole") || "Target Role";
+        const skillCount = (activeResume.technicalSkills || activeResume.skills || []).length;
+        roleLabel.textContent = `Target: ${role} · ${skillCount} skills detected from your resume.`;
+      } else if (isAuthenticated && history.length > 0) {
+        roleLabel.textContent = `Latest benchmark: ${history[0].targetRole || "Saved Analysis"}. Upload a new resume anytime.`;
+      } else {
+        roleLabel.textContent = "Upload a resume in Matcher to calculate your personalized scores.";
+      }
+    }
+
+    // Populate live PRI Gauge and pillar scores from priData / analysisResult / atsResult
+    const breakdown = Array.isArray(priData?.categoryBreakdown) ? priData.categoryBreakdown : [];
+    const findPillar = (kw) => breakdown.find((c) => (c.category || "").toLowerCase().includes(kw))?.rawScore;
+
+    const computedPri = isFreshGuest ? null : (typeof priData?.priScore === "number"
+      ? Math.round(priData.priScore)
+      : (avgScoreNum !== null ? avgScoreNum : null));
+    const techScoreVal = findPillar("technical") ?? liveMatchScore ?? null;
+    const atsScoreVal = findPillar("ats") ?? atsResult?.atsScore ?? analysisResult?.atsReport?.atsScore ?? null;
+    const marketScoreVal = findPillar("market") ?? null;
+
     const priScore = document.getElementById("ovPriScore");
-    if (priScore) priScore.textContent = "—";
+    if (priScore) priScore.textContent = computedPri !== null ? `${computedPri}%` : "—";
     const priTier = document.getElementById("ovPriTier");
-    if (priTier) priTier.textContent = "Not calculated";
-    ["ovTechScore", "ovAtsScore", "ovMarketScore"].forEach((id) => {
+    if (priTier) {
+      priTier.textContent = priData?.readinessTier
+        || (computedPri !== null ? (computedPri >= 75 ? "Interview Ready" : computedPri >= 50 ? "Developing" : "Early Stage") : "Not calculated");
+    }
+
+    const setMetric = (id, val) => {
       const el = document.getElementById(id);
-      if (el) el.textContent = "—";
-    });
+      if (el) el.textContent = val !== null && val !== undefined && !Number.isNaN(Number(val)) ? `${Math.round(Number(val))}%` : "—";
+    };
+    setMetric("ovTechScore", techScoreVal);
+    setMetric("ovAtsScore", atsScoreVal);
+    setMetric("ovMarketScore", marketScoreVal);
+
     const gauge = document.getElementById("dashPriGaugeCircle");
-    if (gauge) gauge.style.strokeDashoffset = "264";
+    if (gauge) {
+      const pct = computedPri !== null ? Math.max(0, Math.min(100, computedPri)) : 0;
+      const circumference = 264;
+      gauge.style.strokeDashoffset = String(Math.round(circumference - (circumference * pct) / 100));
+    }
 
     const matchedEl = document.getElementById("dashTopMatched");
     if (matchedEl) {
-      const skills = Array.isArray(dash.topMatchedSkills) ? dash.topMatchedSkills : [];
+      let skills = Array.isArray(dash.topMatchedSkills) ? dash.topMatchedSkills : [];
+      if (!skills.length && analysisResult?.matchResult?.matchedSkills?.length) {
+        skills = analysisResult.matchResult.matchedSkills.slice(0, 8).map((m) => ({ skill: m.jobSkill, count: 1 }));
+      } else if (!skills.length && activeResume?.technicalSkills?.length) {
+        skills = activeResume.technicalSkills.slice(0, 8).map((s) => ({ skill: typeof s === "string" ? s : s.name, count: 1 }));
+      }
       matchedEl.innerHTML = skills.length
-        ? skills.map((s) => `<span class="tag tag-match">${escapeHtml(s.skill)} (${Number(s.count) || 0})</span>`).join("")
+        ? skills.map((s) => `<span class="tag tag-match">${escapeHtml(s.skill)}${Number(s.count) > 1 ? ` (${Number(s.count)})` : ""}</span>`).join("")
         : `<span class="text-tertiary text-xs">No matched skills recorded yet.</span>`;
     }
 
     const missingEl = document.getElementById("dashTopMissing");
     if (missingEl) {
-      const gaps = Array.isArray(dash.topMissingSkills) ? dash.topMissingSkills : [];
+      let gaps = Array.isArray(dash.topMissingSkills) ? dash.topMissingSkills : [];
+      if (!gaps.length && analysisResult?.matchResult?.missingSkills?.length) {
+        gaps = analysisResult.matchResult.missingSkills.slice(0, 8).map((m) => ({ skill: m.jobSkill, count: 1 }));
+      }
       missingEl.innerHTML = gaps.length
-        ? gaps.map((s) => `<span class="tag tag-gap">${escapeHtml(s.skill)} (${Number(s.count) || 0})</span>`).join("")
+        ? gaps.map((s) => `<span class="tag tag-gap">${escapeHtml(s.skill)}${Number(s.count) > 1 ? ` (${Number(s.count)})` : ""}</span>`).join("")
         : `<span class="text-tertiary text-xs">No priority skill gaps recorded.</span>`;
     }
 

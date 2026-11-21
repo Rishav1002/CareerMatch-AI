@@ -74,11 +74,23 @@ async function request(path, options = {}, maxRetries = 2) {
     options.body = JSON.stringify(options.body);
   }
 
+  const timeoutMs = Number(options.timeoutMs) || 25000;
+  const fetchOptions = { ...options };
+  delete fetchOptions.timeoutMs;
+
   let attempt = 0;
 
   while (attempt <= maxRetries) {
+    const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+    const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
     try {
-      const response = await fetch(path, { credentials: "same-origin", ...options, headers });
+      const response = await fetch(path, {
+        credentials: "same-origin",
+        ...fetchOptions,
+        headers,
+        signal: controller ? controller.signal : undefined,
+      });
+      if (timer) clearTimeout(timer);
 
       let data = null;
       const contentType = response.headers.get("content-type") || "";
@@ -108,6 +120,15 @@ async function request(path, options = {}, maxRetries = 2) {
 
       return data;
     } catch (err) {
+      if (timer) clearTimeout(timer);
+      if (err?.name === "AbortError") {
+        if (attempt < maxRetries) {
+          attempt++;
+          await new Promise((r) => setTimeout(r, attempt * 1000));
+          continue;
+        }
+        throw new ApiError("Request timed out. The server took too long to respond — please try again.", 504);
+      }
       if (err instanceof ApiError) {
         throw err;
       }

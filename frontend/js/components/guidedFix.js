@@ -1,19 +1,22 @@
 /**
- * CareerMatch AI: Guided "Fix This" Remediation Drawer
- * Transforms any skill gap into an immediate action plan:
- * 1. Roadmap Stage Jump
- * 2. Curated Free & Paid Course
- * 3. Tailored Resume Bullet Rewrite
+ * CareerMatch AI: Guided "Fix This" Learning & Remediation Hub Drawer
+ * Clean, tabbed drawer so 3+ Free Courses, 3+ Paid/Certifications, 3+ Project Ideas,
+ * and Resume Fix never congest mobile or desktop viewports.
  */
 
+import { api } from "../api.js";
 import { router } from "../router.js";
 import { store } from "../store.js";
+import { escapeHtml } from "../formatters.js";
 
 export class GuidedFixDrawer {
   constructor() {
     this.isOpen = false;
     this.drawerEl = null;
     this.currentSkill = null;
+    this.currentStatus = "missing";
+    this.activeTab = "free";
+    this.cache = new Map();
   }
 
   init() {
@@ -29,13 +32,13 @@ export class GuidedFixDrawer {
     el.className = "drawer-backdrop";
     el.style.display = "none";
     el.innerHTML = `
-      <aside class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="guidedFixTitle">
+      <aside class="drawer-panel learning-hub-drawer" role="dialog" aria-modal="true" aria-labelledby="guidedFixTitle">
         <header class="drawer-header">
-          <div>
+          <div style="min-width: 0;">
             <span class="status-badge status-missing" id="guidedFixBadge">Skill Gap</span>
-            <h3 id="guidedFixTitle" style="margin-top: 4px; font-size: 1.25rem;">Remediation Guide</h3>
+            <h3 id="guidedFixTitle" style="margin: 4px 0 0; font-size: 1.2rem; overflow-wrap: break-word;">Skill Learning Hub</h3>
           </div>
-          <button class="btn btn-ghost btn-sm" id="closeGuidedFixBtn" aria-label="Close Drawer">
+          <button type="button" class="btn btn-ghost btn-sm" id="closeGuidedFixBtn" aria-label="Close Drawer">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -43,9 +46,7 @@ export class GuidedFixDrawer {
           </button>
         </header>
 
-        <div class="drawer-content" id="guidedFixContent">
-          <!-- Populated dynamically -->
-        </div>
+        <div class="drawer-content" id="guidedFixContent"></div>
       </aside>
     `;
     document.body.appendChild(el);
@@ -60,39 +61,47 @@ export class GuidedFixDrawer {
     const closeBtn = document.getElementById("closeGuidedFixBtn");
     if (closeBtn) closeBtn.addEventListener("click", () => this.close());
 
-    // Listen for global guided-fix trigger clicks: [data-fix-skill]
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && this.isOpen) this.close();
+    });
+
+    // Listen for global guided-fix / skill learning trigger clicks: [data-fix-skill]
     document.addEventListener("click", (e) => {
       const trigger = e.target.closest("[data-fix-skill]");
       if (trigger) {
         const skillName = trigger.getAttribute("data-fix-skill");
         const status = trigger.getAttribute("data-fix-status") || "missing";
-        this.open(skillName, status);
+        if (skillName) this.open(skillName, status);
       }
     });
   }
 
-  open(skillName, status = "missing") {
+  async open(skillName, status = "missing") {
     this.currentSkill = skillName;
+    this.currentStatus = status;
+    this.activeTab = "free";
     this.isOpen = true;
     this.drawerEl.style.display = "flex";
 
     const badge = document.getElementById("guidedFixBadge");
     const title = document.getElementById("guidedFixTitle");
-    const content = document.getElementById("guidedFixContent");
 
     if (badge) {
-      badge.className = `status-badge ${status === "partial" ? "status-partial" : "status-missing"}`;
-      badge.textContent = status === "partial" ? "Partial Match" : "Skill Gap";
+      badge.className = `status-badge ${status === "matched" ? "status-matched" : status === "partial" || status === "adjacent" ? "status-partial" : "status-missing"}`;
+      badge.textContent = status === "matched" ? "Skill Deep Dive" : (status === "partial" || status === "adjacent" ? "Partial Match" : "Skill Gap");
     }
-
     if (title) {
-      title.textContent = `Fix: ${skillName}`;
+      title.textContent = `Learn & Fix: ${skillName}`;
     }
 
-    if (content) {
-      content.innerHTML = this._generateRemediationHTML(skillName, status);
-      this._bindContentEvents(content, skillName);
+    const cacheKey = skillName.toLowerCase();
+    if (this.cache.has(cacheKey)) {
+      this._renderHub(this.cache.get(cacheKey));
+      return;
     }
+
+    this._renderLoading(skillName);
+    await this._fetchResources(skillName, false);
   }
 
   close() {
@@ -100,91 +109,187 @@ export class GuidedFixDrawer {
     this.drawerEl.style.display = "none";
   }
 
-  _generateRemediationHTML(skill, status) {
-    const isPartial = status === "partial";
-    const pointGain = isPartial ? "+6 to +9 pts" : "+10 to +16 pts";
+  async _fetchResources(skillName, useAi = false) {
+    const targetRole = store.get("targetRole") || "Software Engineer";
+    try {
+      const data = await api.post("/api/learning/resources", {
+        skill: skillName,
+        targetRole,
+        useAi,
+      }, { timeoutMs: useAi ? 18000 : 10000 });
+      this.cache.set(skillName.toLowerCase(), data);
+      if (this.currentSkill === skillName && this.isOpen) {
+        this._renderHub(data);
+      }
+    } catch (err) {
+      const fallback = this._clientFallback(skillName);
+      if (this.currentSkill === skillName && this.isOpen) {
+        this._renderHub(fallback, err?.message);
+      }
+    }
+  }
 
-    // Bullet rewrite templates tailored by skill
-    const sampleBullet = `Engineered data pipeline modules using ${skill}, optimizing ETL throughput by 34% and automating daily telemetry reporting across 4 operational databases.`;
+  _clientFallback(skill) {
+    const q = encodeURIComponent(skill);
+    return {
+      skill,
+      source: "curated",
+      freeCourses: [
+        { title: `${skill} Developer Roadmap`, platform: "roadmap.sh", duration: "Self-paced", summary: `Structured topic guide and checklists for ${skill}.`, url: "https://roadmap.sh/" },
+        { title: `${skill} Hands-On Curriculum`, platform: "freeCodeCamp", duration: "Self-paced", summary: `Free interactive lessons and projects covering ${skill}.`, url: `https://www.freecodecamp.org/news/search/?query=${q}` },
+        { title: `Microsoft Learn: ${skill} Modules`, platform: "Microsoft Learn", duration: "4-8 hrs", summary: `Interactive training paths and sandbox labs for ${skill}.`, url: `https://learn.microsoft.com/en-us/training/browse/?terms=${q}` },
+      ],
+      paidAndCerts: [
+        { title: `${skill} Professional Specialization`, platform: "Coursera", badge: "Certification", duration: "1-3 months", summary: `Structured specialization with capstone projects and certificate.`, url: `https://www.coursera.org/courses?query=${q}` },
+        { title: `Complete ${skill} Bootcamp`, platform: "Udemy", badge: "Paid Course", duration: "15-30 hrs", summary: `Practical project-driven course for production ${skill}.`, url: `https://www.udemy.com/courses/search/?q=${q}` },
+        { title: `Verified ${skill} Certificate Program`, platform: "edX", badge: "Certificate", duration: "6-8 weeks", summary: `University-authored program covering core ${skill} mastery.`, url: `https://www.edx.org/search?q=${q}` },
+      ],
+      projects: [
+        { title: `Production ${skill} Starter Service`, difficulty: "Beginner", duration: "4-5 days", summary: `Build a clean, tested repository showcasing core ${skill} patterns.`, url: "https://roadmap.sh/" },
+        { title: `End-to-End ${skill} Integration App`, difficulty: "Intermediate", duration: "1-2 weeks", summary: `Connect ${skill} with an API and database with benchmarks and error handling.`, url: "https://roadmap.sh/" },
+        { title: `Scalable ${skill} Capstone`, difficulty: "Advanced", duration: "2 weeks", summary: `Deploy a full ${skill} project with CI/CD, logging, and architecture docs.`, url: "https://roadmap.sh/" },
+      ],
+      resumeBullet: `Engineered production ${skill} modules, improving workflow reliability and cutting manual processing time by 35%.`,
+    };
+  }
 
-    return `
-      <div style="display: flex; flex-direction: column; gap: var(--space-3);">
-        <!-- Expected Point Gain Ledger -->
-        <div class="card" style="background: var(--bg-raised); border-color: var(--border-medium);">
-          <div class="card-body" style="padding: var(--space-2);">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <div>
-                <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-tertiary); text-transform: uppercase;">
-                  Estimated Score Gain
-                </span>
-                <div style="font-family: var(--font-display); font-size: 1.5rem; color: var(--score-high); font-weight: 600;">
-                  ${pointGain}
-                </div>
-              </div>
-              <button class="btn btn-secondary btn-sm" id="fixJumpRoadmapBtn">
-                Jump to Roadmap Node →
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Section 1: Recommended Courses -->
-        <div>
-          <h4 style="margin-bottom: var(--space-1); font-size: 0.95rem;">1. Curated Learning Modules</h4>
-          <p style="font-size: 0.85rem; margin-bottom: var(--space-15);">
-            High-yield technical resources verified for Indian campus recruitment and lateral hiring:
-          </p>
-
-          <div style="display: flex; flex-direction: column; gap: var(--space-1);">
-            <div class="card" style="padding: var(--space-15);">
-              <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                <strong style="font-size: 0.9rem;">${skill} Essentials & Architecture</strong>
-                <span class="status-badge status-matched" style="font-size: 0.7rem;">Free</span>
-              </div>
-              <p style="font-size: 0.8rem; margin: 4px 0 8px;">Comprehensive documentation, official walk-throughs and hands-on coding drills.</p>
-              <a href="https://www.google.com/search?q=${encodeURIComponent(skill + ' documentation tutorial')}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm" style="align-self: flex-start;">
-                Open Free Course ↗
-              </a>
-            </div>
-
-            <div class="card" style="padding: var(--space-15);">
-              <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                <strong style="font-size: 0.9rem;">Production ${skill} for Engineers</strong>
-                <span class="status-badge status-info" style="font-size: 0.7rem;">Certified</span>
-              </div>
-              <p style="font-size: 0.8rem; margin: 4px 0 8px;">Industry-recognized specialization with capstone projects and evaluation.</p>
-              <a href="https://www.coursera.org/search?query=${encodeURIComponent(skill)}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm" style="align-self: flex-start;">
-                View Specialization ↗
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <!-- Section 2: Resume Bullet Rewrite -->
-        <div>
-          <h4 style="margin-bottom: var(--space-1); font-size: 0.95rem;">2. High-Impact Resume Bullet Rewrite</h4>
-          <p style="font-size: 0.85rem; margin-bottom: var(--space-15);">
-            Use the Google XYZ / STAR format (Action + Context + Quantifiable Metric):
-          </p>
-          <div style="background: var(--bg-sunken); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: var(--space-15); font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.5; color: var(--text-primary); margin-bottom: var(--space-1);" id="bulletTextTarget">
-            ${sampleBullet}
-          </div>
-          <button class="btn btn-secondary btn-sm" id="copyBulletBtn">
-            Copy to Clipboard
-          </button>
-        </div>
-
-        <!-- Section 3: Add to Study Planner -->
-        <div style="border-top: 1px solid var(--border-subtle); padding-top: var(--space-2);">
-          <button class="btn btn-primary" style="width: 100%;" id="addSkillToPlannerBtn">
-            + Schedule in Weekly Study Planner
-          </button>
-        </div>
+  _renderLoading(skillName) {
+    const content = document.getElementById("guidedFixContent");
+    if (!content) return;
+    content.innerHTML = `
+      <div class="p-4 text-center">
+        <div class="spinner mb-2 mx-auto" aria-hidden="true"></div>
+        <p class="text-sm text-secondary m-0">Loading verified courses, certifications &amp; projects for <strong>${escapeHtml(skillName)}</strong>...</p>
       </div>
     `;
   }
 
+  _renderHub(data, notice = "") {
+    const content = document.getElementById("guidedFixContent");
+    if (!content) return;
+
+    const free = data.freeCourses || [];
+    const paid = data.paidAndCerts || [];
+    const projects = data.projects || [];
+    const isPartial = this.currentStatus === "partial" || this.currentStatus === "adjacent";
+    const pointGain = this.currentStatus === "matched" ? "Core Strength" : (isPartial ? "+6 to +9 pts" : "+10 to +16 pts");
+
+    const renderResourceCards = (items, isPaid = false) =>
+      items.map((c) => `
+        <div class="card learning-resource-card p-2">
+          <div class="d-flex justify-between items-start gap-xs mb-1">
+            <strong class="text-sm text-primary" style="line-height: 1.35;">${escapeHtml(c.title)}</strong>
+            <span class="status-badge ${isPaid ? "status-info" : "status-matched"}" style="font-size: 0.68rem; white-space: nowrap; flex-shrink: 0;">
+              ${escapeHtml(isPaid ? (c.badge || "Certified") : "Free")}
+            </span>
+          </div>
+          <div class="text-xxs font-mono text-tertiary mb-1">${escapeHtml(c.platform || "Verified")} · ${escapeHtml(c.duration || "Self-paced")}</div>
+          <p class="text-xs text-secondary m-0 mb-2" style="line-height: 1.45;">${escapeHtml(c.summary || "")}</p>
+          <a href="${escapeHtml(c.url)}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-xs" style="align-self: flex-start;">
+            ${isPaid ? "View Course / Cert ↗" : "Open Free Course ↗"}
+          </a>
+        </div>
+      `).join("");
+
+    const renderProjectCards = (items) =>
+      items.map((p) => `
+        <div class="card learning-resource-card p-2">
+          <div class="d-flex justify-between items-start gap-xs mb-1">
+            <strong class="text-sm text-primary" style="line-height: 1.35;">${escapeHtml(p.title)}</strong>
+            <span class="score-pill" style="font-size: 0.68rem; white-space: nowrap; flex-shrink: 0;">${escapeHtml(p.difficulty || "Intermediate")}</span>
+          </div>
+          <div class="text-xxs font-mono text-tertiary mb-1">Est. ${escapeHtml(p.duration || "1 week")}</div>
+          <p class="text-xs text-secondary m-0 mb-2" style="line-height: 1.45;">${escapeHtml(p.summary || "")}</p>
+          <a href="${escapeHtml(p.url)}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-xs" style="align-self: flex-start;">
+            Starter Guide ↗
+          </a>
+        </div>
+      `).join("");
+
+    content.innerHTML = `
+      <div class="d-flex flex-col gap-md">
+        <!-- Top Action Strip -->
+        <div class="d-flex justify-between items-center flex-wrap gap-xs p-2 bg-sunken rounded-sm border-subtle">
+          <div class="text-xs text-secondary">
+            ${data.source === "ai" ? '<span class="score-pill score-pill-green text-xxs">Gemini AI Updated</span>' : '<span class="score-pill text-xxs">Verified Curated Catalog</span>'}
+          </div>
+          <button type="button" class="btn btn-secondary btn-xs" id="hubRefreshAiBtn">
+            ✨ Fetch Latest via Gemini AI
+          </button>
+        </div>
+        ${notice ? `<div class="text-xs text-tertiary">${escapeHtml(notice)}</div>` : ""}
+
+        <!-- Compact 4-Tab Bar -->
+        <div class="learning-tabs" role="tablist" aria-label="Learning Resources">
+          <button type="button" class="learning-tab-btn ${this.activeTab === "free" ? "active" : ""}" data-hub-tab="free">Free (${free.length})</button>
+          <button type="button" class="learning-tab-btn ${this.activeTab === "paid" ? "active" : ""}" data-hub-tab="paid">Paid &amp; Certs (${paid.length})</button>
+          <button type="button" class="learning-tab-btn ${this.activeTab === "projects" ? "active" : ""}" data-hub-tab="projects">Projects (${projects.length})</button>
+          <button type="button" class="learning-tab-btn ${this.activeTab === "fix" ? "active" : ""}" data-hub-tab="fix">Resume Fix</button>
+        </div>
+
+        <!-- Tab Panels -->
+        <div class="learning-tab-panel ${this.activeTab === "free" ? "" : "hidden"}" data-hub-panel="free">
+          <div class="d-flex flex-col gap-sm">${renderResourceCards(free, false)}</div>
+        </div>
+
+        <div class="learning-tab-panel ${this.activeTab === "paid" ? "" : "hidden"}" data-hub-panel="paid">
+          <div class="d-flex flex-col gap-sm">${renderResourceCards(paid, true)}</div>
+        </div>
+
+        <div class="learning-tab-panel ${this.activeTab === "projects" ? "" : "hidden"}" data-hub-panel="projects">
+          <div class="d-flex flex-col gap-sm">${renderProjectCards(projects)}</div>
+        </div>
+
+        <div class="learning-tab-panel ${this.activeTab === "fix" ? "" : "hidden"}" data-hub-panel="fix">
+          <div class="d-flex flex-col gap-md">
+            <div class="card p-2 bg-raised border-subtle">
+              <div class="d-flex justify-between items-center flex-wrap gap-sm">
+                <div>
+                  <span class="font-mono text-xxs text-tertiary uppercase">Estimated Impact</span>
+                  <div class="font-serif text-xl font-semibold text-high">${pointGain}</div>
+                </div>
+                <button type="button" class="btn btn-secondary btn-xs" id="fixJumpRoadmapBtn">Jump to Roadmap →</button>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="text-sm font-semibold mb-1">High-Impact Resume Bullet (XYZ / STAR)</h4>
+              <div class="p-2 bg-sunken border-subtle rounded-sm font-mono text-xs mb-1" style="line-height: 1.5;" id="bulletTextTarget">
+                ${escapeHtml(data.resumeBullet || "")}
+              </div>
+              <button type="button" class="btn btn-secondary btn-xs" id="copyBulletBtn">Copy to Clipboard</button>
+            </div>
+
+            <button type="button" class="btn btn-primary w-full" id="addSkillToPlannerBtn">
+              + Schedule ${escapeHtml(data.skill)} in Study Planner
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    this._bindContentEvents(content, data.skill);
+  }
+
   _bindContentEvents(container, skill) {
+    container.querySelectorAll("[data-hub-tab]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const tab = btn.getAttribute("data-hub-tab");
+        this.activeTab = tab;
+        container.querySelectorAll("[data-hub-tab]").forEach((b) => b.classList.toggle("active", b.getAttribute("data-hub-tab") === tab));
+        container.querySelectorAll("[data-hub-panel]").forEach((p) => p.classList.toggle("hidden", p.getAttribute("data-hub-panel") !== tab));
+      });
+    });
+
+    const aiBtn = container.querySelector("#hubRefreshAiBtn");
+    if (aiBtn) {
+      aiBtn.addEventListener("click", async () => {
+        aiBtn.disabled = true;
+        aiBtn.textContent = "Fetching via Gemini...";
+        await this._fetchResources(skill, true);
+      });
+    }
+
     const jumpBtn = container.querySelector("#fixJumpRoadmapBtn");
     if (jumpBtn) {
       jumpBtn.addEventListener("click", () => {
@@ -196,13 +301,13 @@ export class GuidedFixDrawer {
     const copyBtn = container.querySelector("#copyBulletBtn");
     if (copyBtn) {
       copyBtn.addEventListener("click", async () => {
-        const text = container.querySelector("#bulletTextTarget").textContent.trim();
+        const text = container.querySelector("#bulletTextTarget")?.textContent.trim() || "";
         try {
           await navigator.clipboard.writeText(text);
-          copyBtn.textContent = "✓ Copied to Clipboard!";
-          setTimeout(() => (copyBtn.textContent = "Copy to Clipboard"), 2000);
+          copyBtn.textContent = "✓ Copied!";
+          setTimeout(() => (copyBtn.textContent = "Copy to Clipboard"), 1800);
         } catch {
-          copyBtn.textContent = "Selected";
+          copyBtn.textContent = "Copied";
         }
       });
     }
@@ -211,20 +316,19 @@ export class GuidedFixDrawer {
     if (addPlannerBtn) {
       addPlannerBtn.addEventListener("click", () => {
         const tasks = store.get("plannerTasks") || [];
-        const newTask = {
+        tasks.push({
           id: Date.now(),
-          title: `Master ${skill} Core Concepts & Code Sample`,
+          title: `Master ${skill}: Complete Course & Build Starter Project`,
           day: "Monday",
           completed: false,
-          skill: skill,
-        };
-        tasks.push(newTask);
+          skill,
+        });
         store.set("plannerTasks", tasks);
         addPlannerBtn.textContent = "✓ Scheduled in Planner!";
         setTimeout(() => {
           this.close();
           router.navigate("planner");
-        }, 800);
+        }, 700);
       });
     }
   }

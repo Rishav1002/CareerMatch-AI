@@ -128,6 +128,7 @@ export class ResumeBuilderModule {
     requestAnimationFrame(() => {
       Object.values(this.carousels).forEach((c) => c?.layout?.(false));
       this.fitPreview();
+      this.fitTemplateGridCards();
     });
   }
 
@@ -761,6 +762,23 @@ export class ResumeBuilderModule {
         }
       });
     });
+
+    requestAnimationFrame(() => this.fitTemplateGridCards());
+  }
+
+  fitTemplateGridCards() {
+    const grid = document.getElementById("builderTemplateGrid");
+    if (!grid) return;
+    grid.querySelectorAll(".bld-grid-card-thumb").forEach((thumb) => {
+      const inner = thumb.querySelector(".bld-grid-card-inner");
+      if (!inner) return;
+      const w = thumb.clientWidth;
+      if (w > 0) {
+        const scale = w / 794;
+        inner.style.transform = `scale(${scale.toFixed(5)})`;
+        thumb.style.height = `${Math.round(1123 * scale)}px`;
+      }
+    });
   }
 
   scrollToTop() {
@@ -1148,7 +1166,7 @@ export class ResumeBuilderModule {
         this.fitPreview();
       });
     }
-    window.addEventListener("resize", () => this.fitPreview());
+    window.addEventListener("resize", () => { this.fitPreview(); this.fitTemplateGridCards(); });
   }
 
   debouncedRenderPreview() {
@@ -2342,10 +2360,16 @@ export class ResumeBuilderModule {
     if (!wrap || !viewport) return;
     let z = parseFloat(this.zoomMode);
     if (this.zoomMode === "fit" || Number.isNaN(z)) {
-      const avail = viewport.clientWidth - 32;
+      const avail = viewport.clientWidth - 16;
       z = avail > 0 ? Math.min(1, avail / 794) : 0.85;
     }
-    wrap.style.zoom = String(z);
+    wrap.style.zoom = "";
+    wrap.style.width = "794px";
+    wrap.style.transformOrigin = "top left";
+    wrap.style.transform = `scale(${z.toFixed(5)})`;
+    const naturalH = Math.max(wrap.scrollHeight || 1123, 1123);
+    wrap.style.marginBottom = `${Math.round(naturalH * (z - 1))}px`;
+    wrap.style.marginRight = `${Math.round(794 * (z - 1))}px`;
   }
 
   showToast(msg, type = "info") {

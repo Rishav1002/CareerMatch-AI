@@ -177,7 +177,7 @@ export class StudyPlanner {
     store.set("streak", this.streak);
     const streakDisplay = document.getElementById("plannerStreakDisplay");
     if (streakDisplay) {
-      streakDisplay.textContent = `${this.streak.current} Days`;
+      streakDisplay.textContent = `${this.streak.current} ${this.streak.current === 1 ? "Day" : "Days"}`;
     }
   }
 
@@ -268,7 +268,8 @@ export class StudyPlanner {
     const grid = document.getElementById("plannerWeekGrid");
     const streakDisplay = document.getElementById("plannerStreakDisplay");
     if (streakDisplay) {
-      streakDisplay.textContent = `${this.streak.current || 0} Days`;
+      const streakCount = this.streak.current || 0;
+      streakDisplay.textContent = `${streakCount} ${streakCount === 1 ? "Day" : "Days"}`;
     }
 
     if (!grid) return;

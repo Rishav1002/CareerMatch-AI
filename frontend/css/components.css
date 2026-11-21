@@ -194,7 +194,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2);
   background: var(--glass-bg-subtle, rgba(255, 255, 255, 0.35));
+}
+
+.card-header > * {
+  min-width: 0;
 }
 
 .card-header h3 {
@@ -1131,5 +1137,39 @@
   .storage-notice-banner {
     bottom: calc(var(--bottom-nav-height, 60px) + var(--space-3));
     width: calc(100% - var(--space-4));
+  }
+}
+
+/* Responsive button & card-header wrapping guardrails */
+.btn {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 640px) {
+  .btn {
+    white-space: normal;
+    text-align: center;
+    line-height: 1.25;
+  }
+
+  .card-header {
+    padding: var(--space-2);
+    align-items: flex-start;
+  }
+
+  .card-header > div:first-child {
+    flex: 1 1 100%;
+  }
+
+  .card-header > .d-flex,
+  .card-header > .btn,
+  .card-header > a.btn {
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .card-body {
+    padding: var(--space-2);
   }
 }

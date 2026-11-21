@@ -296,6 +296,9 @@ export class AnalyzerModule {
       }
 
       store.set("activeResume", data.resume);
+      store.set("analysisResult", null);
+      store.set("priData", null);
+      window.dispatchEvent(new CustomEvent("cm:resume-changed", { detail: { resume: data.resume } }));
       if (statusEl) statusEl.textContent = `Parsed successfully: ${file.name}`;
       this.render(data.resume);
       this.updateRunButtonState();
@@ -331,6 +334,9 @@ export class AnalyzerModule {
       }
 
       store.set("activeResume", data.resume);
+      store.set("analysisResult", null);
+      store.set("priData", null);
+      window.dispatchEvent(new CustomEvent("cm:resume-changed", { detail: { resume: data.resume } }));
       if (statusEl) statusEl.textContent = "Parsed pasted text successfully.";
       this.render(data.resume);
       this.updateRunButtonState();

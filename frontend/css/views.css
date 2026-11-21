@@ -545,14 +545,18 @@
    ========================================================================== */
 .analyzer-layout {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: var(--space-4);
+  width: 100%;
+  max-width: 100%;
 }
 
 .analyzer-left, .analyzer-right {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  min-width: 0;
+  max-width: 100%;
 }
 
 .demo-pills-row {
@@ -1335,3 +1339,647 @@
   font-family: "Times New Roman", Times, Georgia, serif;
 }
 
+/* ==========================================================================
+   MOBILE & RESPONSIVE VIEW FIXES (Analyzer, Builder, Tracker, Planner, PRI, Footer)
+   ========================================================================== */
+.upload-drop-zone,
+.upload-dropzone {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.selected-file-banner {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.selected-file-banner > .d-flex {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+#selectedFileName {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+#uploadStatusText {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+#parsedResumeMeta > .border-top {
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+#parsedResumeMeta #analyzerOpenBuilderBtn {
+  max-width: 100%;
+}
+
+/* PRI bullet lists inside Strengths / Action Items cards */
+.pri-bullet-list {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style-type: disc;
+}
+
+.pri-bullet-list li {
+  line-height: 1.5;
+  overflow-wrap: break-word;
+}
+
+/* Builder "Start Fresh or Test Demos" cards — prevent arrow overlap */
+#builderLandingSection .btn.flex-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  white-space: normal;
+  text-align: left;
+  height: auto;
+  min-height: 56px;
+}
+
+#builderLandingSection .btn.flex-row > div {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+#builderLandingSection .btn.flex-row > span {
+  flex: 0 0 auto;
+  font-size: 1rem;
+  color: var(--text-tertiary);
+}
+
+/* Builder export action bar & editor sub-tabs */
+#view-builder .bld-export-action-bar {
+  flex-wrap: wrap;
+}
+
+#view-builder .builder-editor-tabs,
+#view-builder [role="tablist"] {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  max-width: 100%;
+}
+
+#view-builder .builder-editor-tabs::-webkit-scrollbar,
+#view-builder [role="tablist"]::-webkit-scrollbar {
+  display: none;
+}
+
+/* GitHub input sizing on mobile */
+#view-github #githubUsernameInput {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Footer visual separation & clean columns */
+.footer-columns-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
+}
+
+.footer-link-col ul li a {
+  display: inline-block;
+  padding: 2px 0;
+}
+
+@media (max-width: 900px) {
+  .kanban-col {
+    min-height: auto;
+  }
+
+  .planner-header-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-2);
+  }
+
+  .planner-header-card > .d-flex {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
+  .planner-header-card .streak-counter {
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .footer-columns-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 24px 16px;
+  }
+
+  .footer-brand-col {
+    grid-column: 1 / -1;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .footer-bottom-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  /* Prevent Job Market stacked table company/location collision */
+  .ledger-table td.market-company-cell {
+    display: block;
+    text-align: left;
+  }
+
+  /* Keep Roadmap progress pill tidy */
+  #adapProgressBadge {
+    display: inline-flex;
+    white-space: normal;
+    line-height: 1.3;
+  }
+
+  /* Planner actions wrap cleanly without button clipping */
+  .planner-header-card > .d-flex {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .planner-header-card .streak-counter {
+    grid-column: 1 / -1;
+    margin-left: 0;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    padding: 8px 12px;
+  }
+
+  /* GitHub header controls stack cleanly */
+  #view-github .card-header > .d-flex {
+    width: 100%;
+  }
+
+  #view-github #githubUsernameInput {
+    flex: 1 1 160px;
+    width: auto;
+  }
+}
+
+/* ==========================================================================
+   ROUND 2 RESPONSIVE POLISH: JOB CARDS, LEARNING HUB, CAREER MATRIX & DRAWER
+   ========================================================================== */
+/* Fix blank left space inside Live Job Market cards */
+.job-opening-card {
+  align-items: stretch !important;
+  text-align: left;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.job-opening-body {
+  width: 100%;
+  text-align: left;
+  min-width: 0;
+}
+
+.job-opening-footer {
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+/* Learning Hub Tabs & Cards (Zero congestion across mobile, tablet, desktop) */
+.learning-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 4px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.learning-tab-btn {
+  flex: 1 1 auto;
+  min-width: 84px;
+  padding: 7px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.learning-tab-btn.active {
+  background: var(--bg-card);
+  color: var(--brand-accent);
+  border-color: var(--border-medium);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.learning-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: var(--space-2);
+}
+
+.learning-resource-card {
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  text-align: left;
+  align-items: stretch;
+}
+
+.skill-pill-btn,
+.skill-learn-trigger {
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.skill-pill-btn.active {
+  box-shadow: 0 0 0 2px var(--brand-accent);
+  font-weight: 700;
+}
+
+.skill-pill-btn:hover,
+.skill-learn-trigger:hover {
+  transform: translateY(-1px);
+}
+
+/* Responsive Guided Fix / Learning Hub Drawer across all screen sizes */
+.learning-hub-drawer {
+  width: min(500px, 100vw) !important;
+  max-width: 100vw;
+  box-sizing: border-box;
+}
+
+/* Report Subtabs horizontal scroll on narrow mobile/tablet */
+#view-report .segmented-nav {
+  display: flex;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  max-width: 100%;
+  gap: 4px;
+}
+
+#view-report .segmented-nav::-webkit-scrollbar {
+  display: none;
+}
+
+#view-report .segmented-nav .tab-btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .learning-hub-drawer {
+    width: 100vw !important;
+  }
+
+  .career-salary-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+  }
+
+  .career-salary-grid .kpi-card {
+    padding: 8px 6px !important;
+  }
+
+  .career-salary-grid .kpi-value {
+    font-size: 0.98rem !important;
+  }
+
+  #view-career .card-header > .d-flex {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  #view-career .card-header select,
+  #view-career .card-header button {
+    width: 100%;
+  }
+}
+
+/* ==========================================================================
+   ATS SIMULATOR REDESIGN (Clear Hierarchy, Separated Cards, All Aspect Ratios)
+   ========================================================================== */
+.ats-overview-band {
+  display: grid;
+  grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: stretch;
+}
+
+.ats-hero-score-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-3);
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  gap: 6px;
+}
+
+.ats-hero-score-num {
+  font-size: clamp(2.25rem, 3.5vw, 3rem);
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.ats-pillars-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.ats-pillar-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  min-width: 0;
+}
+
+.ats-pillar-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.ats-pillar-val {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 4px 0 8px;
+}
+
+.ats-progress-track {
+  width: 100%;
+  height: 6px;
+  background: var(--border-subtle);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.ats-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.ats-workspace-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: start;
+}
+
+.ats-section-card {
+  width: 100%;
+  min-width: 0;
+}
+
+.ats-audit-row {
+  padding: 12px 14px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+}
+
+.ats-rewrite-card {
+  padding: 14px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ats-rewrite-before {
+  padding: 8px 10px;
+  background: var(--bg-card);
+  border-left: 3px solid var(--border-medium);
+  border-radius: 4px;
+}
+
+.ats-rewrite-after {
+  padding: 8px 10px;
+  background: var(--bg-card);
+  border-left: 3px solid var(--score-high);
+  border-radius: 4px;
+}
+
+.ats-rewrite-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary);
+  margin-bottom: 3px;
+}
+
+@media (max-width: 960px) {
+  .ats-overview-band {
+    grid-template-columns: 1fr;
+  }
+  .ats-workspace-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .ats-pillars-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   EVIDENCE & GAPS MATRIX POLISH (Zero Overflow / Underflow / Overlap)
+   ========================================================================== */
+.spotlight-banner {
+  gap: var(--space-2) var(--space-3);
+}
+
+.spotlight-kpis {
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+}
+
+.spotlight-actions {
+  max-width: 100%;
+  flex-wrap: wrap;
+}
+
+.report-evidence-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: var(--space-3);
+  align-items: start;
+  width: 100%;
+}
+
+.report-matrix-card,
+.report-proof-card {
+  min-width: 0;
+  width: 100%;
+}
+
+.report-skill-filter {
+  width: min(220px, 100%);
+  min-width: 0;
+}
+
+.evidence-req-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 560px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.evidence-req-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+}
+
+.evidence-req-item:hover,
+.evidence-req-item:focus-visible {
+  border-color: var(--brand-accent);
+  background: var(--bg-card);
+  outline: none;
+}
+
+.evidence-req-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px 12px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.evidence-req-title {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+  flex: 1 1 150px;
+}
+
+.evidence-skill-name {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.evidence-skill-tier {
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.evidence-status-pill {
+  font-size: 0.72rem !important;
+  padding: 3px 8px !important;
+  white-space: nowrap;
+  flex-shrink: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.evidence-req-proof {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.resume-viewer-box {
+  max-height: 560px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.resume-line {
+  padding: 3px 6px;
+  border-radius: 4px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.resume-line.highlighted {
+  background: var(--score-high-bg);
+  color: var(--score-high);
+  font-weight: 600;
+  border-left: 3px solid var(--score-high);
+}
+
+@media (max-width: 960px) {
+  .report-evidence-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .evidence-req-list,
+  .resume-viewer-box {
+    max-height: 440px;
+  }
+}
+
+@media (max-width: 520px) {
+  .report-skill-filter {
+    width: 100%;
+  }
+
+  .evidence-req-item {
+    padding: 10px 12px;
+  }
+
+  .evidence-status-pill {
+    white-space: normal;
+    line-height: 1.25;
+  }
+}

@@ -1,3 +1,4 @@
+import re
 """
 Job Market Intelligence Aggregator & Caching Service.
 Queries providers (Remotive, Arbeitnow, Adzuna) with Neon database caching.
@@ -238,7 +239,7 @@ class JobMarketService:
                     "preferredSkills": pref_skills,
                     "descriptionSummary": r["description_summary"],
                     "applyUrl": r["apply_url"],
-                    "dataSource": r["data_source"] + " (Cached in Neon)",
+                    "dataSource": re.sub(r"(?:\s*\(Cached in Neon\))+", "", str(r["data_source"] or "")).strip(),
                     "postedAt": r["posted_at"],
                 })
             return jobs

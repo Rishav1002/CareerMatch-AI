@@ -6,47 +6,37 @@
 
 import { store } from "../store.js";
 
-const DEFAULT_TRACKER_JOBS = [
-  {
-    id: "job-1",
-    role: "Data Engineer (Analytics Platform)",
-    company: "NexusCloud India",
-    location: "Bengaluru (Hybrid)",
-    salary: "₹18-24 LPA",
-    matchPct: 82,
-    column: "applied",
-    dateAdded: "2026-11-01",
-    notes: "Applied via referral. Technical round scheduled next week.",
-  },
-  {
-    id: "job-2",
-    role: "Associate Cloud Data Engineer",
-    company: "FinTech ScaleUp",
-    location: "Hyderabad",
-    salary: "₹14-18 LPA",
-    matchPct: 76,
-    column: "saved",
-    dateAdded: "2026-11-02",
-    notes: "Requires AWS Glue and PySpark certification.",
-  },
-  {
-    id: "job-3",
-    role: "Junior Data Platform Specialist",
-    company: "Tata Consultancy Services (Digital)",
-    location: "Pune / Remote",
-    salary: "₹9-13 LPA",
-    matchPct: 88,
-    column: "interview",
-    dateAdded: "2026-10-28",
-    notes: "Passed coding assessment. System design round pending.",
-  },
-];
+const LEGACY_FAKE_COMPANIES = new Set([
+  "NexusCloud India",
+  "FinTech ScaleUp",
+  "Tata Consultancy Services (Digital)",
+]);
+
+function normalizeTrackerJob(raw) {
+  if (!raw || typeof raw !== "object") return null;
+  const col = raw.column || (raw.stage === "wishlist" ? "saved" : raw.stage) || "saved";
+  return {
+    id: raw.id || `job-${Date.now()}`,
+    role: raw.role || raw.title || "Target Role",
+    company: raw.company || raw.companyName || "Target Company",
+    location: raw.location || "Remote / India",
+    salary: raw.salary || raw.salaryRange || "Competitive",
+    matchPct: raw.matchPct != null ? Math.round(Number(raw.matchPct)) : (raw.match != null ? Math.round(Number(raw.match)) : null),
+    column: ["saved", "applied", "interview", "offer"].includes(col) ? col : "saved",
+    dateAdded: raw.dateAdded || raw.appliedDate || new Date().toISOString().split("T")[0],
+    notes: raw.notes || "",
+  };
+}
 
 export class ApplicationTracker {
   constructor() {
-    this.jobs = store.get("trackerJobs");
-    if (!this.jobs || this.jobs.length === 0) {
-      this.jobs = DEFAULT_TRACKER_JOBS;
+    const stored = Array.isArray(store.get("trackerJobs")) ? store.get("trackerJobs") : [];
+    const cleaned = stored
+      .filter((j) => !(j && LEGACY_FAKE_COMPANIES.has(j.company) && /^job-[123]$/.test(String(j.id))))
+      .map(normalizeTrackerJob)
+      .filter(Boolean);
+    this.jobs = cleaned;
+    if (cleaned.length !== stored.length) {
       store.set("trackerJobs", this.jobs);
     }
   }
@@ -54,7 +44,7 @@ export class ApplicationTracker {
   init() {
     this.render();
     store.subscribe("trackerJobs", (newJobs) => {
-      this.jobs = newJobs;
+      this.jobs = Array.isArray(newJobs) ? newJobs.map(normalizeTrackerJob).filter(Boolean) : [];
       this.render();
     });
   }
@@ -66,7 +56,7 @@ export class ApplicationTracker {
       company: jobData.company || "Target Company",
       location: jobData.location || "India",
       salary: jobData.salary || "Competitive",
-      matchPct: jobData.matchPct || Math.floor(Math.random() * 25) + 70,
+      matchPct: jobData.matchPct != null ? Math.round(Number(jobData.matchPct)) : null,
       column: "saved",
       dateAdded: new Date().toISOString().split("T")[0],
       notes: jobData.notes || "Added from Job Market Intelligence",
@@ -130,7 +120,7 @@ export class ApplicationTracker {
       <div class="kanban-card" data-job-id="${job.id}">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-1);">
           <strong style="font-size: 0.9rem; line-height: 1.3; color: var(--text-primary);">${job.role}</strong>
-          <span class="score-pill ${matchClass}">${job.matchPct}% match</span>
+          ${job.matchPct != null ? `<span class="score-pill ${matchClass}" style="white-space:nowrap;flex-shrink:0;">${job.matchPct}% match</span>` : ""}
         </div>
         <div style="font-size: 0.8125rem; color: var(--text-secondary); display: flex; align-items: center; justify-content: space-between;">
           <span>${job.company}</span>

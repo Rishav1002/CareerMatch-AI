@@ -154,9 +154,9 @@ export class PriModule {
         .map(
           (c) => `
           <div class="bar-chart-row" style="margin-bottom:10px;">
-            <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:4px;">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:0.85rem;margin-bottom:4px;">
               <span><strong>${escapeHtml(c.category)}</strong> <small style="color:var(--text-tertiary);">(${c.weightPct}% weight)</small></span>
-              <span class="tabular-nums" style="font-weight:600;">${Math.round(c.rawScore)}%</span>
+              <span class="tabular-nums" style="font-weight:600;white-space:nowrap;flex-shrink:0;">${Math.round(c.rawScore)}%</span>
             </div>
             <div class="bar-chart-track" style="height:6px;background:var(--bg-sunken);border-radius:var(--radius-sm);overflow:hidden;">
               <div class="bar-chart-fill" style="width:${Math.min(100, c.rawScore)}%;height:100%;background:${c.isVerified ? "var(--score-high)" : "var(--brand-accent)"};"></div>

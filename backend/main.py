@@ -44,6 +44,7 @@ from starlette.concurrency import run_in_threadpool
 from backend.ai_service import (
     extract_structured_resume_with_gemini,
     generate_career_intelligence,
+    get_skill_learning_resources,
     is_configured as is_ai_configured,
 )
 from backend.career_modules import (
@@ -1391,6 +1392,30 @@ async def api_ai_status() -> Dict[str, Any]:
 async def api_ai_usage(owner_info: Tuple[str, bool] = Depends(get_owner)) -> Dict[str, Any]:
     owner_id, is_auth = owner_info
     return get_ai_usage(owner_id, is_auth)
+
+
+
+@app.post("/api/learning/resources")
+async def api_learning_resources(
+    request: Request,
+    owner_info: Tuple[str, bool] = Depends(get_owner),
+) -> Dict[str, Any]:
+    owner_id, _ = owner_info
+    allowed, retry = rate_limiter.is_allowed(f"learn_{owner_id}", max_requests=30, window_seconds=60)
+    if not allowed:
+        raise HTTPException(status_code=429, detail=f"Too many requests. Please wait {retry}s.")
+    try:
+        body = await request.json()
+        skill = str(body.get("skill", "")).strip()
+        if not skill:
+            raise ValueError("Skill name is required.")
+        target_role = str(body.get("targetRole", "")).strip()
+        use_ai = bool(body.get("useAi", False))
+        return await run_in_threadpool(get_skill_learning_resources, skill, target_role, use_ai)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to load learning resources: {exc}")
 
 
 @app.post("/api/ai/ask")

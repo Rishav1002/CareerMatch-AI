@@ -39,9 +39,9 @@ export class CareerModule {
     });
   }
 
-  load() {
-    this.populateRoleOptions();
-    this.compare();
+  async load() {
+    await this.populateRoleOptions();
+    await this.compare();
   }
 
   async populateRoleOptions() {
@@ -53,17 +53,21 @@ export class CareerModule {
         const selA = document.getElementById("careerPrimaryRoleSelect");
         const selB = document.getElementById("careerSecondaryRoleSelect");
 
+        const preferredPrimary = store.get("targetRole") || "";
         if (selA && roles.length) {
           const currentA = selA.value;
           selA.innerHTML = roles.map((r) => `<option value="${escapeHtml(r.title)}">${escapeHtml(r.title)}</option>`).join("");
-          if (currentA) selA.value = currentA;
+          const matchTarget = roles.find((r) => r.title.toLowerCase() === preferredPrimary.toLowerCase());
+          const matchCurrent = roles.find((r) => r.title === currentA);
+          selA.value = matchTarget ? matchTarget.title : (matchCurrent ? matchCurrent.title : roles[0].title);
         }
 
         if (selB && roles.length) {
           const currentB = selB.value;
           selB.innerHTML = roles.map((r) => `<option value="${escapeHtml(r.title)}">${escapeHtml(r.title)}</option>`).join("");
-          if (currentB) selB.value = currentB;
-          else if (roles[1]) selB.value = roles[1].title;
+          const matchCurrentB = roles.find((r) => r.title === currentB && r.title !== selA?.value);
+          const fallbackB = roles.find((r) => r.title !== selA?.value) || roles[0];
+          selB.value = matchCurrentB ? matchCurrentB.title : fallbackB.title;
         }
       }
     } catch (_) {}
@@ -100,22 +104,41 @@ export class CareerModule {
 
   render(data) {
     if (!data) return;
+    const hasResume = Boolean(store.get("activeResume"));
+
+    // Optional notice when viewing Role Compare before uploading a resume
+    const careerCardBody = document.querySelector("#view-career .card-body");
+    let resumeNotice = document.getElementById("careerResumePromptBanner");
+    if (!hasResume && careerCardBody) {
+      if (!resumeNotice) {
+        resumeNotice = document.createElement("div");
+        resumeNotice.id = "careerResumePromptBanner";
+        resumeNotice.className = "card p-2 mb-3 bg-sunken border-subtle d-flex justify-between items-center flex-wrap gap-sm text-xs";
+        resumeNotice.innerHTML = `
+          <span class="text-secondary">Upload your resume to calculate your personalized match percentage and skill transition gaps across roles.</span>
+          <a href="#/analyzer" class="btn btn-primary btn-xs">Upload Resume →</a>
+        `;
+        careerCardBody.prepend(resumeNotice);
+      }
+      resumeNotice.hidden = false;
+    } else if (resumeNotice) {
+      resumeNotice.hidden = true;
+    }
 
     const renderRoleCard = (r, badgeLabel) => `
       <span class="step-badge">${escapeHtml(badgeLabel)}</span>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin:6px 0 10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0 10px;">
         <h3 style="margin:0;font-size:1.15rem;">${escapeHtml(r.roleTitle)}</h3>
-        <span class="tag tag-match tabular-nums">${Math.round(r.candidateMatchScore)}% Match</span>
+        <span class="tag ${hasResume ? "tag-match" : ""} tabular-nums">${hasResume ? `${Math.round(r.candidateMatchScore)}% Match` : "Upload Resume"}</span>
       </div>
       <p style="font-size:0.82rem;color:var(--text-secondary);margin:0 0 10px;">${escapeHtml(r.experienceExpectation)}</p>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;">
-        <div class="kpi-card" style="padding:10px;"><span class="kpi-label">Entry (India)</span><div class="kpi-value" style="font-size:1.15rem;">₹${r.indiaEntryLPA}L</div></div>
-        <div class="kpi-card" style="padding:10px;"><span class="kpi-label">Mid-Level</span><div class="kpi-value" style="font-size:1.15rem;">₹${r.indiaMidLPA}L</div></div>
-        <div class="kpi-card" style="padding:10px;"><span class="kpi-label">Senior</span><div class="kpi-value" style="font-size:1.15rem;">₹${r.indiaSeniorLPA}L</div></div>
+      <div class="career-salary-grid" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px;">
+        <div class="kpi-card" style="padding:10px;"><span class="kpi-label">Entry (India)</span><div class="kpi-value" style="font-size:1.1rem;">₹${r.indiaEntryLPA}L</div></div>
+        <div class="kpi-card" style="padding:10px;"><span class="kpi-label">Mid-Level</span><div class="kpi-value" style="font-size:1.1rem;">₹${r.indiaMidLPA}L</div></div>
+        <div class="kpi-card" style="padding:10px;"><span class="kpi-label">Senior</span><div class="kpi-value" style="font-size:1.1rem;">₹${r.indiaSeniorLPA}L</div></div>
       </div>
       <span style="font-size:0.75rem;font-family:var(--font-mono);color:var(--text-tertiary);text-transform:uppercase;">Progression Path</span>
-      <p style="font-size:0.8rem;margin:4px 0 10px;">${(r.progressionPath || []).map(escapeHtml).join(" → ")}</p>
-      <small style="color:var(--text-tertiary);font-size:0.72rem;">Source: ${escapeHtml(r.benchmarkSource || "Industry Compensation Survey")}</small>
+      <p style="font-size:0.8rem;margin:4px 0 0;">${(r.progressionPath || []).map(escapeHtml).join(" → ")}</p>
     `;
 
     const cardA = document.getElementById("careerRoleACard");
@@ -126,7 +149,9 @@ export class CareerModule {
     const br = data.transitionBridge || {};
     const bridgeTitle = document.getElementById("careerBridgeTitle");
     if (bridgeTitle) {
-      bridgeTitle.textContent = `Transition Bridge: ${br.fromRole || "Role A"} → ${br.toRole || "Role B"} (${br.estimatedTransitionTime || "3-6 months"})`;
+      bridgeTitle.textContent = hasResume
+        ? `Transition Bridge: ${br.fromRole || "Role A"} → ${br.toRole || "Role B"} (${br.estimatedTransitionTime || "3-6 months"})`
+        : `Skill Requirements: ${br.fromRole || "Role A"} → ${br.toRole || "Role B"}`;
     }
 
     const bridgeBody = document.getElementById("careerBridgeBody");
@@ -135,27 +160,29 @@ export class CareerModule {
         <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:16px;">
           <div>
             <span style="font-size:0.75rem;font-family:var(--font-mono);color:var(--text-tertiary);">SHARED FOUNDATION SKILLS</span>
-            <div class="skill-tags" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">
-              ${(br.sharedFoundationSkills || []).map((s) => `<span class="tag tag-match">${escapeHtml(s)}</span>`).join("")}
+            <div class="skill-tags" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">
+              ${(br.sharedFoundationSkills || []).map((s) => `<button type="button" class="tag tag-match skill-learn-trigger" data-fix-skill="${escapeHtml(s)}" data-fix-status="matched">${escapeHtml(s)}</button>`).join("")}
             </div>
           </div>
           <div>
             <span style="font-size:0.75rem;font-family:var(--font-mono);color:var(--text-tertiary);">YOU ALREADY HAVE FOR ${escapeHtml(br.toRole || "")}</span>
-            <div class="skill-tags" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">
-              ${(br.candidateAlreadyHasForTarget || []).map((s) => `<span class="tag tag-match">${escapeHtml(s)} ✓</span>`).join("") || `<span style="font-size:0.8rem;color:var(--text-tertiary);">None yet</span>`}
+            <div class="skill-tags" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">
+              ${!hasResume
+                ? `<span style="font-size:0.8rem;color:var(--text-tertiary);">Upload your resume to see matched skills.</span>`
+                : ((br.candidateAlreadyHasForTarget || []).map((s) => `<button type="button" class="tag tag-match skill-learn-trigger" data-fix-skill="${escapeHtml(s)}" data-fix-status="matched">${escapeHtml(s)} ✓</button>`).join("") || `<span style="font-size:0.8rem;color:var(--text-tertiary);">None detected yet</span>`)}
             </div>
           </div>
           <div>
-            <span style="font-size:0.75rem;font-family:var(--font-mono);color:var(--text-tertiary);">BRIDGE SKILLS NEEDED TO PIVOT</span>
-            <div class="skill-tags" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">
-              ${(br.skillsNeededToTransition || []).map((s) => `<span class="tag tag-gap">${escapeHtml(s)} !</span>`).join("") || `<span class="tag tag-match">Ready to Transition!</span>`}
+            <span style="font-size:0.75rem;font-family:var(--font-mono);color:var(--text-tertiary);">${hasResume ? "BRIDGE SKILLS NEEDED TO PIVOT" : "CORE TARGET ROLE SKILLS"}</span>
+            <div class="skill-tags" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">
+              ${(br.skillsNeededToTransition || []).map((s) => `<button type="button" class="tag tag-gap skill-learn-trigger" data-fix-skill="${escapeHtml(s)}" data-fix-status="missing">${escapeHtml(s)}</button>`).join("") || `<span class="tag tag-match">Ready to Transition!</span>`}
             </div>
           </div>
         </div>
       `;
     }
 
-    // Role Salary Benchmark Matrix
+    // Role Salary Benchmark Matrix (aligned strictly with 6 columns, no benchmark source text)
     const tbody = document.getElementById("careerMatrixTableBody");
     if (tbody) {
       tbody.innerHTML = (data.allRolesMatrix || [])
@@ -163,11 +190,11 @@ export class CareerModule {
           (m) => `
           <tr>
             <td><strong>${escapeHtml(m.roleTitle)}</strong></td>
-            <td><strong class="tabular-nums" style="color:var(--score-high);">${Math.round(m.candidateMatchScore)}%</strong></td>
-            <td class="tabular-nums">₹${m.indiaEntryLPA}L / ₹${m.indiaMidLPA}L / ₹${m.indiaSeniorLPA}L</td>
-            <td class="tabular-nums">$${(m.globalEntryUSD / 1000).toFixed(0)}k / $${(m.globalMidUSD / 1000).toFixed(0)}k / $${(m.globalSeniorUSD / 1000).toFixed(0)}k</td>
+            <td><strong class="tabular-nums" style="color:${hasResume ? "var(--score-high)" : "var(--text-tertiary)"};">${hasResume ? `${Math.round(m.candidateMatchScore)}%` : "—"}</strong></td>
+            <td class="tabular-nums">₹${m.indiaEntryLPA}L</td>
+            <td class="tabular-nums">₹${m.indiaMidLPA}L</td>
+            <td class="tabular-nums">₹${m.indiaSeniorLPA}L</td>
             <td class="tabular-nums" style="color:var(--brand-accent);font-weight:600;">${escapeHtml(m.demandGrowthYoY)}</td>
-            <td style="font-size:0.75rem;color:var(--text-tertiary);">${escapeHtml(m.benchmarkSource)}</td>
           </tr>
         `
         )

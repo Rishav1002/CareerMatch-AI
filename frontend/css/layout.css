@@ -1602,3 +1602,56 @@
 #view-career .card-header h2 { overflow-wrap: normal; word-break: keep-all; }
 #careerRoleACard > div[style*="grid-template-columns"],
 #careerRoleBCard > div[style*="grid-template-columns"] { grid-template-columns: repeat(auto-fit, minmax(125px, 1fr)) !important; }
+
+/* ==========================================================================
+   MOBILE POLISH & OVERFLOW GUARDRAILS (Responsive Fix Pass)
+   ========================================================================== */
+html,
+body,
+.app-shell,
+.app-main-wrapper,
+.app-main,
+.app-content {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+@media (max-width: 768px) {
+  /* Hide desktop keyboard-shortcut search button on phone screens */
+  .cmd-palette-trigger {
+    display: none !important;
+  }
+
+  /* Avoid duplicate menu trigger on phones: bottom-right "More" opens the same drawer */
+  .mobile-rail-trigger {
+    display: none !important;
+  }
+
+  .app-topbar {
+    padding: 0 14px;
+    gap: 8px;
+  }
+
+  .topbar-view-title {
+    font-size: 1.05rem;
+  }
+
+  .topbar-actions {
+    gap: 6px;
+  }
+
+  /* Keep Ask AI FAB compact and unobtrusive on mobile */
+  .ask-ai-fab {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+    right: 12px;
+    opacity: 0.94;
+  }
+
+  .ask-ai-fab svg {
+    width: 20px;
+    height: 20px;
+  }
+}
