@@ -2928,3 +2928,141 @@ button.tag:hover,
     justify-self: stretch;
   }
 }
+
+/* ==========================================================================
+   ROUND 5 POLISH: CONSISTENT ICON THEME PILL + REDESIGNED RESUME BUILDER
+   ========================================================================== */
+/* Consistent Icon + Label Theme Segmented Pill across all devices */
+.theme-icon-pill .theme-seg-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 5px 10px;
+  white-space: nowrap;
+}
+
+/* On mobile & compact topbars, show crisp icon-only pill so brand & Log in never collide */
+@media (max-width: 768px) {
+  .landing-topbar .theme-seg-label {
+    display: none;
+  }
+  .landing-topbar .theme-icon-pill .theme-seg-btn {
+    padding: 6px 8px;
+  }
+  .landing-topbar #landingAuthBtn {
+    white-space: nowrap;
+    padding: 6px 12px;
+  }
+  .landing-topbar-inner {
+    gap: 8px;
+  }
+  .landing-brand-left .brand-name {
+    font-size: 0.92rem;
+  }
+}
+
+/* Resume Builder 2x2 Quick Start Grid */
+.bld-quickstart-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.bld-preset-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-sunken);
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.bld-preset-card:hover {
+  border-color: var(--brand-accent);
+  background: var(--bg-card);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+}
+
+.bld-preset-top {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.bld-preset-badge {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--brand-accent) 12%, var(--bg-card));
+  color: var(--brand-accent);
+}
+
+.bld-preset-arrow {
+  color: var(--text-tertiary);
+  font-size: 0.95rem;
+}
+
+@media (max-width: 640px) {
+  .bld-quickstart-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Resume Profile Editor: Clean Skills & Languages 2-row grid (zero slider overlap!) */
+.bld-item-top-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.bld-row-del {
+  height: 34px;
+  width: 32px;
+  padding: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bld-slider-row {
+  padding-top: 8px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.bld-slider-row input[type="range"] {
+  width: 100%;
+  accent-color: var(--brand-accent);
+  cursor: pointer;
+}
+
+@media (max-width: 520px) {
+  .bld-item-top-grid {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .bld-item-top-grid > div:nth-child(2) {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Keep carousel cleanly framed inside Resume Builder without colliding with topbar */
+#builderCarouselLanding {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+}

@@ -134,18 +134,7 @@ function attachShellListeners() {
   const rail = document.getElementById("appRail");
   const railBackdrop = document.getElementById("railBackdrop");
 
-  // Desktop rail collapse toggle
-  const collapseRailBtn = document.getElementById("collapseRailBtn");
-  if (collapseRailBtn && rail) {
-    collapseRailBtn.addEventListener("click", () => {
-      rail.classList.toggle("collapsed");
-      const isCollapsed = rail.classList.contains("collapsed");
-      collapseRailBtn.setAttribute("aria-expanded", String(!isCollapsed));
-      collapseRailBtn.title = isCollapsed ? "Expand Sidebar" : "Collapse Sidebar";
-    });
-  }
-
-  // Mobile rail slide-out drawer
+  // Mobile rail slide-out drawer (slides in from the right on <= 1024px)
   function openMobileRail() {
     rail?.classList.add("open");
     railBackdrop?.classList.add("open");
@@ -156,14 +145,124 @@ function attachShellListeners() {
     railBackdrop?.classList.remove("open");
   }
 
+  // Collapsed sidebar floating hover tooltip (fixed-position, never clipped by scroll)
+  let railTooltip = document.getElementById("railHoverTooltip");
+  if (!railTooltip) {
+    railTooltip = document.createElement("div");
+    railTooltip.id = "railHoverTooltip";
+    railTooltip.className = "rail-hover-tooltip";
+    railTooltip.setAttribute("role", "tooltip");
+    railTooltip.setAttribute("aria-hidden", "true");
+    document.body.appendChild(railTooltip);
+  }
+
+  function isRailVisuallyCollapsed() {
+    if (!rail || window.innerWidth <= 1024) return false;
+    if (window.innerWidth <= 1280) {
+      return !rail.classList.contains("expanded");
+    }
+    return rail.classList.contains("collapsed");
+  }
+
+  function hideRailTooltip() {
+    if (!railTooltip) return;
+    railTooltip.classList.remove("visible");
+    railTooltip.setAttribute("aria-hidden", "true");
+  }
+
+  function showRailTooltip(targetEl, label) {
+    if (!railTooltip || !targetEl || !label || !isRailVisuallyCollapsed()) {
+      hideRailTooltip();
+      return;
+    }
+    const rect = targetEl.getBoundingClientRect();
+    railTooltip.textContent = label;
+    railTooltip.style.left = `${Math.round(rect.right + 12)}px`;
+    railTooltip.style.top = `${Math.round(rect.top + rect.height / 2)}px`;
+    railTooltip.classList.add("visible");
+    railTooltip.setAttribute("aria-hidden", "false");
+  }
+
+  // Desktop & tablet rail collapse / expand toggles
+  const collapseRailBtn = document.getElementById("collapseRailBtn");
+  const expandRailLogoBtn = document.getElementById("expandRailLogoBtn");
+
+  function syncRailAria() {
+    const collapsed = isRailVisuallyCollapsed();
+    collapseRailBtn?.setAttribute("aria-expanded", String(!collapsed));
+    expandRailLogoBtn?.setAttribute("aria-expanded", String(!collapsed));
+  }
+
+  if (collapseRailBtn && rail) {
+    collapseRailBtn.addEventListener("click", () => {
+      hideRailTooltip();
+      if (window.innerWidth <= 1024) {
+        closeMobileRail();
+        return;
+      }
+      if (window.innerWidth <= 1280) {
+        rail.classList.remove("expanded");
+        rail.classList.add("collapsed");
+      } else {
+        rail.classList.toggle("collapsed");
+        rail.classList.remove("expanded");
+      }
+      syncRailAria();
+    });
+  }
+
+  if (expandRailLogoBtn && rail) {
+    expandRailLogoBtn.addEventListener("click", () => {
+      hideRailTooltip();
+      rail.classList.remove("collapsed");
+      if (window.innerWidth > 1024 && window.innerWidth <= 1280) {
+        rail.classList.add("expanded");
+      }
+      syncRailAria();
+    });
+  }
+
+  // Attach hover/focus tooltips to all collapsed sidebar symbols
+  function bindRailTooltip(el, getLabel) {
+    if (!el) return;
+    el.addEventListener("mouseenter", () => showRailTooltip(el, getLabel()));
+    el.addEventListener("focusin", () => showRailTooltip(el, getLabel()));
+    el.addEventListener("mouseleave", hideRailTooltip);
+    el.addEventListener("focusout", hideRailTooltip);
+    el.addEventListener("click", hideRailTooltip);
+  }
+
+  bindRailTooltip(expandRailLogoBtn, () => expandRailLogoBtn?.dataset?.railTooltip || "Open sidebar");
+
+  document.querySelectorAll(".rail-nav-link").forEach((link) => {
+    bindRailTooltip(link, () => {
+      const span = link.querySelector(".rail-link-text");
+      return (span?.textContent || link.getAttribute("aria-label") || "").trim();
+    });
+  });
+
+  const sidebarUserCard = document.getElementById("sidebarUserCard");
+  bindRailTooltip(sidebarUserCard, () => {
+    const nameEl = document.getElementById("sidebarUserName");
+    const name = nameEl?.textContent?.trim();
+    return name && name !== "Guest Student" ? `${name} · Profile` : "Profile";
+  });
+
+  rail?.addEventListener("scroll", hideRailTooltip, { passive: true });
+  document.querySelector(".rail-nav")?.addEventListener("scroll", hideRailTooltip, { passive: true });
+  window.addEventListener("resize", () => {
+    hideRailTooltip();
+    syncRailAria();
+  });
+
   document.getElementById("mobileRailTriggerBtn")?.addEventListener("click", openMobileRail);
   document.getElementById("mobileMoreBtn")?.addEventListener("click", openMobileRail);
   railBackdrop?.addEventListener("click", closeMobileRail);
 
-  // Close mobile rail when clicking any navigation link
-  document.querySelectorAll(".rail-nav-link").forEach((link) => {
+  // Close mobile/tablet slide-out rail when clicking any navigation link or profile card
+  document.querySelectorAll(".rail-nav-link, #sidebarUserCard").forEach((link) => {
     link.addEventListener("click", () => {
-      if (window.innerWidth <= 768) {
+      if (window.innerWidth <= 1024) {
         closeMobileRail();
       }
     });

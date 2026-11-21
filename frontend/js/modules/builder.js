@@ -33,9 +33,58 @@ import { TemplateCarousel } from "../components/templateCarousel.js";
 
 function cleanParsedText(val) {
   if (!val) return "";
-  const s = String(val).replace(/[-_=~—–]{3,}/g, " ").replace(/^[\s•·\-–—|:=_*]+|[\s•·\-–—|:=_*]+$/g, "").replace(/\s{2,}/g, " ").trim();
+  const s = String(val)
+    .replace(/[\u2022\u25aa\u25a0\u25cf\u25c6\u27a2\u2756\u25ba\u25b8\u25e6\uf0b7\uf0a7\uf0d8\uf076\x00-\x08\x0b\x0c\x0e-\x1f]+/g, " ")
+    .replace(/[-_=~—–*#]{3,}/g, " ")
+    .replace(/^[\s•·\-–—|:=_*]+|[\s•·\-–—|:=_*]+$/g, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
   const alnum = (s.match(/[a-zA-Z0-9]/g) || []).length;
   return alnum >= 2 ? s : "";
+}
+
+function cleanProfileObject(profile) {
+  if (!profile || typeof profile !== "object") return profile;
+  if (profile.summary) profile.summary = cleanParsedText(profile.summary);
+  if (Array.isArray(profile.workExperience)) {
+    profile.workExperience = profile.workExperience
+      .map((e) => ({
+        ...e,
+        role: cleanParsedText(e.role || e.title || ""),
+        company: cleanParsedText(e.company || ""),
+        description: cleanParsedText(e.description || ""),
+        highlights: Array.isArray(e.highlights) ? e.highlights.map(cleanParsedText).filter(Boolean) : [],
+      }))
+      .filter((e) => e.role || e.company || e.highlights.length);
+  }
+  if (Array.isArray(profile.education)) {
+    profile.education = profile.education
+      .map((ed) => ({
+        ...ed,
+        degree: cleanParsedText(ed.degree || ""),
+        institution: cleanParsedText(ed.institution || ""),
+      }))
+      .filter((ed) => ed.degree || ed.institution);
+  }
+  if (Array.isArray(profile.projects)) {
+    profile.projects = profile.projects
+      .map((p) => ({
+        ...p,
+        title: cleanParsedText(p.title || p.name || ""),
+        description: cleanParsedText(p.description || ""),
+        bullets: Array.isArray(p.bullets) ? p.bullets.map(cleanParsedText).filter(Boolean) : [],
+      }))
+      .filter((p) => p.title || p.description || p.bullets.length);
+  }
+  if (Array.isArray(profile.certifications)) {
+    profile.certifications = profile.certifications
+      .map((c) => (typeof c === "string" ? cleanParsedText(c) : { ...c, name: cleanParsedText(c.name || c.title || "") }))
+      .filter((c) => (typeof c === "string" ? Boolean(c) : Boolean(c.name)));
+  }
+  if (Array.isArray(profile.achievements)) {
+    profile.achievements = profile.achievements.map(cleanParsedText).filter(Boolean);
+  }
+  return profile;
 }
 
 function formatBytes(bytes) {
@@ -1895,15 +1944,15 @@ export class ResumeBuilderModule {
     }
 
     listEl.innerHTML = objSkills.map((sk, idx) => `
-      <div class="card p-2 mb-2 bg-sunken builder-skill-item" data-idx="${idx}">
-        <div class="grid-3 gap-2 items-center">
-          <div>
-            <label class="text-xs text-secondary mb-0">Skill Name</label>
+      <div class="card p-3 mb-2 bg-sunken builder-skill-item" data-idx="${idx}">
+        <div class="bld-item-top-grid">
+          <div class="min-w-0">
+            <label class="text-xs text-secondary mb-05">Skill Name</label>
             <input type="text" class="input input-sm bld-skill-name" value="${escapeHtml(sk.name || "")}" placeholder="Python" />
           </div>
-          <div>
-            <label class="text-xs text-secondary mb-0">Category</label>
-            <select class="input input-sm bld-skill-cat">
+          <div class="min-w-0">
+            <label class="text-xs text-secondary mb-05">Category</label>
+            <select class="input input-sm bld-skill-cat w-100">
               <option value="Languages" ${sk.category === "Languages" ? "selected" : ""}>Languages</option>
               <option value="Frameworks" ${sk.category === "Frameworks" ? "selected" : ""}>Frameworks</option>
               <option value="Databases" ${sk.category === "Databases" ? "selected" : ""}>Databases</option>
@@ -1911,13 +1960,13 @@ export class ResumeBuilderModule {
               <option value="Tools" ${sk.category === "Tools" ? "selected" : ""}>Tools</option>
             </select>
           </div>
-          <div class="d-flex items-center gap-2">
-            <div class="flex-1">
-              <label class="text-xs text-secondary mb-0">Level (${sk.level || 85}%)</label>
-              <input type="range" min="30" max="100" class="w-100 bld-skill-lvl" value="${sk.level || 85}" />
-            </div>
-            <button type="button" class="btn btn-ghost btn-xs text-danger bld-delete-skill" data-idx="${idx}">✕</button>
+          <button type="button" class="btn btn-ghost btn-xs text-danger bld-delete-skill bld-row-del" data-idx="${idx}" aria-label="Delete skill">✕</button>
+        </div>
+        <div class="bld-slider-row mt-2">
+          <div class="d-flex justify-between items-center mb-05">
+            <label class="text-xs text-secondary m-0">Level (${sk.level || 85}%)</label>
           </div>
+          <input type="range" min="30" max="100" class="w-100 bld-skill-lvl" value="${sk.level || 85}" />
         </div>
       </div>
     `).join("");
@@ -1981,15 +2030,15 @@ export class ResumeBuilderModule {
       const prof = typeof lang === "object" ? (lang.proficiency || "Fluent") : "Fluent";
       const lvl = typeof lang === "object" ? (lang.level || 90) : 90;
       return `
-        <div class="card p-2 mb-2 bg-sunken builder-lang-card" data-idx="${idx}">
-          <div class="grid-3 gap-2 items-center">
-            <div>
-              <label class="text-xs text-secondary mb-0">Language</label>
+        <div class="card p-3 mb-2 bg-sunken builder-lang-card" data-idx="${idx}">
+          <div class="bld-item-top-grid">
+            <div class="min-w-0">
+              <label class="text-xs text-secondary mb-05">Language</label>
               <input type="text" class="input input-sm bld-lang-name" value="${escapeHtml(name)}" placeholder="English" />
             </div>
-            <div>
-              <label class="text-xs text-secondary mb-0">Proficiency</label>
-              <select class="input input-sm bld-lang-prof">
+            <div class="min-w-0">
+              <label class="text-xs text-secondary mb-05">Proficiency</label>
+              <select class="input input-sm bld-lang-prof w-100">
                 <option value="Native / Bilingual" ${prof === "Native / Bilingual" ? "selected" : ""}>Native / Bilingual</option>
                 <option value="Fluent" ${prof === "Fluent" ? "selected" : ""}>Fluent</option>
                 <option value="Professional" ${prof === "Professional" ? "selected" : ""}>Professional</option>
@@ -1997,13 +2046,13 @@ export class ResumeBuilderModule {
                 <option value="Basic" ${prof === "Basic" ? "selected" : ""}>Basic</option>
               </select>
             </div>
-            <div class="d-flex items-center gap-2">
-              <div class="flex-1">
-                <label class="text-xs text-secondary mb-0">Bar Level (${lvl}%)</label>
-                <input type="range" min="20" max="100" class="w-100 bld-lang-lvl" value="${lvl}" />
-              </div>
-              <button type="button" class="btn btn-ghost btn-xs text-danger bld-delete-lang" data-idx="${idx}">✕</button>
+            <button type="button" class="btn btn-ghost btn-xs text-danger bld-delete-lang bld-row-del" data-idx="${idx}" aria-label="Delete language">✕</button>
+          </div>
+          <div class="bld-slider-row mt-2">
+            <div class="d-flex justify-between items-center mb-05">
+              <label class="text-xs text-secondary m-0">Bar Level (${lvl}%)</label>
             </div>
+            <input type="range" min="20" max="100" class="w-100 bld-lang-lvl" value="${lvl}" />
           </div>
         </div>
       `;

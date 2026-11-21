@@ -1773,3 +1773,380 @@ body,
     text-align: right;
   }
 }
+
+
+/* ==========================================================================
+   ROUND 6: GEMINI-STYLE COLLAPSIBLE SIDEBAR, HOVER TOOLTIPS & RIGHT MOBILE DRAWER
+   ========================================================================== */
+.rail-expand-logo-btn {
+  display: none;
+  position: relative;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-sunken);
+  color: var(--text-primary);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+
+.rail-expand-logo-btn:hover,
+.rail-expand-logo-btn:focus-visible {
+  background: var(--bg-card);
+  border-color: var(--border-strong, var(--border-subtle));
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+  outline: none;
+}
+
+.rail-expand-logo-btn .rail-expand-logo,
+.rail-expand-logo-btn .rail-expand-icon {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.rail-expand-logo-btn .rail-expand-logo {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.rail-expand-logo-btn .rail-expand-icon {
+  opacity: 0;
+  transform: scale(0.8);
+  color: var(--text-primary);
+}
+
+.rail-expand-logo-btn:hover .rail-expand-logo,
+.rail-expand-logo-btn:focus-visible .rail-expand-logo {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.rail-expand-logo-btn:hover .rail-expand-icon,
+.rail-expand-logo-btn:focus-visible .rail-expand-icon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Desktop collapsed rail polish (> 1024px) */
+@media (min-width: 1024.1px) {
+  .app-rail.collapsed {
+    width: 68px;
+    min-width: 68px;
+  }
+
+  .app-rail.collapsed .rail-header {
+    justify-content: center;
+    padding: 0;
+  }
+
+  .app-rail.collapsed .rail-brand,
+  .app-rail.collapsed #collapseRailBtn {
+    display: none;
+  }
+
+  .app-rail.collapsed .rail-expand-logo-btn {
+    display: inline-flex;
+  }
+
+  .app-rail.collapsed .rail-nav {
+    gap: 6px;
+    padding: 12px 0;
+    align-items: center;
+  }
+
+  .app-rail.collapsed .rail-group {
+    width: 100%;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .app-rail.collapsed .rail-nav-link {
+    width: 44px;
+    height: 42px;
+    min-height: 42px;
+    padding: 0;
+    margin: 2px auto;
+    justify-content: center;
+    border-radius: var(--radius-md);
+  }
+
+  .app-rail.collapsed .rail-footer {
+    padding: 10px 0;
+    display: flex;
+    justify-content: center;
+  }
+
+  .app-rail.collapsed .sidebar-user-card {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 50%;
+    background: transparent;
+  }
+
+  .app-rail.collapsed .sidebar-user-card:hover {
+    background: var(--bg-sunken);
+  }
+}
+
+/* Tablet auto-collapsed rail (1024.1px - 1280px) with click-to-expand support */
+@media (min-width: 1024.1px) and (max-width: 1280px) {
+  .app-rail:not(.expanded) {
+    width: 68px;
+    min-width: 68px;
+  }
+
+  .app-rail:not(.expanded) .rail-header {
+    justify-content: center;
+    padding: 0;
+  }
+
+  .app-rail:not(.expanded) .rail-brand,
+  .app-rail:not(.expanded) #collapseRailBtn,
+  .app-rail:not(.expanded) .rail-group-title,
+  .app-rail:not(.expanded) .rail-link-text,
+  .app-rail:not(.expanded) .brand-titles,
+  .app-rail:not(.expanded) .sidebar-user-info,
+  .app-rail:not(.expanded) .score-pill {
+    display: none;
+  }
+
+  .app-rail:not(.expanded) .rail-expand-logo-btn {
+    display: inline-flex;
+  }
+
+  .app-rail:not(.expanded) .rail-nav {
+    gap: 6px;
+    padding: 12px 0;
+    align-items: center;
+  }
+
+  .app-rail:not(.expanded) .rail-group {
+    width: 100%;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .app-rail:not(.expanded) .rail-nav-link {
+    width: 44px;
+    height: 42px;
+    min-height: 42px;
+    padding: 0;
+    margin: 2px auto;
+    justify-content: center;
+    border-radius: var(--radius-md);
+  }
+
+  .app-rail:not(.expanded) .rail-footer {
+    padding: 10px 0;
+    display: flex;
+    justify-content: center;
+  }
+
+  .app-rail:not(.expanded) .sidebar-user-card {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 50%;
+    background: transparent;
+  }
+
+  .app-rail.expanded {
+    width: 250px;
+    min-width: 250px;
+  }
+
+  .app-rail.expanded .rail-brand,
+  .app-rail.expanded #collapseRailBtn,
+  .app-rail.expanded .brand-titles,
+  .app-rail.expanded .rail-group-title,
+  .app-rail.expanded .rail-link-text,
+  .app-rail.expanded .sidebar-user-info {
+    display: flex;
+  }
+
+  .app-rail.expanded .rail-group-title,
+  .app-rail.expanded .rail-link-text,
+  .app-rail.expanded .sidebar-user-info {
+    display: block;
+  }
+
+  .app-rail.expanded .rail-expand-logo-btn {
+    display: none;
+  }
+
+  .app-rail.expanded .rail-nav-link {
+    width: auto;
+    justify-content: flex-start;
+    padding: 8px 14px;
+    margin: 1px 8px;
+  }
+}
+
+/* Floating pill tooltip for collapsed rail symbols (fixed-position, never clipped) */
+.rail-hover-tooltip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9500;
+  pointer-events: none;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: #1c1917;
+  color: #fafaf9;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  line-height: 1.2;
+  white-space: nowrap;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+  opacity: 0;
+  transform: translate3d(-4px, -50%, 0);
+  transition: opacity 130ms ease, transform 130ms ease;
+  will-change: opacity, transform;
+}
+
+.rail-hover-tooltip.visible {
+  opacity: 1;
+  transform: translate3d(0, -50%, 0);
+}
+
+[data-theme="dark"] .rail-hover-tooltip {
+  background: #eef0f3;
+  color: #16181d;
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.48);
+}
+
+/* Topbar far-left logo before selected tab name */
+.topbar-brand-logo-link {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  text-decoration: none;
+  transition: transform 160ms ease, background-color 160ms ease;
+}
+
+.topbar-brand-logo-link:hover {
+  background-color: var(--bg-sunken);
+}
+
+.topbar-brand-logo-link:hover .topbar-brand-logo {
+  transform: rotate(15deg);
+}
+
+.topbar-brand-logo {
+  width: 26px;
+  height: 26px;
+  display: block;
+  flex-shrink: 0;
+  transition: transform 160ms ease;
+}
+
+/* Mobile & Tablet (<= 1024px):
+   - Website logo always at top far-left before selected tab name
+   - Navigation tray slides in from the RIGHT (aligned with bottom-right More button) */
+@media (max-width: 1024px) {
+  .topbar-brand-logo-link {
+    display: inline-flex;
+  }
+
+  #appTopbar .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  #appTopbar .topbar-view-title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .app-rail,
+  .app-rail.collapsed {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: auto;
+    right: 0;
+    width: min(300px, 85vw);
+    min-width: 260px;
+    z-index: var(--z-modal);
+    border-right: none;
+    border-left: 1px solid var(--overlay-border, var(--border-subtle));
+    transform: translateX(100%);
+    box-shadow: -12px 0 32px rgba(0, 0, 0, 0.18);
+  }
+
+  .app-rail.open,
+  .app-rail.collapsed.open {
+    transform: translateX(0);
+  }
+
+  /* Ensure full labels always show inside mobile/tablet slide-out tray */
+  .app-rail.collapsed .rail-expand-logo-btn {
+    display: none;
+  }
+
+  .app-rail.collapsed .rail-brand,
+  .app-rail.collapsed #collapseRailBtn,
+  .app-rail.collapsed .brand-titles {
+    display: flex;
+  }
+
+  .app-rail.collapsed .rail-group-title,
+  .app-rail.collapsed .rail-link-text,
+  .app-rail.collapsed .sidebar-user-info {
+    display: block;
+  }
+
+  .app-rail.collapsed .rail-nav-link {
+    justify-content: flex-start;
+    padding: 8px 14px;
+    margin: 1px 8px;
+  }
+
+  .rail-hover-tooltip {
+    display: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  #appTopbar .topbar-left {
+    gap: 8px;
+  }
+
+  .topbar-brand-logo-link {
+    width: 30px;
+    height: 30px;
+  }
+
+  .topbar-brand-logo {
+    width: 24px;
+    height: 24px;
+  }
+
+  #appTopbar .topbar-view-title {
+    max-width: min(50vw, 200px);
+    font-size: clamp(14.5px, 4vw, 17px);
+  }
+}

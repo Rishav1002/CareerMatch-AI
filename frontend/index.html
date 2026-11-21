@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<script src="/frontend/js/theme-init.js?v=20261121h"></script>
+<script src="/frontend/js/theme-init.js?v=20261121j"></script>
 <title>CareerMatch AI</title>
 <meta content="CareerMatch AI: Spot missing skills, fix ATS issues, and rebuild your resume in minutes with real proof." name="description"/>
 <meta content="#B84D2B" name="theme-color"/>
@@ -21,14 +21,14 @@
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&amp;family=Noto+Sans+Devanagari:wght@400;500;600;700&amp;family=Noto+Serif+Devanagari:wght@600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700;800&amp;family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=Merriweather:ital,wght@0,400;0,700;1,400&amp;family=Oswald:wght@500;600&amp;family=Playfair+Display:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
 
   <!-- Tokenized Modular Stylesheets -->
-<link href="/frontend/css/tokens.css?v=20261121h" rel="stylesheet"/>
-<link href="/frontend/css/base.css?v=20261121h" rel="stylesheet"/>
-<link href="/frontend/css/layout.css?v=20261121h" rel="stylesheet"/>
-<link href="/frontend/css/components.css?v=20261121h" rel="stylesheet"/>
-<link href="/frontend/css/views.css?v=20261121h" rel="stylesheet"/>
-<link href="/frontend/css/styles.css?v=20261121h" rel="stylesheet"/>
-<link href="/frontend/css/resume-templates.css?v=20261121h" rel="stylesheet"/>
-<link href="/frontend/css/template-gallery.css?v=20261121h" rel="stylesheet"/>
+<link href="/frontend/css/tokens.css?v=20261121j" rel="stylesheet"/>
+<link href="/frontend/css/base.css?v=20261121j" rel="stylesheet"/>
+<link href="/frontend/css/layout.css?v=20261121j" rel="stylesheet"/>
+<link href="/frontend/css/components.css?v=20261121j" rel="stylesheet"/>
+<link href="/frontend/css/views.css?v=20261121j" rel="stylesheet"/>
+<link href="/frontend/css/styles.css?v=20261121j" rel="stylesheet"/>
+<link href="/frontend/css/resume-templates.css?v=20261121j" rel="stylesheet"/>
+<link href="/frontend/css/template-gallery.css?v=20261121j" rel="stylesheet"/>
 </head>
 <body>
 
@@ -109,11 +109,19 @@
 <span class="brand-edition">AI</span>
 </div>
 </a>
-<button aria-label="Collapse Navigation Rail" class="rail-toggle-btn" id="collapseRailBtn" title="Collapse Sidebar" type="button">
-<svg fill="none" height="18" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="18">
-<line x1="3" x2="21" y1="12" y2="12"></line>
-<line x1="3" x2="21" y1="6" y2="6"></line>
-<line x1="3" x2="21" y1="18" y2="18"></line>
+<button aria-expanded="false" aria-label="Open sidebar" class="rail-expand-logo-btn" data-rail-tooltip="Open sidebar" id="expandRailLogoBtn" type="button">
+<svg class="rail-expand-logo" width="24" height="24" viewBox="0 0 200 200" aria-hidden="true"><use href="#cm-logo"/></svg>
+<svg class="rail-expand-icon" fill="none" height="19" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" viewBox="0 0 24 24" width="19" aria-hidden="true">
+<rect height="16" rx="3" width="18" x="3" y="4"></rect>
+<line x1="9" x2="9" y1="4" y2="20"></line>
+<polyline points="13 9.5 16 12 13 14.5"></polyline>
+</svg>
+</button>
+<button aria-expanded="true" aria-label="Close sidebar" class="rail-toggle-btn" id="collapseRailBtn" title="Close sidebar" type="button">
+<svg fill="none" height="18" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" viewBox="0 0 24 24" width="18" aria-hidden="true">
+<rect height="16" rx="3" width="18" x="3" y="4"></rect>
+<line x1="9" x2="9" y1="4" y2="20"></line>
+<polyline points="15 9.5 12 12 15 14.5"></polyline>
 </svg>
 </button>
 </div>
@@ -215,13 +223,9 @@
 <!-- Minimal Topbar Header -->
 <header aria-label="Main Navigation" class="app-topbar" id="appTopbar">
 <div class="topbar-left">
-<button aria-label="Open Navigation" class="mobile-rail-trigger" id="mobileRailTriggerBtn" type="button">
-<svg fill="none" height="20" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="20">
-<line x1="4" x2="20" y1="6" y2="6"></line>
-<line x1="4" x2="20" y1="12" y2="12"></line>
-<line x1="4" x2="20" y1="18" y2="18"></line>
-</svg>
-</button>
+<a aria-label="CareerMatch AI Home" class="topbar-brand-logo-link" href="#/landing" title="CareerMatch AI">
+<svg aria-hidden="true" class="topbar-brand-logo" height="26" viewBox="0 0 200 200" width="26"><use href="#cm-logo"/></svg>
+</a>
 <h1 class="topbar-view-title" id="topbarViewTitle">Dashboard</h1>
 </div>
 <div class="topbar-actions">
@@ -270,10 +274,19 @@
 <div class="avatar-menu-divider"></div>
 <div class="avatar-theme-row">
 <span class="text-xs text-tertiary font-mono uppercase">Theme</span>
-<div class="theme-segmented" role="group" aria-label="Theme preference">
-<button type="button" class="theme-seg-btn active" data-theme-choice="auto">Auto</button>
-<button type="button" class="theme-seg-btn" data-theme-choice="light">Light</button>
-<button type="button" class="theme-seg-btn" data-theme-choice="dark">Dark</button>
+<div class="theme-segmented theme-icon-pill" role="group" aria-label="Theme preference">
+  <button type="button" class="theme-seg-btn active" data-theme-choice="auto" title="Auto (System Theme)" aria-label="Auto Theme">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+    <span class="theme-seg-label">Auto</span>
+  </button>
+  <button type="button" class="theme-seg-btn" data-theme-choice="light" title="Light Theme" aria-label="Light Theme">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.07" y2="4.93"/></svg>
+    <span class="theme-seg-label">Light</span>
+  </button>
+  <button type="button" class="theme-seg-btn" data-theme-choice="dark" title="Dark Theme" aria-label="Dark Theme">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    <span class="theme-seg-label">Dark</span>
+  </button>
 </div>
 </div>
 <div class="avatar-menu-divider"></div>
@@ -287,6 +300,13 @@
 </button>
 </div>
 </div>
+<button aria-label="Open Navigation" class="mobile-rail-trigger" id="mobileRailTriggerBtn" title="Menu" type="button">
+<svg aria-hidden="true" fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="20">
+<line x1="4" x2="20" y1="6" y2="6"></line>
+<line x1="4" x2="20" y1="12" y2="12"></line>
+<line x1="4" x2="20" y1="18" y2="18"></line>
+</svg>
+</button>
 </div>
 </header>
 <!-- Main Content Wrapper -->
@@ -310,11 +330,20 @@
     <a class="landing-nav-link" href="#/roadmap">Skill Roadmap</a>
   </nav>
   <div class="landing-topbar-right">
-    <div class="theme-segmented landing-theme-segmented" role="group" aria-label="Theme preference">
-      <button type="button" class="theme-seg-btn active" data-theme-choice="auto" title="Auto (Browser Theme)">Auto</button>
-      <button type="button" class="theme-seg-btn" data-theme-choice="light" title="Light Theme">Light</button>
-      <button type="button" class="theme-seg-btn" data-theme-choice="dark" title="Dark Theme">Dark</button>
-    </div>
+    <div class="theme-segmented theme-icon-pill" role="group" aria-label="Theme preference">
+  <button type="button" class="theme-seg-btn active" data-theme-choice="auto" title="Auto (System Theme)" aria-label="Auto Theme">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+    <span class="theme-seg-label">Auto</span>
+  </button>
+  <button type="button" class="theme-seg-btn" data-theme-choice="light" title="Light Theme" aria-label="Light Theme">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.07" y2="4.93"/></svg>
+    <span class="theme-seg-label">Light</span>
+  </button>
+  <button type="button" class="theme-seg-btn" data-theme-choice="dark" title="Dark Theme" aria-label="Dark Theme">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    <span class="theme-seg-label">Dark</span>
+  </button>
+</div>
     <a class="btn btn-secondary btn-sm" href="#/login" id="landingAuthBtn">Log in</a>
     <a class="btn btn-primary btn-sm" href="#/dashboard" id="landingOpenAppBtn">Open Workspace →</a>
   </div>
@@ -437,30 +466,32 @@
     <div class="landing-section-header text-center mb-4">
       <div class="editorial-eyebrow">■ 01 // WHY IT WORKS</div>
       <h2 class="font-serif text-score-huge text-primary m-0" id="landingHowItWorksHeading" tabindex="-1">
-        Built on Real Proof
+        Built on real proof
       </h2>
-      
+      <p class="text-secondary text-base mt-1 mb-0">
+        Every score points to exact lines in your resume and code.
+      </p>
     </div>
     <div class="landing-values-grid steps-3-grid">
       <div class="step-liquid-card architectural-card p-4">
-        <div class="font-mono text-xs font-bold text-accent mb-1">[ 01 ]</div>
+        <div class="font-mono text-xs font-bold text-accent mb-1">[ VAL.01 ]</div>
         <h3 class="text-lg text-primary font-serif mb-1">Line-by-Line Proof</h3>
         <p class="text-sm text-secondary lh-relaxed m-0">
-          See the Exact Resume Lines behind every Score.
+          See the exact resume lines behind every score.
         </p>
       </div>
       <div class="step-liquid-card architectural-card p-4">
-        <div class="font-mono text-xs font-bold text-accent mb-1">[ 02 ]</div>
+        <div class="font-mono text-xs font-bold text-accent mb-1">[ VAL.02 ]</div>
         <h3 class="text-lg text-primary font-serif mb-1">Clear Skill Gaps</h3>
         <p class="text-sm text-secondary lh-relaxed m-0">
-          Find Missing Skills Ranked by Hiring Impact.
+          Find missing skills ranked by hiring impact.
         </p>
       </div>
       <div class="step-liquid-card architectural-card p-4">
-        <div class="font-mono text-xs font-bold text-accent mb-1">[ 03 ]</div>
+        <div class="font-mono text-xs font-bold text-accent mb-1">[ VAL.03 ]</div>
         <h3 class="text-lg text-primary font-serif mb-1">Live Market Data</h3>
         <p class="text-sm text-secondary lh-relaxed m-0">
-          Compare your Profile against real open Roles.
+          Compare your profile against real open roles.
         </p>
       </div>
     </div>
@@ -473,7 +504,7 @@
     <div class="landing-section-header text-center mb-4">
       <div class="editorial-eyebrow">■ 02 // TOOLS</div>
       <h2 class="font-serif text-score-huge text-primary m-0">
-        Everything in one Workspace
+        Everything in one workspace
       </h2>
       <p class="text-secondary text-base mt-1 mb-0">
         Pick a tool and start immediately.
@@ -485,7 +516,7 @@
           <span class="font-mono text-xs text-accent font-bold">01</span>
           <h3 class="text-md font-semibold text-primary mt-1 mb-1">Resume Analyzer</h3>
           <p class="text-xs text-secondary lh-relaxed m-0">
-            Score your Resume against any Target Role.
+            Score your resume against any target role.
           </p>
         </div>
         <span class="landing-tool-open-link font-mono text-xs text-accent mt-3">Open →</span>
@@ -495,7 +526,7 @@
           <span class="font-mono text-xs text-accent font-bold">02</span>
           <h3 class="text-md font-semibold text-primary mt-1 mb-1">Resume Builder</h3>
           <p class="text-xs text-secondary lh-relaxed m-0">
-            Auto-fill Industry Approved Templates. Export PDF or DOCX.
+            Auto-fill 10 clean templates. Export PDF or DOCX.
           </p>
         </div>
         <span class="landing-tool-open-link font-mono text-xs text-accent mt-3">Open →</span>
@@ -505,7 +536,7 @@
           <span class="font-mono text-xs text-accent font-bold">03</span>
           <h3 class="text-md font-semibold text-primary mt-1 mb-1">ATS Check</h3>
           <p class="text-xs text-secondary lh-relaxed m-0">
-            Catch Formatting Issues and Missing Keywords Early.
+            Catch formatting issues and missing keywords early.
           </p>
         </div>
         <span class="landing-tool-open-link font-mono text-xs text-accent mt-3">Open →</span>
@@ -515,7 +546,7 @@
           <span class="font-mono text-xs text-accent font-bold">04</span>
           <h3 class="text-md font-semibold text-primary mt-1 mb-1">Skill Roadmap</h3>
           <p class="text-xs text-secondary lh-relaxed m-0">
-            Follow a focused Weekly Plan to close Gaps.
+            Follow a focused weekly plan to close gaps.
           </p>
         </div>
         <span class="landing-tool-open-link font-mono text-xs text-accent mt-3">Open →</span>
@@ -525,7 +556,7 @@
           <span class="font-mono text-xs text-accent font-bold">05</span>
           <h3 class="text-md font-semibold text-primary mt-1 mb-1">Mock Interview</h3>
           <p class="text-xs text-secondary lh-relaxed m-0">
-            Practice Role-Specific Questions with Instant Feedback.
+            Practice role-specific questions with instant feedback.
           </p>
         </div>
         <span class="landing-tool-open-link font-mono text-xs text-accent mt-3">Open →</span>
@@ -535,7 +566,7 @@
           <span class="font-mono text-xs text-accent font-bold">06</span>
           <h3 class="text-md font-semibold text-primary mt-1 mb-1">Job Market</h3>
           <p class="text-xs text-secondary lh-relaxed m-0">
-            Browse Live Tech Jobs and Track Applications.
+            Browse live tech jobs and track applications.
           </p>
         </div>
         <span class="landing-tool-open-link font-mono text-xs text-accent mt-3">Open →</span>
@@ -554,7 +585,7 @@
           Facts, not vague AI advice.
         </h2>
         <p class="text-secondary text-base lh-relaxed mb-4">
-          We check your actual Resume, GitHub Repos and Live Job Listings.
+          We check your actual resume, GitHub repos, and live job listings.
         </p>
         <div class="d-flex gap-sm">
           <a class="btn btn-primary btn-sm" href="#/analyzer">Check My Resume →</a>
@@ -590,7 +621,7 @@
             <div>
               <strong class="text-primary text-sm block mb-1">Role Benchmarks</strong>
               <p class="text-xs text-secondary lh-relaxed m-0">
-                Shows how new Skills lift your Target Pay.
+                Shows how new skills lift your target pay.
               </p>
             </div>
           </div>
@@ -657,9 +688,9 @@
       <svg class="brand-logo" width="32" height="32" viewBox="0 0 200 200" aria-hidden="true"><use href="#cm-logo"/></svg>
       <span class="brand-name text-lg font-bold text-primary ml-1">CareerMatch AI</span>
     </a>
-    <h2 class="font-serif text-2x2 text-primary mb-1">Evidence-first Career Intelligence.</h2>
+    <h2 class="font-serif text-2xl text-primary mb-1">Evidence-first career intelligence.</h2>
     <p class="text-sm text-secondary lh-relaxed m-0">
-      Save Resume Versions, Track ATS Improvements and sync your Skill Roadmap across Devices.
+      Save resume versions, track ATS improvements, and sync your Skill Roadmap across devices.
     </p>
   </div>
   <div class="auth-glass-card">
@@ -673,7 +704,7 @@
 <span class="brand-name text-lg font-bold text-primary ml-1">CareerMatch AI</span>
 </a>
 <p class="text-sm text-secondary m-0" id="authHeaderSubtitle">
-                  Sign in or Create your Career Intelligence Workspace
+                  Sign in or create your career intelligence workspace
                 </p>
 </div>
 <!-- Segmented Control [Log in | Sign up] -->
@@ -711,14 +742,14 @@
 </div>
 <!-- Password Requirements hint -->
 <div class="text-xs text-tertiary mb-1 hidden" id="authPasswordRequirements">
-  Password must be at least 8 characters with letters, numbers and symbols.
+  Password must be at least 8 characters with letters and numbers.
 </div>
 <!-- Password Strength Meter -->
 <div class="hidden mb-15" id="authPasswordStrengthWrap">
 <div class="bg-sunken rounded-full overflow-hidden mb-05">
 <div id="authPasswordStrengthBar"></div>
 </div>
-<span class="text-xs text-tertiary" id="authPasswordStrengthLabel">Password Strength</span>
+<span class="text-xs text-tertiary" id="authPasswordStrengthLabel">Password strength</span>
 </div>
 <div class="text-low mb-15 hidden" id="authPageErrorMsg" role="alert"></div>
 <div class="text-high mb-15 hidden" id="authPageSuccessMsg" role="status"></div>
@@ -733,7 +764,7 @@
 </div>
 <!-- Guest Mode Button -->
 <a class="btn btn-secondary w-full text-center d-block mb-15" href="#/analyzer" id="authContinueGuestBtn">
-                Continue without an Account
+                Continue without an account
               </a>
 <p class="text-xs text-tertiary text-center m-0">
                 Guest sessions save locally in private browser storage.
@@ -763,10 +794,10 @@
   <div class="pri-hero-details">
     <div class="pri-greeting-row">
       <h2 class="text-xl m-0" id="dashCandidateGreeting">Welcome to CareerMatch AI</h2>
-      <span class="status-badge pri-tier-pill" id="ovPriTier">Not Calculated</span>
+      <span class="status-badge pri-tier-pill" id="ovPriTier">Not calculated</span>
     </div>
     <p class="text-sm text-secondary m-0" id="ovTargetRoleLabel">
-      Upload your resume in Resume Analyzer to calculate your Scores.
+      Upload your resume in Resume Analyzer to calculate your scores.
     </p>
     <div class="pri-mini-metrics">
       <div class="pri-mini-tile">
@@ -820,7 +851,7 @@
 <div class="stat-box">
 <div class="stat-label">Status</div>
 <div class="stat-num text-lg text-high" id="dashReadinessStatus">
-                  Not Calculated
+                  Not calculated
                 </div>
 </div>
 </div>
@@ -1012,7 +1043,7 @@
 <div class="mt-2">
 <label class="checkbox-label" for="dontSaveCheckbox">
 <input id="dontSaveCheckbox" type="checkbox"/>
-<span>Transient Session (no server save)</span>
+<span>Transient session (no server save)</span>
 </label>
 </div>
 <div class="mt-3">
@@ -1043,7 +1074,7 @@
 <span class="status-badge" id="spotlightVerdictBadge">Pending Analysis</span>
 <h3 class="text-lg" id="spotlightSummaryTitle">Target Role Alignment</h3>
 <p class="text-sm text-secondary m-0" id="spotlightSummaryDesc">
-                      Upload and Analyze your Resume in the Matcher to view personalized scores.
+                      Upload and analyze your resume in the Matcher to view personalized scores.
                     </p>
 </div>
 </div>
@@ -1333,34 +1364,38 @@
         <p class="text-sm text-secondary mb-3">
           No existing resume on hand? Build a high-impact profile from scratch, or load a pre-populated fictional profile tailored for the Indian hiring market.
         </p>
-        <div class="flex-col gap-2 mb-4">
-          <button type="button" class="btn btn-secondary text-left p-3 w-100 flex-row items-center justify-between" id="builderLandingScratchBtn">
-            <div>
-              <div class="font-semibold text-sm">Create from Blank Canvas</div>
-              <div class="text-xs text-tertiary">Step-by-step guidance across all essential sections</div>
+        <div class="bld-quickstart-grid">
+          <button type="button" class="bld-preset-card" id="builderLandingScratchBtn">
+            <div class="bld-preset-top">
+              <span class="bld-preset-badge">Blank</span>
+              <span class="bld-preset-arrow">→</span>
             </div>
-            <span>→</span>
+            <div class="font-semibold text-sm text-primary">Create from Scratch</div>
+            <div class="text-xs text-tertiary">Guided step-by-step editor for all essential sections</div>
           </button>
-          <button type="button" class="btn btn-secondary text-left p-3 w-100 flex-row items-center justify-between" id="builderLandingFresherBtn">
-            <div>
-              <div class="font-semibold text-sm">Load Indian Graduate &amp; Fresher Profile</div>
-              <div class="text-xs text-tertiary">B.Tech IIT Bombay · Projects &amp; CGPA focused (No exp required)</div>
+          <button type="button" class="bld-preset-card" id="builderLandingFresherBtn">
+            <div class="bld-preset-top">
+              <span class="bld-preset-badge">Fresher</span>
+              <span class="bld-preset-arrow">→</span>
             </div>
-            <span>→</span>
+            <div class="font-semibold text-sm text-primary">Indian Graduate &amp; Fresher</div>
+            <div class="text-xs text-tertiary">IIT Bombay · Projects &amp; CGPA focused</div>
           </button>
-          <button type="button" class="btn btn-secondary text-left p-3 w-100 flex-row items-center justify-between" id="builderLandingSdeBtn">
-            <div>
-              <div class="font-semibold text-sm">Load Software Engineer Profile</div>
-              <div class="text-xs text-tertiary">4 yrs SDE · Razorpay &amp; Swiggy · Microservices &amp; Kafka</div>
+          <button type="button" class="bld-preset-card" id="builderLandingSdeBtn">
+            <div class="bld-preset-top">
+              <span class="bld-preset-badge">SDE</span>
+              <span class="bld-preset-arrow">→</span>
             </div>
-            <span>→</span>
+            <div class="font-semibold text-sm text-primary">Software Engineer</div>
+            <div class="text-xs text-tertiary">4 yrs · Razorpay &amp; Swiggy · Microservices &amp; Kafka</div>
           </button>
-          <button type="button" class="btn btn-secondary text-left p-3 w-100 flex-row items-center justify-between" id="builderLandingDsBtn">
-            <div>
-              <div class="font-semibold text-sm">Load Data Scientist Profile</div>
-              <div class="text-xs text-tertiary">IISc Bangalore · Zomato Labs · RAG, PyTorch &amp; Publications</div>
+          <button type="button" class="bld-preset-card" id="builderLandingDsBtn">
+            <div class="bld-preset-top">
+              <span class="bld-preset-badge">Data / AI</span>
+              <span class="bld-preset-arrow">→</span>
             </div>
-            <span>→</span>
+            <div class="font-semibold text-sm text-primary">Data Scientist</div>
+            <div class="text-xs text-tertiary">IISc Bangalore · Zomato Labs · RAG &amp; PyTorch</div>
           </button>
         </div>
       </div>
@@ -1387,7 +1422,65 @@
   </div>
 
   <div class="builder-workspace-grid">
-    <!-- Left Column: Profile Editor -->
+    <!-- Left Column: Template switcher & Live A4 Preview -->
+    <div class="builder-preview-pane">
+      <div class="card p-3 mb-2 bld-toolbar">
+        <div class="bld-tpl-chip bld-inline">
+          <span class="text-xs text-tertiary">Template</span>
+          <b id="builderActiveTemplateName">Editorial Serif</b>
+          <span id="builderActiveTemplateBadge" class="score-pill score-pill-green text-xs">ATS High</span>
+          <button type="button" class="btn btn-secondary btn-xs" id="builderChangeTplBtn" aria-expanded="false">Change template</button>
+        </div>
+        <div class="bld-inline">
+          <span id="builderPageCount" class="bld-pagecount text-tertiary">1 page</span>
+          <select id="builderZoomSelect" class="input input-sm" style="width: 104px;" aria-label="Preview zoom">
+            <option value="fit" selected>Fit width</option>
+            <option value="1">100%</option>
+            <option value="0.85">85%</option>
+            <option value="0.7">70%</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card p-2 mb-2 bld-inline items-center gap-2" id="builderThemeControlsCard">
+        <div id="builderThemeColorRow" class="d-flex items-center gap-2 flex-wrap">
+          <span class="text-xs text-tertiary" style="white-space:nowrap;">Accent colour</span>
+          <div class="bld-swatches" id="builderSwatches"></div>
+          <label class="d-flex items-center gap-1 cursor-pointer text-xs text-secondary mb-0" title="Custom color picker">
+            <input type="color" id="builderCustomColorPicker" class="bld-color-picker" value="#2563A6" style="width:28px;height:24px;padding:0;border:1px solid var(--border-medium);border-radius:4px;cursor:pointer;" />
+            <span>Custom</span>
+          </label>
+          <button type="button" class="btn btn-ghost btn-xs text-secondary" id="builderResetColorBtn">Reset</button>
+        </div>
+        <span id="builderMonochromeBadge" class="score-pill score-pill-gray text-xs hidden">Classic Monochrome Layout</span>
+        <span class="text-xs text-tertiary" id="builderAtsNote" style="margin-left:auto;"></span>
+      </div>
+
+      <!-- Collapsible template gallery & filter bar -->
+      <div id="builderWorkspaceGallery" class="bld-gallery-panel hidden card p-3 mb-2">
+        <div class="d-flex justify-between items-center mb-3 flex-wrap gap-2">
+          <div class="d-flex gap-1 flex-wrap" id="builderTemplateFilterBar">
+            <button type="button" class="btn btn-sm btn-primary bld-filter-btn" data-filter="all">All (10)</button>
+            <button type="button" class="btn btn-sm btn-ghost bld-filter-btn" data-filter="classic">ATS &amp; Classic</button>
+            <button type="button" class="btn btn-sm btn-ghost bld-filter-btn" data-filter="modern">Modern &amp; Editorial</button>
+            <button type="button" class="btn btn-sm btn-ghost bld-filter-btn" data-filter="twocol">Two-Column</button>
+            <button type="button" class="btn btn-sm btn-ghost bld-filter-btn" data-filter="photo">With Photo</button>
+          </div>
+          <button type="button" class="btn btn-ghost btn-xs" id="builderCloseGalleryBtn">✕ Close</button>
+        </div>
+        <div id="builderTemplateGrid" class="bld-template-grid"></div>
+      </div>
+
+      <!-- Live A4 Canvas Container -->
+      <div class="builder-preview-viewport" id="builderPreviewViewport">
+        <div id="builderPreviewPaper" class="bld-sheet-wrap">
+          <div id="builderLivePreviewDoc"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <!-- Right Column: Profile Editor -->
     <div class="builder-editor-pane card">
       <div class="card-header pb-2">
         <div>
@@ -1579,64 +1672,6 @@
         </div>
       </form>
     </div>
-
-    <!-- Right Column: Template switcher & Live A4 Preview -->
-    <div class="builder-preview-pane">
-      <div class="card p-3 mb-2 bld-toolbar">
-        <div class="bld-tpl-chip bld-inline">
-          <span class="text-xs text-tertiary">Template</span>
-          <b id="builderActiveTemplateName">Editorial Serif</b>
-          <span id="builderActiveTemplateBadge" class="score-pill score-pill-green text-xs">ATS High</span>
-          <button type="button" class="btn btn-secondary btn-xs" id="builderChangeTplBtn" aria-expanded="false">Change template</button>
-        </div>
-        <div class="bld-inline">
-          <span id="builderPageCount" class="bld-pagecount text-tertiary">1 page</span>
-          <select id="builderZoomSelect" class="input input-sm" style="width: 104px;" aria-label="Preview zoom">
-            <option value="fit" selected>Fit width</option>
-            <option value="1">100%</option>
-            <option value="0.85">85%</option>
-            <option value="0.7">70%</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="card p-2 mb-2 bld-inline items-center gap-2" id="builderThemeControlsCard">
-        <div id="builderThemeColorRow" class="d-flex items-center gap-2 flex-wrap">
-          <span class="text-xs text-tertiary" style="white-space:nowrap;">Accent colour</span>
-          <div class="bld-swatches" id="builderSwatches"></div>
-          <label class="d-flex items-center gap-1 cursor-pointer text-xs text-secondary mb-0" title="Custom color picker">
-            <input type="color" id="builderCustomColorPicker" class="bld-color-picker" value="#2563A6" style="width:28px;height:24px;padding:0;border:1px solid var(--border-medium);border-radius:4px;cursor:pointer;" />
-            <span>Custom</span>
-          </label>
-          <button type="button" class="btn btn-ghost btn-xs text-secondary" id="builderResetColorBtn">Reset</button>
-        </div>
-        <span id="builderMonochromeBadge" class="score-pill score-pill-gray text-xs hidden">Classic Monochrome Layout</span>
-        <span class="text-xs text-tertiary" id="builderAtsNote" style="margin-left:auto;"></span>
-      </div>
-
-      <!-- Collapsible template gallery & filter bar -->
-      <div id="builderWorkspaceGallery" class="bld-gallery-panel hidden card p-3 mb-2">
-        <div class="d-flex justify-between items-center mb-3 flex-wrap gap-2">
-          <div class="d-flex gap-1 flex-wrap" id="builderTemplateFilterBar">
-            <button type="button" class="btn btn-sm btn-primary bld-filter-btn" data-filter="all">All (10)</button>
-            <button type="button" class="btn btn-sm btn-ghost bld-filter-btn" data-filter="classic">ATS &amp; Classic</button>
-            <button type="button" class="btn btn-sm btn-ghost bld-filter-btn" data-filter="modern">Modern &amp; Editorial</button>
-            <button type="button" class="btn btn-sm btn-ghost bld-filter-btn" data-filter="twocol">Two-Column</button>
-            <button type="button" class="btn btn-sm btn-ghost bld-filter-btn" data-filter="photo">With Photo</button>
-          </div>
-          <button type="button" class="btn btn-ghost btn-xs" id="builderCloseGalleryBtn">✕ Close</button>
-        </div>
-        <div id="builderTemplateGrid" class="bld-template-grid"></div>
-      </div>
-
-      <!-- Live A4 Canvas Container -->
-      <div class="builder-preview-viewport" id="builderPreviewViewport">
-        <div id="builderPreviewPaper" class="bld-sheet-wrap">
-          <div id="builderLivePreviewDoc"></div>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>
 
 <iframe id="builderPrintFrame" class="visually-hidden" style="position:fixed;right:0;bottom:0;width:0;height:0;border:0;" title="Print Frame"></iframe>
@@ -2452,11 +2487,20 @@ Explore verified engineering openings with live skill and salary benchmarks.
         <div class="settings-row-title">Appearance &amp; Theme</div>
         <p class="text-xs text-secondary m-0">Auto matches your browser or OS preference automatically.</p>
       </div>
-      <div class="theme-segmented" role="group" aria-label="Interface Theme">
-        <button type="button" class="theme-seg-btn active" data-theme-choice="auto">Auto</button>
-        <button type="button" class="theme-seg-btn" data-theme-choice="light">Light</button>
-        <button type="button" class="theme-seg-btn" data-theme-choice="dark">Dark</button>
-      </div>
+      <div class="theme-segmented theme-icon-pill" role="group" aria-label="Theme preference">
+  <button type="button" class="theme-seg-btn active" data-theme-choice="auto" title="Auto (System Theme)" aria-label="Auto Theme">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+    <span class="theme-seg-label">Auto</span>
+  </button>
+  <button type="button" class="theme-seg-btn" data-theme-choice="light" title="Light Theme" aria-label="Light Theme">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.07" y2="4.93"/></svg>
+    <span class="theme-seg-label">Light</span>
+  </button>
+  <button type="button" class="theme-seg-btn" data-theme-choice="dark" title="Dark Theme" aria-label="Dark Theme">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    <span class="theme-seg-label">Dark</span>
+  </button>
+</div>
     </div>
   </div>
 
@@ -2884,7 +2928,7 @@ We use only strictly necessary HTTP cookies (to isolate your guest session secur
 <span id="pStep3"></span>
 </div>
 <!-- Core Modular Application Entry -->
-<script src="/frontend/js/main.js?v=20261121h" type="module"></script>
+<script src="/frontend/js/main.js?v=20261121j" type="module"></script>
 <!-- Boot Watchdog Safety Net -->
 <script src="/frontend/js/boot-watchdog.js" defer></script>
   <!-- Storage & Essential Cookies Notice Banner (Non-intrusive) -->

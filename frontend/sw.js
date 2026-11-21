@@ -4,7 +4,7 @@
  * Bypass completely for /api/*, Build-Hash Versioned Cache.
  */
 
-const BUILD_SHA = "2026-11-21-v4.4.0-r4-hotfix";
+const BUILD_SHA = "2026-11-21-v4.6.0-sidebar-hover";
 const CACHE_NAME = `careermatch-shell-${BUILD_SHA}`;
 
 const PRECACHE_ASSETS = [
