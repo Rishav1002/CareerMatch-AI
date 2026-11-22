@@ -4,7 +4,7 @@
  * Bypass completely for /api/*, Build-Hash Versioned Cache.
  */
 
-const BUILD_SHA = "2026-11-22-v4.8.0-landing-v2";
+const BUILD_SHA = "2026-11-22-v4.7.0-polish-skeletons-builder";
 const CACHE_NAME = `careermatch-shell-${BUILD_SHA}`;
 
 const PRECACHE_ASSETS = [
@@ -19,12 +19,10 @@ const PRECACHE_ASSETS = [
   "/frontend/css/styles.css",
   "/frontend/css/resume-templates.css",
   "/frontend/css/template-gallery.css",
-  "/frontend/css/landing-v2.css",
   "/frontend/js/theme-init.js",
   "/frontend/js/boot-watchdog.js",
   "/frontend/js/sw-register.js",
   "/frontend/js/main.js",
-  "/frontend/js/landing-previews.js",
   "/frontend/js/store.js",
   "/frontend/js/api.js",
   "/frontend/js/router.js",
