@@ -81,7 +81,12 @@ export class AtsModule {
 
     const kpiContainer = document.getElementById("atsPillarKpis");
     if (kpiContainer) {
-      kpiContainer.innerHTML = `<div class="p-4 text-center text-sm text-secondary" style="grid-column:1/-1;"><div class="spinner mb-2 mx-auto"></div>Auditing ATS parser compatibility...</div>`;
+      kpiContainer.innerHTML = Array.from({ length: 4 }).map(() => `
+        <div class="cm-skel-card" aria-busy="true">
+          <div class="cm-skel-line w-50 mb-2"></div>
+          <div class="cm-skel-line h-lg w-35 mb-2"></div>
+          <div class="cm-skel-line w-85"></div>
+        </div>`).join("");
     }
 
     try {

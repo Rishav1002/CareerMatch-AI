@@ -77,6 +77,12 @@ export class CareerModule {
     const primaryRole = document.getElementById("careerPrimaryRoleSelect")?.value || store.get("targetRole") || "Full Stack Developer";
     const secondaryRole = document.getElementById("careerSecondaryRoleSelect")?.value || "Data Engineer";
 
+    const skelRole = `<div class="cm-skel-card" aria-busy="true"><div class="cm-skel-pill mb-2"></div><div class="cm-skel-line h-lg w-65 mb-2"></div><div class="cm-skel-line w-85 mb-2"></div><div class="cm-skel-line w-70"></div></div>`;
+    const cA = document.getElementById("careerRoleCardA");
+    const cB = document.getElementById("careerRoleCardB");
+    if (cA && !cA.innerHTML.trim()) cA.innerHTML = skelRole;
+    if (cB && !cB.innerHTML.trim()) cB.innerHTML = skelRole;
+
     try {
       const resume = store.get("activeResume");
       const token = store.get("token");

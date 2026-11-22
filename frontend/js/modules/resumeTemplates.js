@@ -401,11 +401,18 @@ export function buildViewModel(profile, { sample = false } = {}) {
     const end = txt(e.end_date || e.endDate);
     const dur = txt(e.duration || (start ? `${start} – ${end || "Present"}` : end));
     const overview = txt(e.overview || e.summary);
-    const bullets = [
-      ...toBulletsList(e.bullets),
-      ...toBulletsList(e.highlights),
-      ...toBulletsList(e.description),
-    ];
+    const rawExpBullets = toBulletsList(e.bullets).length
+      ? toBulletsList(e.bullets)
+      : (toBulletsList(e.highlights).length
+          ? toBulletsList(e.highlights)
+          : toBulletsList(e.description));
+    const seenExpB = new Set();
+    const bullets = rawExpBullets.filter((b) => {
+      const k = b.toLowerCase().replace(/\s+/g, " ").trim();
+      if (!k || seenExpB.has(k)) return false;
+      seenExpB.add(k);
+      return true;
+    });
     return { role, company, loc, date: dur, start, end, overview, bullets };
   }).filter((e) => e.role || e.company || e.bullets.length);
 
@@ -436,10 +443,16 @@ export function buildViewModel(profile, { sample = false } = {}) {
     else if (Array.isArray(pr.techStack)) techArr = pr.techStack.map(txt).filter(Boolean);
     else if (txt(pr.tech_stack)) techArr = txt(pr.tech_stack).split(/[,·|•]/).map(txt).filter(Boolean);
 
-    const bullets = [
-      ...toBulletsList(pr.bullets),
-      ...toBulletsList(pr.description),
-    ];
+    const rawProjBullets = toBulletsList(pr.bullets).length
+      ? toBulletsList(pr.bullets)
+      : toBulletsList(pr.description);
+    const seenProjB = new Set();
+    const bullets = rawProjBullets.filter((b) => {
+      const k = b.toLowerCase().replace(/\s+/g, " ").trim();
+      if (!k || seenProjB.has(k)) return false;
+      seenProjB.add(k);
+      return true;
+    });
     const gh = txt(pr.github_link || pr.github);
     const live = txt(pr.live_link || pr.link);
     const dates = txt(pr.dates || pr.year || pr.date);

@@ -48,7 +48,15 @@ export class RoadmapModule {
     roadmapDiagram.mount("roadmapDiagramViewport");
     const vp = document.getElementById("roadmapDiagramViewport");
     if (vp) {
-      vp.innerHTML = `<div class="p-4 text-center text-sm text-secondary"><div class="spinner mb-2 mx-auto"></div>Building your branching skill roadmap...</div>`;
+      vp.innerHTML = `
+      <div class="cm-skel-roadmap" aria-busy="true" aria-label="Loading skill roadmap">
+        <div class="cm-skel-line w-40 mb-3"></div>
+        <div class="cm-skel-roadmap-nodes">
+          <div class="cm-skel-card"><div class="cm-skel-pill mb-2"></div><div class="cm-skel-line w-80 mb-1"></div><div class="cm-skel-line w-60"></div></div>
+          <div class="cm-skel-card"><div class="cm-skel-pill mb-2"></div><div class="cm-skel-line w-75 mb-1"></div><div class="cm-skel-line w-55"></div></div>
+          <div class="cm-skel-card"><div class="cm-skel-pill mb-2"></div><div class="cm-skel-line w-85 mb-1"></div><div class="cm-skel-line w-50"></div></div>
+        </div>
+      </div>`;
     }
 
     try {

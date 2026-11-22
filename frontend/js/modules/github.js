@@ -63,6 +63,15 @@ export class GithubModule {
       btn.disabled = true;
       btn.textContent = "Analyzing Repositories...";
     }
+    const ghRepos = document.getElementById("githubReposGrid");
+    if (ghRepos) {
+      ghRepos.innerHTML = Array.from({ length: 3 }).map(() => `
+        <div class="cm-skel-card" aria-busy="true">
+          <div class="cm-skel-line w-60 mb-2"></div>
+          <div class="cm-skel-line w-90 mb-1"></div>
+          <div class="cm-skel-line w-70"></div>
+        </div>`).join("");
+    }
 
     try {
       const resume = store.get("activeResume");

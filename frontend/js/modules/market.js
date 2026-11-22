@@ -88,6 +88,18 @@ export class MarketModule {
     const skillFilter = document.getElementById("jobFilterSkill")?.value || "";
     const preferLiveApi = Boolean(document.getElementById("jobPreferLiveCheck")?.checked);
 
+    const cardsGridEl = document.getElementById("jobsCardsGrid");
+    if (cardsGridEl) {
+      cardsGridEl.innerHTML = Array.from({ length: 4 }).map(() => `
+        <div class="cm-skel-card" aria-busy="true">
+          <div class="d-flex justify-between items-center mb-2"><div class="cm-skel-line w-60"></div><div class="cm-skel-pill"></div></div>
+          <div class="cm-skel-line w-40 mb-3"></div>
+          <div class="cm-skel-line w-90 mb-1"></div>
+          <div class="cm-skel-line w-75 mb-3"></div>
+          <div class="d-flex gap-xs"><div class="cm-skel-pill"></div><div class="cm-skel-pill"></div><div class="cm-skel-pill"></div></div>
+        </div>`).join("");
+    }
+
     try {
       const resume = store.get("activeResume");
       const token = store.get("token");

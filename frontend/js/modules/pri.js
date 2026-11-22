@@ -59,6 +59,12 @@ export class PriModule {
       return;
     }
 
+    const priBarsEl = document.getElementById("priCategoryBars");
+    if (priBarsEl && !priBarsEl.children.length) {
+      priBarsEl.innerHTML = Array.from({ length: 4 }).map(() => `
+        <div class="mb-2" aria-busy="true"><div class="cm-skel-line w-45 mb-1"></div><div class="cm-skel-line w-100"></div></div>`).join("");
+    }
+
     try {
       const targetRole = store.get("targetRole") || document.getElementById("targetRoleSelect")?.value || "Full Stack Developer";
       const weights = {

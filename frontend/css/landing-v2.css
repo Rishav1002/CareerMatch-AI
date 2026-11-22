@@ -1,0 +1,142 @@
+/* ==========================================================================
+   Landing page v2 — plain-language sections, honest sample, real proof.
+   Scoped to #view-landing. Uses design tokens so light/dark both work.
+   ========================================================================== */
+
+#view-landing .lp-kicker {
+  margin: 0 0 10px;
+  font: 600 0.78rem/1.3 var(--font-ui);
+  letter-spacing: 0.04em;
+  color: var(--brand-accent);
+}
+#view-landing .landing-hero-content .lp-kicker { margin-bottom: 14px; }
+#view-landing .lp-reassure { margin: 0 0 12px; font-size: 0.8125rem; color: var(--text-secondary); max-width: 52ch; }
+
+#view-landing .lp-head { text-align: center; max-width: 760px; margin: 0 auto 36px; }
+#view-landing .lp-h2 { font-size: clamp(1.9rem, 2.4vw + 1rem, 2.9rem); line-height: 1.1; letter-spacing: -0.01em; }
+
+/* ---------------- Hero sample card ---------------- */
+#view-landing .lp-sample { padding: 22px 22px 18px; }
+#view-landing .lp-sample-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--border-subtle); }
+#view-landing .lp-badge { font: 700 0.68rem/1 var(--font-ui); letter-spacing: 0.06em; text-transform: uppercase; padding: 5px 8px; border-radius: 6px; background: var(--brand-subtle); color: var(--brand-accent); border: 1px solid var(--brand-border); }
+#view-landing .lp-sample-note { font-size: 0.75rem; color: var(--text-tertiary); }
+#view-landing .lp-score-row { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
+#view-landing .lp-score-num { font-size: 3.4rem; font-weight: 700; line-height: 1; color: var(--text-primary); }
+#view-landing .lp-score-num small { font-size: 1rem; font-weight: 500; color: var(--text-tertiary); margin-left: 3px; }
+#view-landing .lp-score-text strong { display: block; font-size: 0.95rem; color: var(--text-primary); }
+#view-landing .lp-score-text span { font-size: 0.8rem; color: var(--text-secondary); }
+#view-landing .lp-breakdown { list-style: none; margin: 0 0 14px; padding: 0; display: grid; gap: 7px; }
+#view-landing .lp-breakdown li { display: grid; grid-template-columns: 138px 1fr 42px; align-items: center; gap: 10px; font-size: 0.78rem; color: var(--text-secondary); }
+#view-landing .lp-bar { height: 7px; border-radius: 99px; background: var(--bg-active); overflow: hidden; }
+#view-landing .lp-bar i { display: block; height: 100%; border-radius: 99px; background: var(--brand-accent); }
+#view-landing .lp-breakdown b { font: 600 0.78rem var(--font-mono); color: var(--text-primary); text-align: right; white-space: nowrap; }
+#view-landing .lp-breakdown b small { font-weight: 400; color: var(--text-tertiary); font-size: 0.68rem; }
+#view-landing .lp-evidence { padding: 9px 11px; border-radius: 8px; margin-top: 7px; font-size: 0.78rem; line-height: 1.4; border: 1px solid; }
+#view-landing .lp-evidence b { display: block; font-size: 0.72rem; letter-spacing: 0.02em; margin-bottom: 2px; }
+#view-landing .lp-evidence q { quotes: none; font-family: var(--font-mono); font-size: 0.74rem; color: var(--text-primary); }
+#view-landing .lp-evidence span { color: var(--text-secondary); }
+#view-landing .lp-ev-ok { background: var(--status-matched-bg); border-color: var(--status-matched-border); }
+#view-landing .lp-ev-ok b { color: var(--status-matched); }
+#view-landing .lp-ev-gap { background: var(--status-gap-bg); border-color: var(--status-gap-border); }
+#view-landing .lp-ev-gap b { color: var(--status-gap); }
+#view-landing .lp-ev-adj { background: var(--status-partial-bg); border-color: var(--status-partial-border); }
+#view-landing .lp-ev-adj b { color: var(--status-partial); }
+
+/* ---------------- Score weights ---------------- */
+#view-landing .lp-weights { display: flex; max-width: 900px; margin: 0 auto 14px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-subtle); }
+#view-landing .lp-w { display: grid; place-items: center; padding: 16px 0; font: 700 0.95rem var(--font-mono); }
+#view-landing .lp-weights .lp-w1 { flex: 60; }
+#view-landing .lp-weights .lp-w2, #view-landing .lp-weights .lp-w3 { flex: 15; }
+#view-landing .lp-weights .lp-w4, #view-landing .lp-weights .lp-w5 { flex: 5; }
+#view-landing .lp-w1 { background: var(--brand-accent); color: var(--on-accent); }
+#view-landing .lp-w2 { background: color-mix(in srgb, var(--brand-accent) 70%, var(--bg-canvas)); color: var(--on-accent); }
+#view-landing .lp-w3 { background: color-mix(in srgb, var(--brand-accent) 48%, var(--bg-canvas)); color: var(--text-primary); }
+#view-landing .lp-w4 { background: color-mix(in srgb, var(--brand-accent) 30%, var(--bg-canvas)); color: var(--text-primary); }
+#view-landing .lp-w5 { background: color-mix(in srgb, var(--brand-accent) 16%, var(--bg-canvas)); color: var(--text-primary); }
+#view-landing .lp-legend { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 22px; margin: 0 auto 34px; padding: 0; font-size: 0.82rem; color: var(--text-secondary); }
+#view-landing .lp-legend li { display: flex; align-items: center; gap: 7px; }
+#view-landing .lp-legend i { width: 11px; height: 11px; border-radius: 3px; display: inline-block; border: 1px solid var(--border-subtle); }
+
+/* ---------------- Cards / steps ---------------- */
+#view-landing .lp-grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; max-width: 1000px; margin: 0 auto; }
+#view-landing .lp-card { padding: 22px; border: 1px solid var(--border-subtle); border-radius: var(--r-md); background: var(--bg-card); }
+#view-landing .lp-card h3 { margin: 0 0 8px; font-size: 1.2rem; font-weight: 500; color: var(--text-primary); }
+#view-landing .lp-card p { margin: 0; font-size: 0.9rem; line-height: 1.6; color: var(--text-secondary); }
+
+#view-landing .lp-steps { list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; max-width: 1000px; margin: 0 auto; padding: 0; counter-reset: none; }
+#view-landing .lp-steps li { position: relative; padding-top: 4px; }
+#view-landing .lp-step-n { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--brand-accent); color: var(--on-accent); font: 700 0.9rem var(--font-mono); margin-bottom: 14px; }
+#view-landing .lp-steps h3 { margin: 0 0 6px; font-size: 1.25rem; font-weight: 500; color: var(--text-primary); }
+#view-landing .lp-steps p { margin: 0; font-size: 0.92rem; line-height: 1.6; color: var(--text-secondary); }
+
+/* ---------------- Tools ---------------- */
+#view-landing .lp-tools-feature { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; margin-bottom: 20px; }
+#view-landing .lp-feature { display: flex; flex-direction: column; padding: 26px; border: 1px solid var(--border-subtle); border-radius: var(--r-lg); background: var(--bg-card); text-decoration: none; color: inherit; transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease; }
+#view-landing .lp-feature:hover, #view-landing .lp-mini:hover { border-color: var(--brand-border); transform: translateY(-2px); box-shadow: var(--glass-shadow); }
+#view-landing .lp-feature h3 { margin: 0 0 8px; font-size: 1.5rem; font-weight: 500; color: var(--text-primary); }
+#view-landing .lp-feature p { margin: 0 0 16px; font-size: 0.92rem; line-height: 1.6; color: var(--text-secondary); max-width: 46ch; }
+#view-landing .lp-link { margin-top: auto; font-weight: 600; font-size: 0.88rem; color: var(--brand-accent); }
+#view-landing .lp-tools-compact { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+#view-landing .lp-mini { padding: 18px; border: 1px solid var(--border-subtle); border-radius: var(--r-md); background: var(--bg-card); text-decoration: none; color: inherit; transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease; }
+#view-landing .lp-mini h3 { margin: 0 0 6px; font: 600 0.95rem var(--font-ui); color: var(--text-primary); }
+#view-landing .lp-mini p { margin: 0; font-size: 0.8rem; line-height: 1.55; color: var(--text-secondary); }
+
+/* real template thumbnails (filled by landing-previews.js) */
+#view-landing .lp-tplstrip { display: flex; gap: 10px; margin: 0 0 18px; overflow: hidden; }
+#view-landing .lp-tplstrip:empty { display: none; }
+#view-landing .lp-tpl { --k: 0.152; width: calc(794px * var(--k)); height: calc(1123px * var(--k)); overflow: hidden; border-radius: 3px; background: #fff; box-shadow: 0 1px 2px rgba(20,30,60,.14), 0 4px 12px rgba(20,30,60,.08); flex: none; }
+#view-landing .lp-tpl > div { width: 794px; height: 1123px; transform: scale(var(--k)); transform-origin: 0 0; pointer-events: none; overflow: hidden; }
+#view-landing .lp-tpl .rt-page { height: 1123px; overflow: hidden; }
+
+/* ---------------- Privacy / trust ---------------- */
+#view-landing .lp-trust { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 48px; align-items: start; max-width: 1000px; margin: 0 auto; }
+#view-landing .lp-trust-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+#view-landing .lp-trust-list li { padding: 16px 18px; border: 1px solid var(--border-subtle); border-radius: var(--r-md); background: var(--bg-card); display: grid; gap: 3px; }
+#view-landing .lp-trust-list strong { font-size: 0.92rem; color: var(--text-primary); }
+#view-landing .lp-trust-list span { font-size: 0.84rem; line-height: 1.55; color: var(--text-secondary); }
+
+/* ---------------- FAQ ---------------- */
+#view-landing .lp-faq { max-width: 780px; margin: 0 auto; display: grid; gap: 10px; }
+#view-landing .lp-faq details { border: 1px solid var(--border-subtle); border-radius: var(--r-md); background: var(--bg-card); }
+#view-landing .lp-faq summary { cursor: pointer; padding: 16px 20px; font-weight: 600; font-size: 0.95rem; color: var(--text-primary); list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+#view-landing .lp-faq summary::-webkit-details-marker { display: none; }
+#view-landing .lp-faq summary::after { content: "+"; font: 400 1.4rem/1 var(--font-ui); color: var(--brand-accent); transition: transform .2s ease; }
+#view-landing .lp-faq details[open] summary::after { transform: rotate(45deg); }
+#view-landing .lp-faq summary:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--r-md); }
+#view-landing .lp-faq details p { margin: 0; padding: 0 20px 18px; font-size: 0.9rem; line-height: 1.65; color: var(--text-secondary); }
+
+/* ---------------- Final CTA ---------------- */
+#view-landing .lp-final { text-align: center; padding-top: 72px; padding-bottom: 72px; }
+
+/* ---------------- Responsive ---------------- */
+@media (max-width: 900px) {
+  #view-landing .lp-grid-3, #view-landing .lp-steps, #view-landing .lp-tools-feature, #view-landing .lp-trust { grid-template-columns: minmax(0, 1fr); }
+  #view-landing .lp-trust { gap: 28px; }
+  #view-landing .lp-head { margin-bottom: 26px; }
+}
+@media (max-width: 560px) {
+  #view-landing .lp-breakdown li { grid-template-columns: 112px 1fr 40px; gap: 8px; }
+  #view-landing .lp-score-num { font-size: 2.8rem; }
+  #view-landing .lp-weights .lp-w { padding: 12px 0; font-size: 0.75rem; }
+  #view-landing .lp-weights .lp-w4 b, #view-landing .lp-weights .lp-w5 b { font-size: 0; }
+  #view-landing .lp-final { padding-top: 48px; padding-bottom: 48px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #view-landing .lp-feature, #view-landing .lp-mini, #view-landing .lp-faq summary::after { transition: none; }
+  #view-landing .lp-feature:hover, #view-landing .lp-mini:hover { transform: none; }
+}
+
+/* ---------------- Polish ---------------- */
+#view-landing .lp-h2, #view-landing .landing-headline { text-wrap: balance; }
+#view-landing .lp-head { max-width: 860px; }
+/* The router moves focus to the first heading on navigation (a11y); don't draw a ring around display text. */
+#view-landing h1:focus, #view-landing h2:focus, #view-landing h3:focus { outline: none; }
+#view-landing .lp-checks { list-style: none; margin: 0 0 18px; padding: 0; display: grid; gap: 9px; }
+#view-landing .lp-checks li { position: relative; padding-left: 26px; font-size: 0.9rem; line-height: 1.5; color: var(--text-primary); }
+#view-landing .lp-checks li::before { content: "✓"; position: absolute; left: 0; top: 0; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font-size: 0.7rem; font-weight: 700; color: var(--status-matched); background: var(--status-matched-bg); border: 1px solid var(--status-matched-border); }
+
+#view-landing .lp-feature, #view-landing .lp-mini { min-width: 0; }
+@media (max-width: 560px) {
+  #view-landing .lp-tpl:nth-child(n+4) { display: none; }
+  #view-landing .lp-feature { padding: 20px; }
+}

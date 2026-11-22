@@ -262,38 +262,7 @@ export class ResumeBuilderModule {
       landingScratchBtn.addEventListener("click", () => this.startFromScratch());
     }
 
-    // Dropdown toggle button
-    const demoDropdownBtn = document.getElementById("builderLoadDemoDropdownBtn");
-    const demoDropdownMenu = document.getElementById("builderLoadDemoDropdownMenu");
-    if (demoDropdownBtn && demoDropdownMenu) {
-      demoDropdownBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        demoDropdownMenu.classList.toggle("hidden");
-      });
-      document.addEventListener("click", (e) => {
-        if (!e.target.closest(".dropdown-wrapper")) {
-          demoDropdownMenu.classList.add("hidden");
-        }
-      });
-    }
-
-    // Sample Profile Buttons (dropdown + landing cards)
-    const wireDemo = (btnId, key) => {
-      const btn = document.getElementById(btnId);
-      if (btn) {
-        btn.addEventListener("click", () => {
-          if (demoDropdownMenu) demoDropdownMenu.classList.add("hidden");
-          this.loadSampleProfile(key);
-        });
-      }
-    };
-
-    wireDemo("builderLoadFresherBtn", "fresher");
-    wireDemo("builderLandingFresherBtn", "fresher");
-    wireDemo("builderLoadSdeBtn", "software_engineer");
-    wireDemo("builderLandingSdeBtn", "software_engineer");
-    wireDemo("builderLoadDsBtn", "data_scientist");
-    wireDemo("builderLandingDsBtn", "data_scientist");
+    // Demo test profile loaders removed per user preference
   }
 
   bindSyncBanner() {
@@ -479,7 +448,7 @@ export class ResumeBuilderModule {
         dates: exp.dates || exp.duration || exp.start_date || "",
         overview: exp.overview || "",
         bullets,
-        highlights: bullets,
+        highlights: [],
       };
     });
 
@@ -502,7 +471,7 @@ export class ResumeBuilderModule {
         dates: proj.dates || proj.year || "",
         github_link: proj.github_link || proj.github || "",
         live_link: proj.live_link || proj.live || proj.link || "",
-        description: proj.description || bullets.join(". ") || "",
+        description: bullets.length ? "" : (proj.description || ""),
         bullets,
       };
     });
@@ -611,7 +580,7 @@ export class ResumeBuilderModule {
     ];
 
     this.hasUserEdits = true;
-    this.showToast("Started fresh resume! Edit your details in the left pane.", "info");
+    this.showToast("Started fresh resume! Edit your details in the right pane.", "info");
     this.showEditorWorkspace();
     this.render();
   }
@@ -1036,11 +1005,64 @@ export class ResumeBuilderModule {
     const genBtn = document.getElementById("builderGenerateBtn");
     if (genBtn) genBtn.addEventListener("click", () => this.openConfirmModal());
 
+    const dlFormatModal = document.getElementById("builderDownloadFormatModal");
+    const dlMenuBtn = document.getElementById("builderDownloadMenuBtn");
+    const closeDlFormatBtn = document.getElementById("closeBldDlFormatModalBtn");
+
+    const closeDlModal = () => {
+      dlFormatModal?.classList.add("hidden");
+      dlMenuBtn?.setAttribute("aria-expanded", "false");
+    };
+    const openDlModal = () => {
+      dlFormatModal?.classList.remove("hidden");
+      dlMenuBtn?.setAttribute("aria-expanded", "true");
+    };
+
+    if (dlMenuBtn && dlFormatModal) {
+      dlMenuBtn.addEventListener("click", () => openDlModal());
+      closeDlFormatBtn?.addEventListener("click", () => closeDlModal());
+      dlFormatModal.addEventListener("click", (e) => {
+        if (e.target === dlFormatModal) closeDlModal();
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && !dlFormatModal.classList.contains("hidden")) closeDlModal();
+      });
+    }
+
     const dlBtn = document.getElementById("builderDownloadBtn");
-    if (dlBtn && dlBtn !== genBtn) dlBtn.addEventListener("click", () => this.openConfirmModal());
+    if (dlBtn && dlBtn !== genBtn) {
+      dlBtn.addEventListener("click", () => {
+        closeDlModal();
+        this.openConfirmModal();
+      });
+    }
 
     const docxBtn = document.getElementById("builderDownloadDocxBtn");
-    if (docxBtn) docxBtn.addEventListener("click", () => this.downloadDocx());
+    if (docxBtn) {
+      docxBtn.addEventListener("click", () => {
+        closeDlModal();
+        this.downloadDocx();
+      });
+    }
+
+    // Mobile/Tablet Edit Resume Toggle (opens editor at TOP with live preview directly underneath)
+    const mobileEditBtn = document.getElementById("builderMobileEditToggleBtn");
+    if (mobileEditBtn) {
+      mobileEditBtn.addEventListener("click", () => {
+        const wsGrid = document.querySelector(".builder-workspace-grid");
+        if (!wsGrid) return;
+        const isOpen = wsGrid.classList.toggle("mobile-editor-open");
+        mobileEditBtn.setAttribute("aria-expanded", String(isOpen));
+        mobileEditBtn.classList.toggle("btn-primary", isOpen);
+        mobileEditBtn.classList.toggle("btn-secondary", !isOpen);
+        const labelSpan = mobileEditBtn.querySelector("span");
+        if (labelSpan) labelSpan.textContent = isOpen ? "Hide Editor" : "Edit Resume";
+        if (isOpen) {
+          document.querySelector(".builder-editor-pane")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+        window.requestAnimationFrame(() => this.applyPreviewScale());
+      });
+    }
 
     const saveAccountBtn = document.getElementById("builderSaveAccountBtn");
     if (saveAccountBtn) saveAccountBtn.addEventListener("click", () => this.saveToAccount());
@@ -1816,7 +1838,7 @@ export class ResumeBuilderModule {
         const rawBullets = card.querySelector(".bld-exp-bullets")?.value || "";
         const parsedBullets = rawBullets.split("\n").map((b) => b.replace(/^[\s•·\-*]+/, "").trim()).filter(Boolean);
         exp.bullets = parsedBullets;
-        exp.highlights = parsedBullets;
+        exp.highlights = [];
         this.debouncedRenderPreview();
       });
     });

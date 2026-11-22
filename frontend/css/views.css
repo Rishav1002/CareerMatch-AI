@@ -3066,3 +3066,268 @@ button.tag:hover,
   overflow: hidden;
   border-radius: var(--radius-lg);
 }
+
+
+/* ==========================================================================
+   ROUND 7: AUTH MOBILE FIX, SIDE-BY-SIDE BUILDER, DOWNLOAD MODAL & SKELETONS
+   ========================================================================== */
+/* 1. Auth Login/Signup Mobile Responsiveness & Safe Area */
+.auth-password-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.auth-pw-label {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.auth-pw-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+.auth-pw-actions .btn {
+  white-space: nowrap;
+  padding: 4px 10px;
+  min-height: 28px;
+  font-size: 0.72rem;
+}
+
+#authPageSubmitBtn {
+  white-space: nowrap;
+  min-height: 44px;
+}
+
+@media (max-width: 768px) {
+  .auth-viewport {
+    align-items: flex-start !important;
+    padding: max(24px, env(safe-area-inset-top, 0px) + 16px) 14px max(72px, env(safe-area-inset-bottom, 0px) + 44px) !important;
+    min-height: 100dvh;
+    overflow-y: auto;
+  }
+
+  .auth-split-shell {
+    width: 100%;
+    max-width: 440px;
+    margin: 0 auto;
+  }
+
+  .auth-split-shell .auth-glass-card {
+    padding: 20px 18px 24px !important;
+    border-radius: var(--radius-lg, 16px);
+  }
+}
+
+/* 2. Resume Builder: Side-by-Side Sticky Preview (Left) + Editor (Right) on Desktop */
+@media (min-width: 1024px) {
+  .builder-workspace-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.08fr) minmax(380px, 0.92fr) !important;
+    gap: 18px !important;
+    align-items: start !important;
+  }
+
+  .builder-preview-pane {
+    position: sticky;
+    top: calc(var(--topbar-height, 64px) + 12px);
+    max-height: calc(100dvh - var(--topbar-height, 64px) - 24px);
+    overflow-y: auto;
+    padding-right: 2px;
+  }
+
+  .builder-editor-pane {
+    display: flex !important;
+  }
+
+  .bld-mobile-editor-btn {
+    display: none !important;
+  }
+}
+
+/* Mobile & Tablet (< 1024px): Preview by default; clicking "Edit Resume" opens Editor at TOP & Preview UNDER it */
+@media (max-width: 1023.9px) {
+  .bld-mobile-editor-btn {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .builder-workspace-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+
+  .builder-editor-pane {
+    display: none !important;
+    order: 1;
+  }
+
+  .builder-preview-pane {
+    display: flex !important;
+    flex-direction: column;
+    order: 2;
+  }
+
+  .builder-workspace-grid.mobile-editor-open .builder-editor-pane {
+    display: flex !important;
+  }
+}
+
+/* Fix Fit Width dropdown truncation */
+#view-builder select.bld-zoom-select {
+  width: auto !important;
+  min-width: 122px;
+  padding-right: 30px;
+  white-space: nowrap;
+}
+
+/* Merged Download Format Pop-up Modal */
+.bld-download-modal {
+  width: min(420px, 92vw);
+  max-width: 420px;
+}
+
+.bld-download-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bld-download-option-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px;
+  border-radius: var(--radius-md, 12px);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-sunken);
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 150ms ease, background-color 150ms ease, transform 150ms ease;
+}
+
+.bld-download-option-card:hover {
+  border-color: var(--brand-accent);
+  background: var(--bg-card);
+  transform: translateY(-1px);
+}
+
+.bld-dl-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.bld-dl-icon-pdf {
+  background: rgba(184, 77, 43, 0.14);
+  color: var(--brand-accent, #b84d2b);
+}
+
+.bld-dl-icon-docx {
+  background: rgba(37, 99, 235, 0.12);
+  color: #2563eb;
+}
+
+.bld-dl-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.bld-dl-meta strong {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.bld-dl-meta small {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+}
+
+.bld-dl-arrow {
+  color: var(--text-tertiary);
+  font-size: 1rem;
+}
+
+/* 3. Reusable Shimmer Skeleton Loaders */
+@keyframes cmShimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.cm-skel-line,
+.cm-skel-pill {
+  background: linear-gradient(
+    90deg,
+    var(--bg-sunken, #f1eee8) 25%,
+    var(--border-subtle, #e4dfd5) 50%,
+    var(--bg-sunken, #f1eee8) 75%
+  );
+  background-size: 200% 100%;
+  animation: cmShimmer 1.4s ease-in-out infinite;
+}
+
+.cm-skel-line {
+  height: 12px;
+  border-radius: 6px;
+}
+
+.cm-skel-line.h-lg {
+  height: 22px;
+  border-radius: 8px;
+}
+
+.cm-skel-pill {
+  width: 68px;
+  height: 22px;
+  border-radius: 999px;
+}
+
+.cm-skel-card {
+  padding: 16px;
+  border-radius: var(--radius-md, 12px);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+}
+
+.cm-skel-roadmap {
+  padding: 16px;
+}
+
+.cm-skel-roadmap-nodes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.cm-skel-line.w-35 { width: 35%; }
+.cm-skel-line.w-40 { width: 40%; }
+.cm-skel-line.w-45 { width: 45%; }
+.cm-skel-line.w-50 { width: 50%; }
+.cm-skel-line.w-55 { width: 55%; }
+.cm-skel-line.w-60 { width: 60%; }
+.cm-skel-line.w-65 { width: 65%; }
+.cm-skel-line.w-70 { width: 70%; }
+.cm-skel-line.w-75 { width: 75%; }
+.cm-skel-line.w-80 { width: 80%; }
+.cm-skel-line.w-85 { width: 85%; }
+.cm-skel-line.w-90 { width: 90%; }
+.cm-skel-line.w-100 { width: 100%; }

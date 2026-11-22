@@ -4,13 +4,14 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<script src="/frontend/js/theme-init.js?v=20261121j"></script>
-<title>CareerMatch AI</title>
-<meta content="CareerMatch AI: Spot missing skills, fix ATS issues, and rebuild your resume in minutes with real proof." name="description"/>
+<script src="/frontend/js/theme-init.js?v=20261122a"></script>
+<title>CareerMatch AI: Resume analyzer, ATS check and builder for engineering students</title>
+<meta content="Score your resume line by line against 41 tech roles, see missing skills and ATS issues, then fix it in a builder with 10 templates and export PDF or DOCX." name="description"/>
 <meta content="#B84D2B" name="theme-color"/>
 <link href="/frontend/assets/favicon.svg" rel="icon" type="image/svg+xml"/>
-<meta content="CareerMatch AI — Know Why Your Resume Gets Shortlisted" property="og:title"/>
-<meta content="Spot missing skills, fix ATS issues, and rebuild your resume with real proof." property="og:description"/>
+<meta content="CareerMatch AI: your resume, scored line by line" property="og:title"/>
+<meta content="See which skills match, which are missing, and the exact resume lines behind every point. Free to try as a guest." property="og:description"/>
+<meta content="summary_large_image" name="twitter:card"/>
 <meta content="website" property="og:type"/>
 <meta content="/frontend/assets/icon-512.svg" property="og:image"/>
 <link href="/frontend/manifest.json" rel="manifest"/>
@@ -21,14 +22,15 @@
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&amp;family=Noto+Sans+Devanagari:wght@400;500;600;700&amp;family=Noto+Serif+Devanagari:wght@600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700;800&amp;family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=Merriweather:ital,wght@0,400;0,700;1,400&amp;family=Oswald:wght@500;600&amp;family=Playfair+Display:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
 
   <!-- Tokenized Modular Stylesheets -->
-<link href="/frontend/css/tokens.css?v=20261121j" rel="stylesheet"/>
-<link href="/frontend/css/base.css?v=20261121j" rel="stylesheet"/>
-<link href="/frontend/css/layout.css?v=20261121j" rel="stylesheet"/>
-<link href="/frontend/css/components.css?v=20261121j" rel="stylesheet"/>
-<link href="/frontend/css/views.css?v=20261121j" rel="stylesheet"/>
-<link href="/frontend/css/styles.css?v=20261121j" rel="stylesheet"/>
-<link href="/frontend/css/resume-templates.css?v=20261121j" rel="stylesheet"/>
-<link href="/frontend/css/template-gallery.css?v=20261121j" rel="stylesheet"/>
+<link href="/frontend/css/tokens.css?v=20261122a" rel="stylesheet"/>
+<link href="/frontend/css/base.css?v=20261122a" rel="stylesheet"/>
+<link href="/frontend/css/layout.css?v=20261122a" rel="stylesheet"/>
+<link href="/frontend/css/components.css?v=20261122a" rel="stylesheet"/>
+<link href="/frontend/css/views.css?v=20261122a" rel="stylesheet"/>
+<link href="/frontend/css/styles.css?v=20261122a" rel="stylesheet"/>
+<link href="/frontend/css/resume-templates.css?v=20261122a" rel="stylesheet"/>
+<link href="/frontend/css/template-gallery.css?v=20261122a" rel="stylesheet"/>
+<link href="/frontend/css/landing-v2.css?v=20261122b" rel="stylesheet"/>
 </head>
 <body>
 
@@ -89,6 +91,14 @@
   </symbol>
 </svg>
 
+<!-- Branded Pre-Route Boot Splash -->
+<div class="cm-boot-splash" id="cmBootSplash" aria-hidden="true">
+  <div class="cm-boot-splash-inner">
+    <svg class="cm-boot-logo" width="48" height="48" viewBox="0 0 200 200" aria-hidden="true"><use href="#cm-logo"/></svg>
+    <div class="cm-boot-wordmark">CareerMatch <span>AI</span></div>
+    <div class="cm-boot-bar"><div class="cm-boot-bar-fill"></div></div>
+  </div>
+</div>
 <!-- Boot Failure Safety Net Banner -->
 <div class="boot-failure-banner hidden" id="cmBootFailureBanner" role="alert">
 <span>Something failed to load.</span>
@@ -274,20 +284,11 @@
 <div class="avatar-menu-divider"></div>
 <div class="avatar-theme-row">
 <span class="text-xs text-tertiary font-mono uppercase">Theme</span>
-<div class="theme-segmented theme-icon-pill" role="group" aria-label="Theme preference">
-  <button type="button" class="theme-seg-btn active" data-theme-choice="auto" title="Auto (System Theme)" aria-label="Auto Theme">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-    <span class="theme-seg-label">Auto</span>
-  </button>
-  <button type="button" class="theme-seg-btn" data-theme-choice="light" title="Light Theme" aria-label="Light Theme">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.07" y2="4.93"/></svg>
-    <span class="theme-seg-label">Light</span>
-  </button>
-  <button type="button" class="theme-seg-btn" data-theme-choice="dark" title="Dark Theme" aria-label="Dark Theme">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-    <span class="theme-seg-label">Dark</span>
-  </button>
-</div>
+<button type="button" class="theme-cycle-btn" data-theme-cycle="true" title="Theme: Device (click for Light)" aria-label="Switch theme (currently Device)">
+  <svg class="theme-icon theme-icon-auto" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+  <svg class="theme-icon theme-icon-light" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor" stroke="none"/><line x1="12" y1="2.5" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="21.5"/><line x1="5.28" y1="5.28" x2="7.05" y2="7.05"/><line x1="16.95" y1="16.95" x2="18.72" y2="18.72"/><line x1="2.5" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="21.5" y2="12"/><line x1="5.28" y1="18.72" x2="7.05" y2="16.95"/><line x1="16.95" y1="7.05" x2="18.72" y2="5.28"/></svg>
+  <svg class="theme-icon theme-icon-dark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor" stroke="none"/></svg>
+</button>
 </div>
 <div class="avatar-menu-divider"></div>
 <button class="avatar-menu-item" id="openAuthModalBtn" type="button">
@@ -330,26 +331,17 @@
     <a class="landing-nav-link" href="#/roadmap">Skill Roadmap</a>
   </nav>
   <div class="landing-topbar-right">
-    <div class="theme-segmented theme-icon-pill" role="group" aria-label="Theme preference">
-  <button type="button" class="theme-seg-btn active" data-theme-choice="auto" title="Auto (System Theme)" aria-label="Auto Theme">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-    <span class="theme-seg-label">Auto</span>
-  </button>
-  <button type="button" class="theme-seg-btn" data-theme-choice="light" title="Light Theme" aria-label="Light Theme">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.07" y2="4.93"/></svg>
-    <span class="theme-seg-label">Light</span>
-  </button>
-  <button type="button" class="theme-seg-btn" data-theme-choice="dark" title="Dark Theme" aria-label="Dark Theme">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-    <span class="theme-seg-label">Dark</span>
-  </button>
-</div>
+    <button type="button" class="theme-cycle-btn" data-theme-cycle="true" title="Theme: Device (click for Light)" aria-label="Switch theme (currently Device)">
+  <svg class="theme-icon theme-icon-auto" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+  <svg class="theme-icon theme-icon-light" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor" stroke="none"/><line x1="12" y1="2.5" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="21.5"/><line x1="5.28" y1="5.28" x2="7.05" y2="7.05"/><line x1="16.95" y1="16.95" x2="18.72" y2="18.72"/><line x1="2.5" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="21.5" y2="12"/><line x1="5.28" y1="18.72" x2="7.05" y2="16.95"/><line x1="16.95" y1="7.05" x2="18.72" y2="5.28"/></svg>
+  <svg class="theme-icon theme-icon-dark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor" stroke="none"/></svg>
+</button>
     <a class="btn btn-secondary btn-sm" href="#/login" id="landingAuthBtn">Log in</a>
     <a class="btn btn-primary btn-sm" href="#/dashboard" id="landingOpenAppBtn">Open Workspace →</a>
   </div>
 </div>
 </header>
-<!-- Full Hero Band (SEC. 00) with Architectural Dot-Grid -->
+<!-- ===== HERO ===== -->
 <section class="landing-section landing-architectural-hero border-bottom">
   <div aria-hidden="true" class="carousel-bg-wrap" id="landingCarouselBg" style="opacity: 0.12; pointer-events: none;">
     <div class="carousel-track">
@@ -379,80 +371,74 @@
     </div>
   </div>
 
-  <!-- 2-Column Hero Grid inside Unified Container -->
   <div class="landing-container">
     <div class="landing-hero-2col position-relative">
-      <!-- Left Column: Editorial Headline & Actions (Strictly Left-Aligned) -->
       <div class="landing-hero-content">
+        <p class="lp-kicker">For engineering &amp; CS students applying to tech roles</p>
         <h1 class="landing-headline font-serif text-primary m-0 mb-2">
-          Know why your resume gets <em class="text-accent italic font-serif">shortlisted.</em>
+          Your resume, scored <em class="text-accent italic font-serif">line by line</em> against the role you want.
         </h1>
         <p class="landing-lead text-secondary text-base mb-4">
-          Spot missing Skills, Fix ATS issues and Rebuild your Resume in minutes.
+          Upload your resume, pick a target role, and see which skills match, which are missing, and the exact lines behind every point. Then fix it in the builder and export a PDF or DOCX.
         </p>
-        <div class="landing-cta-row d-flex items-center gap-sm mb-3">
-          <a class="btn btn-primary btn-lg" href="#/analyzer" id="landingAnalyzeCtaBtn">
-            Analyze Resume →
-          </a>
-          <a class="btn btn-secondary btn-lg" href="#/builder" id="landingBuildResumeCtaBtn">
-            Build Resume
-          </a>
-          <a class="btn btn-secondary btn-lg hidden" href="#/dashboard" id="landingOpenDashboardCtaBtn" style="display:none;">
-            Open Dashboard →
-          </a>
+        <div class="landing-cta-row d-flex items-center gap-sm mb-2">
+          <a class="btn btn-primary btn-lg" href="#/analyzer" id="landingAnalyzeCtaBtn">Analyze my resume →</a>
+          <a class="btn btn-secondary btn-lg" href="#/builder" id="landingBuildResumeCtaBtn">Build a resume</a>
+          <a class="btn btn-secondary btn-lg hidden" href="#/dashboard" id="landingOpenDashboardCtaBtn" style="display:none;">Open Dashboard →</a>
         </div>
+        <p class="lp-reassure">Try it as a guest, no account needed. You can choose not to save your resume on our server.</p>
         <div class="mb-2">
-          <a class="how-it-works-link text-xs text-secondary" href="#/landing" data-scroll-to="landingHowItWorks" id="howItWorksLink">
-            Explore architectural evidence ↓
-          </a>
+          <a class="how-it-works-link text-xs text-secondary" href="#/landing" data-scroll-to="landingHowItWorks" id="howItWorksLink">See exactly how the score is calculated ↓</a>
         </div>
 
-        <!-- 3-Metric Proof Strip -->
         <div class="landing-proof-strip pt-3 mt-3 border-top w-full">
           <div class="landing-proof-metric">
-            <span class="font-mono font-bold text-accent text-lg">41+</span>
-            <span class="text-xs text-secondary">Tech Roles</span>
+            <span class="font-mono font-bold text-accent text-lg">41</span>
+            <span class="text-xs text-secondary">Target tech roles</span>
           </div>
           <div class="landing-proof-metric">
-            <span class="font-mono font-bold text-accent text-lg">10</span>
-            <span class="text-xs text-secondary">Pro Templates</span>
+            <span class="font-mono font-bold text-accent text-lg" data-tpl-count>10</span>
+            <span class="text-xs text-secondary">Resume templates</span>
           </div>
           <div class="landing-proof-metric">
-            <span class="font-mono font-bold text-accent text-lg">Live</span>
-            <span class="text-xs text-secondary">Job Data</span>
+            <span class="font-mono font-bold text-accent text-lg">6</span>
+            <span class="text-xs text-secondary">Live job boards</span>
           </div>
         </div>
       </div>
 
-      <!-- Right Column: Precision Visual Preview Card (Constrained Max-Width) -->
+      <!-- Honest sample: clearly labelled, mirrors the real scoring weights -->
       <div class="landing-hero-preview-col">
-        <div class="architectural-card p-4">
-          <div class="d-flex justify-between items-center mb-3 pb-2 border-bottom">
-            <span class="floating-metric-badge">[ VERIFIABLE METRIC ]</span>
+        <div class="architectural-card lp-sample">
+          <div class="lp-sample-head">
+            <span class="lp-badge">Sample analysis</span>
+            <span class="lp-sample-note">Illustrative resume · Backend Developer</span>
           </div>
-          <div class="d-flex items-baseline justify-between mb-3">
-            <div>
-              <div class="text-xs text-secondary">Match Confidence</div>
-              <div class="font-mono text-score-huge font-bold text-primary">94.2<span class="text-sm font-normal text-accent">%</span></div>
-            </div>
-            <div class="text-right">
-              <span class="score-pill score-pill-green text-xs">High Alignment</span>
-              <div class="font-mono text-xs text-secondary mt-1">Full-Stack SDE</div>
+          <div class="lp-score-row">
+            <div class="lp-score-num font-mono">73<small>/100</small></div>
+            <div class="lp-score-text">
+              <strong>Role match</strong>
+              <span>Good fit, 1 mandatory skill missing</span>
             </div>
           </div>
-          <div class="landing-telemetry-box mb-3">
-            <div class="text-xs text-accent font-bold mb-1">■ EXACT PARSED PROOF</div>
-            <div class="text-xs text-primary font-mono lh-relaxed">
-              "Architected Payments Settlement Pipeline processing 1.2M Transactions daily with sub-200ms latency."
-            </div>
+          <ul class="lp-breakdown" aria-label="Score breakdown">
+            <li><span>Mandatory skills</span><div class="lp-bar"><i style="width:83%"></i></div><b>50<small>/60</small></b></li>
+            <li><span>Preferred skills</span><div class="lp-bar"><i style="width:53%"></i></div><b>8<small>/15</small></b></li>
+            <li><span>Projects &amp; experience</span><div class="lp-bar"><i style="width:67%"></i></div><b>10<small>/15</small></b></li>
+            <li><span>Education</span><div class="lp-bar"><i style="width:100%"></i></div><b>5<small>/5</small></b></li>
+            <li><span>Certifications</span><div class="lp-bar"><i style="width:0%"></i></div><b>0<small>/5</small></b></li>
+          </ul>
+          <div class="lp-evidence lp-ev-ok">
+            <b>Matched · PostgreSQL</b>
+            <q>Designed a 12-table PostgreSQL schema with indexed joins</q>
           </div>
-          <div class="grid-2 gap-2 text-xs font-mono">
-            <div class="p-2 bg-card border rounded-xs">
-              <span class="text-tertiary block">ATS COMPATIBILITY</span>
-            </div>
-            <div class="p-2 bg-card border rounded-xs">
-              <span class="text-tertiary block">VERIFIED SKILLS</span>
-            </div>
+          <div class="lp-evidence lp-ev-gap">
+            <b>Missing · FastAPI</b>
+            <span>Required by the role. Not found anywhere in your resume.</span>
+          </div>
+          <div class="lp-evidence lp-ev-adj">
+            <b>Adjacent · Flask</b>
+            <span>Helps you learn FastAPI, but earns 0 points.</span>
           </div>
         </div>
       </div>
@@ -460,173 +446,176 @@
   </div>
 </section>
 
-<!-- SEC. 01 // WHY IT WORKS -->
+<!-- ===== HOW THE SCORE WORKS ===== -->
 <section class="landing-section border-bottom" id="landingHowItWorks">
   <div class="landing-container">
-    <div class="landing-section-header text-center mb-4">
-      <div class="editorial-eyebrow">■ 01 // WHY IT WORKS</div>
-      <h2 class="font-serif text-score-huge text-primary m-0" id="landingHowItWorksHeading" tabindex="-1">
-        Built on real proof
-      </h2>
-      <p class="text-secondary text-base mt-1 mb-0">
-        Every score points to exact lines in your resume and code.
-      </p>
+    <div class="lp-head">
+      <p class="lp-kicker">How the score works</p>
+      <h2 class="font-serif lp-h2 text-primary m-0" id="landingHowItWorksHeading" tabindex="-1">A score you can check, not just trust.</h2>
+      <p class="text-secondary text-base mt-1 mb-0">Most resume tools return a number and a vibe. CareerMatch shows its arithmetic.</p>
     </div>
-    <div class="landing-values-grid steps-3-grid">
-      <div class="step-liquid-card architectural-card p-4">
-        <div class="font-mono text-xs font-bold text-accent mb-1">[ VAL.01 ]</div>
-        <h3 class="text-lg text-primary font-serif mb-1">Line-by-Line Proof</h3>
-        <p class="text-sm text-secondary lh-relaxed m-0">
-          See the exact resume lines behind every score.
-        </p>
+
+    <div class="lp-weights" role="img" aria-label="Score weights: mandatory skills 60 percent, preferred skills 15, projects and experience 15, education 5, certifications 5">
+      <div class="lp-w lp-w1"><b>60%</b></div>
+      <div class="lp-w lp-w2"><b>15%</b></div>
+      <div class="lp-w lp-w3"><b>15%</b></div>
+      <div class="lp-w lp-w4"><b>5%</b></div>
+      <div class="lp-w lp-w5"><b>5%</b></div>
+    </div>
+    <ul class="lp-legend">
+      <li><i class="lp-w1"></i>Mandatory skills</li>
+      <li><i class="lp-w2"></i>Preferred skills</li>
+      <li><i class="lp-w3"></i>Projects &amp; experience</li>
+      <li><i class="lp-w4"></i>Education</li>
+      <li><i class="lp-w5"></i>Certifications</li>
+    </ul>
+
+    <div class="lp-grid-3">
+      <div class="lp-card">
+        <h3 class="font-serif">Whole-word matching</h3>
+        <p>A skill counts only when it actually appears in your resume. No fuzzy "similarity" number padding the score.</p>
       </div>
-      <div class="step-liquid-card architectural-card p-4">
-        <div class="font-mono text-xs font-bold text-accent mb-1">[ VAL.02 ]</div>
-        <h3 class="text-lg text-primary font-serif mb-1">Clear Skill Gaps</h3>
-        <p class="text-sm text-secondary lh-relaxed m-0">
-          Find missing skills ranked by hiring impact.
-        </p>
+      <div class="lp-card">
+        <h3 class="font-serif">Adjacent skills earn nothing</h3>
+        <p>Knowing Flask helps with FastAPI, so we tell you that. It just doesn't inflate your score.</p>
       </div>
-      <div class="step-liquid-card architectural-card p-4">
-        <div class="font-mono text-xs font-bold text-accent mb-1">[ VAL.03 ]</div>
-        <h3 class="text-lg text-primary font-serif mb-1">Live Market Data</h3>
-        <p class="text-sm text-secondary lh-relaxed m-0">
-          Compare your profile against real open roles.
-        </p>
+      <div class="lp-card">
+        <h3 class="font-serif">Rules score, AI reads</h3>
+        <p>Gemini helps turn job descriptions into requirements. The scoring itself is a fixed, weighted formula, and falls back to rule-based parsing if the AI is unavailable.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- SEC. 02 // TOOLS -->
+<!-- ===== 3 STEPS ===== -->
+<section class="landing-section border-bottom" id="landingSteps">
+  <div class="landing-container">
+    <div class="lp-head">
+      <p class="lp-kicker">How it works</p>
+      <h2 class="font-serif lp-h2 text-primary m-0">Three steps to a better resume</h2>
+    </div>
+    <ol class="lp-steps">
+      <li>
+        <span class="lp-step-n">1</span>
+        <h3 class="font-serif">Upload and pick a role</h3>
+        <p>Add a PDF, DOCX or TXT (up to 5 MB). Choose from 41 tech roles or paste a real job description.</p>
+      </li>
+      <li>
+        <span class="lp-step-n">2</span>
+        <h3 class="font-serif">Read the evidence</h3>
+        <p>See matched skills with the lines that prove them, missing skills ranked by hiring impact, and your ATS issues.</p>
+      </li>
+      <li>
+        <span class="lp-step-n">3</span>
+        <h3 class="font-serif">Fix it and export</h3>
+        <p>Edit in the resume builder, switch between <span data-tpl-count>10</span> templates without losing content, and download a PDF or DOCX.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ===== TOOLS ===== -->
 <section class="landing-section border-bottom" id="landingTools">
   <div class="landing-container">
-    <div class="landing-section-header text-center mb-4">
-      <div class="editorial-eyebrow">■ 02 // TOOLS</div>
-      <h2 class="font-serif text-score-huge text-primary m-0">
-        Everything in one workspace
-      </h2>
-      <p class="text-secondary text-base mt-1 mb-0">
-        Pick a tool and start immediately.
-      </p>
+    <div class="lp-head">
+      <p class="lp-kicker">The workspace</p>
+      <h2 class="font-serif lp-h2 text-primary m-0">From first draft to first interview</h2>
     </div>
-    <div class="landing-tools-grid utility-suite-grid d-grid grid-3 gap-lg">
-      <a class="landing-tool-card utility-card card p-4" href="#/analyzer">
-        <div class="landing-tool-card-body">
-          <span class="font-mono text-xs text-accent font-bold">01</span>
-          <h3 class="text-md font-semibold text-primary mt-1 mb-1">Resume Analyzer</h3>
-          <p class="text-xs text-secondary lh-relaxed m-0">
-            Score your resume against any target role.
-          </p>
-        </div>
-        <span class="landing-tool-open-link font-mono text-xs text-accent mt-3">Open →</span>
+
+    <div class="lp-tools-feature">
+      <a class="lp-feature" href="#/analyzer">
+        <h3 class="font-serif">Resume Analyzer</h3>
+        <p>Score your resume against any of 41 roles or a pasted job description.</p>
+        <ul class="lp-checks">
+          <li>A score out of 100 with a weighted breakdown</li>
+          <li>Matched skills, with the resume line that proves each</li>
+          <li>Missing skills ranked by hiring impact</li>
+          <li>ATS issues to fix before you apply</li>
+        </ul>
+        <span class="lp-link">Analyze my resume →</span>
       </a>
-      <a class="landing-tool-card utility-card card p-4" href="#/builder">
-        <div class="landing-tool-card-body">
-          <span class="font-mono text-xs text-accent font-bold">02</span>
-          <h3 class="text-md font-semibold text-primary mt-1 mb-1">Resume Builder</h3>
-          <p class="text-xs text-secondary lh-relaxed m-0">
-            Auto-fill 10 clean templates. Export PDF or DOCX.
-          </p>
-        </div>
-        <span class="landing-tool-open-link font-mono text-xs text-accent mt-3">Open →</span>
+      <a class="lp-feature" href="#/builder">
+        <h3 class="font-serif">Resume Builder</h3>
+        <p><span data-tpl-count>10</span> professional templates, live A4 preview, accent colours, and PDF or DOCX export. Pick a design and switch any time.</p>
+        <div class="lp-tplstrip" id="landingTplStrip" aria-hidden="true"></div>
+        <span class="lp-link">Browse templates →</span>
       </a>
-      <a class="landing-tool-card utility-card card p-4" href="#/ats">
-        <div class="landing-tool-card-body">
-          <span class="font-mono text-xs text-accent font-bold">03</span>
-          <h3 class="text-md font-semibold text-primary mt-1 mb-1">ATS Check</h3>
-          <p class="text-xs text-secondary lh-relaxed m-0">
-            Catch formatting issues and missing keywords early.
-          </p>
-        </div>
-        <span class="landing-tool-open-link font-mono text-xs text-accent mt-3">Open →</span>
-      </a>
-      <a class="landing-tool-card utility-card card p-4" href="#/roadmap">
-        <div class="landing-tool-card-body">
-          <span class="font-mono text-xs text-accent font-bold">04</span>
-          <h3 class="text-md font-semibold text-primary mt-1 mb-1">Skill Roadmap</h3>
-          <p class="text-xs text-secondary lh-relaxed m-0">
-            Follow a focused weekly plan to close gaps.
-          </p>
-        </div>
-        <span class="landing-tool-open-link font-mono text-xs text-accent mt-3">Open →</span>
-      </a>
-      <a class="landing-tool-card utility-card card p-4" href="#/interview">
-        <div class="landing-tool-card-body">
-          <span class="font-mono text-xs text-accent font-bold">05</span>
-          <h3 class="text-md font-semibold text-primary mt-1 mb-1">Mock Interview</h3>
-          <p class="text-xs text-secondary lh-relaxed m-0">
-            Practice role-specific questions with instant feedback.
-          </p>
-        </div>
-        <span class="landing-tool-open-link font-mono text-xs text-accent mt-3">Open →</span>
-      </a>
-      <a class="landing-tool-card utility-card card p-4" href="#/market">
-        <div class="landing-tool-card-body">
-          <span class="font-mono text-xs text-accent font-bold">06</span>
-          <h3 class="text-md font-semibold text-primary mt-1 mb-1">Job Market</h3>
-          <p class="text-xs text-secondary lh-relaxed m-0">
-            Browse live tech jobs and track applications.
-          </p>
-        </div>
-        <span class="landing-tool-open-link font-mono text-xs text-accent mt-3">Open →</span>
-      </a>
+    </div>
+
+    <div class="lp-tools-compact">
+      <a class="lp-mini" href="#/ats"><h3>ATS Simulator</h3><p>An explainable ATS score with a section audit and bullet rewrites that stay truthful.</p></a>
+      <a class="lp-mini" href="#/roadmap"><h3>Skill Roadmap</h3><p>A weekly plan built from your missing skills, so you know what to learn first.</p></a>
+      <a class="lp-mini" href="#/interview"><h3>Mock Interview</h3><p>Practise role-specific questions and get feedback on your answers.</p></a>
+      <a class="lp-mini" href="#/market"><h3>Live Jobs</h3><p>Listings pulled from 6 job boards, with an application tracker.</p></a>
+      <a class="lp-mini" href="#/github"><h3>GitHub Check</h3><p>Check your claimed stack against your public repos, only when you ask.</p></a>
     </div>
   </div>
 </section>
 
-<!-- SEC. 03 // PROOF ENGINE -->
+<!-- ===== PRIVACY / TRUST ===== -->
 <section class="landing-section border-bottom" id="landingProof">
   <div class="landing-container">
-    <div class="landing-proof-split precision-split-grid d-grid grid-2 gap-xl">
-      <div class="landing-proof-left">
-        <div class="editorial-eyebrow">■ 03 // PROOF ENGINE</div>
-        <h2 class="font-serif text-score-huge text-primary m-0 mb-2">
-          Facts, not vague AI advice.
-        </h2>
-        <p class="text-secondary text-base lh-relaxed mb-4">
-          We check your actual resume, GitHub repos, and live job listings.
-        </p>
-        <div class="d-flex gap-sm">
-          <a class="btn btn-primary btn-sm" href="#/analyzer">Check My Resume →</a>
-          <a class="btn btn-secondary btn-sm" href="#/github">Verify GitHub →</a>
-        </div>
+    <div class="lp-trust">
+      <div class="lp-trust-intro">
+        <p class="lp-kicker">Your data</p>
+        <h2 class="font-serif lp-h2 text-primary m-0 mb-2">Your resume stays yours.</h2>
+        <p class="text-secondary text-base lh-relaxed mb-3">Resumes are personal. Here is what we do with yours, in plain words. The full details are in our privacy policy.</p>
+        <a class="btn btn-secondary btn-sm" href="#/privacy">Read the privacy policy →</a>
       </div>
-      <div class="landing-proof-cards">
-        <div class="proof-card card p-3 bg-card border">
-          <div class="proof-card-row">
-            <span class="proof-tag-pill font-mono">[ RESUME ]</span>
-            <div>
-              <strong class="text-primary text-sm block mb-1">Exact Quotes</strong>
-              <p class="text-xs text-secondary lh-relaxed m-0">
-                Highlights what matched and what is missing.
-              </p>
-            </div>
-          </div>
-        </div>
-        <div class="proof-card card p-3 bg-card border">
-          <div class="proof-card-row">
-            <span class="proof-tag-pill font-mono">[ GITHUB ]</span>
-            <div>
-              <strong class="text-primary text-sm block mb-1">Code Proof</strong>
-              <p class="text-xs text-secondary lh-relaxed m-0">
-                Verifies your stack from real commits.
-              </p>
-            </div>
-          </div>
-        </div>
-        <div class="proof-card card p-3 bg-card border">
-          <div class="proof-card-row">
-            <span class="proof-tag-pill font-mono">[ SALARY ]</span>
-            <div>
-              <strong class="text-primary text-sm block mb-1">Role Benchmarks</strong>
-              <p class="text-xs text-secondary lh-relaxed m-0">
-                Shows how new skills lift your target pay.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ul class="lp-trust-list">
+        <li><strong>Guest-friendly</strong><span>Analyze without an account. Guest sessions are deleted automatically after 30 days.</span></li>
+        <li><strong>Don't want it stored?</strong><span>Tick "Do not save my resume on the server" and the analysis runs in memory only.</span></li>
+        <li><strong>Not used to train AI</strong><span>Text excerpts go to Google's Gemini API, whose terms exclude model training on submitted data.</span></li>
+        <li><strong>Export or delete anytime</strong><span>Download everything we hold as JSON, or purge it, from Settings.</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FAQ ===== -->
+<section class="landing-section border-bottom" id="landingFaq">
+  <div class="landing-container">
+    <div class="lp-head">
+      <p class="lp-kicker">Questions</p>
+      <h2 class="font-serif lp-h2 text-primary m-0">Straight answers</h2>
+    </div>
+    <div class="lp-faq">
+      <details>
+        <summary>Will a high score get me shortlisted?</summary>
+        <p>No tool can promise that, and be wary of any that does. The score shows how well your resume covers a role's requirements and where it is weak. Recruiters and hiring managers decide the rest.</p>
+      </details>
+      <details>
+        <summary>Do I need an account?</summary>
+        <p>No. You can analyze and build as a guest. Sign in if you want to save resume versions, track ATS improvements and sync your roadmap across devices.</p>
+      </details>
+      <details>
+        <summary>Is my resume used to train AI models?</summary>
+        <p>Per our privacy policy, resume text sent to Google's Gemini API is not used to train or refine its models. You can also tick "Do not save my resume on the server" so nothing is written to our database.</p>
+      </details>
+      <details>
+        <summary>How is the match score calculated?</summary>
+        <p>A weighted formula: mandatory skills 60%, preferred skills 15%, projects and experience 15%, education 5%, certifications 5%. Skills are matched as whole words, and adjacent skills are shown but earn no points.</p>
+      </details>
+      <details>
+        <summary>Are the resume templates ATS-friendly?</summary>
+        <p>Every template exports real, selectable text rather than an image. The "ATS &amp; Classic" designs, such as ATS Compact Pro and Clean Minimalist, are single-column layouts built to parse most reliably. Two-column designs like Emerald Sidebar are made more for human readers.</p>
+      </details>
+      <details>
+        <summary>Which file formats can I upload?</summary>
+        <p>PDF, DOCX or TXT, up to 5 MB.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FINAL CTA ===== -->
+<section class="landing-section lp-final">
+  <div class="landing-container">
+    <h2 class="font-serif lp-h2 text-primary m-0 mb-2">Find out what your resume is missing.</h2>
+    <p class="text-secondary text-base mb-3">It takes about a minute, and you can try it without signing up.</p>
+    <div class="d-flex gap-sm justify-center flex-wrap">
+      <a class="btn btn-primary btn-lg" href="#/analyzer">Analyze my resume →</a>
+      <a class="btn btn-secondary btn-lg" href="#/builder">Build a resume</a>
     </div>
   </div>
 </section>
@@ -641,7 +630,7 @@
 <span class="brand-name text-md font-bold text-primary ml-1">CareerMatch AI</span>
 </div>
 <p class="text-sm text-secondary m-0">
-  Evidence-grounded career intelligence for engineering students.
+  Resume analysis, ATS checks and a resume builder for engineering students.
 </p>
 </div>
 <div class="footer-link-col">
@@ -722,9 +711,9 @@
 <input autocomplete="email" class="form-input" id="authPageEmailInput" placeholder="name@college.edu" required="" type="email"/>
 </div>
 <div class="form-group mb-1">
-<div class="d-flex flex-between align-center mb-05">
-<label class="form-label m-0" for="authPagePasswordInput">Password</label>
-<div class="d-flex gap-xs">
+<div class="auth-password-header mb-05">
+<label class="form-label m-0 auth-pw-label" for="authPagePasswordInput">Password</label>
+<div class="auth-pw-actions">
 <button class="btn btn-ghost btn-sm text-xxs badge-tag hidden" id="authGeneratePasswordBtn" type="button" title="Generate strong random password">
   Suggest Password
 </button>
@@ -1295,33 +1284,19 @@
   Build ATS-friendly resumes with live preview and instant PDF or DOCX export.
 </p>
 </div>
-<div class="d-flex gap-sm items-center flex-wrap">
+<div class="d-flex gap-sm items-center flex-wrap bld-header-actions">
 <button class="btn btn-secondary btn-sm" id="builderStartScratchBtn" type="button">
   Start from Scratch
 </button>
-<div class="dropdown-wrapper" style="position:relative;">
-  <button class="btn btn-secondary btn-sm" id="builderLoadDemoDropdownBtn" type="button">
-    Load Test Profile ▾
+<!-- Consolidated Export Action Bar -->
+<div class="bld-export-action-bar d-flex gap-xs items-center flex-wrap" id="builderExportActionBar">
+  <button class="btn btn-secondary btn-sm bld-mobile-editor-btn" id="builderMobileEditToggleBtn" type="button" aria-expanded="false">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+    <span>Edit Resume</span>
   </button>
-  <div class="dropdown-menu hidden" id="builderLoadDemoDropdownMenu" style="position:absolute; right:0; top:100%; z-index:var(--z-dropdown, 100); min-width:220px; background:var(--bg-overlay, #ffffff); border:1px solid var(--border-medium); border-radius:var(--r-md); box-shadow:var(--overlay-shadow); padding:6px; margin-top:4px;">
-    <button class="btn btn-ghost btn-sm w-100 text-left mb-1" id="builderLoadFresherBtn" type="button">
-      🎓 Indian Fresher (IIT Bombay)
-    </button>
-    <button class="btn btn-ghost btn-sm w-100 text-left mb-1" id="builderLoadSdeBtn" type="button">
-      💼 Software Engineer (Razorpay)
-    </button>
-    <button class="btn btn-ghost btn-sm w-100 text-left" id="builderLoadDsBtn" type="button">
-      🔬 Data Scientist (IISc / Zomato)
-    </button>
-  </div>
-</div>
-<!-- Consolidated Export Action Bar (Task 6 Item 1) -->
-<div class="bld-export-action-bar d-flex gap-xs items-center" id="builderExportActionBar">
-  <button class="btn btn-primary btn-sm" id="builderDownloadBtn" type="button">
-    Download PDF
-  </button>
-  <button class="btn btn-secondary btn-sm" id="builderDownloadDocxBtn" type="button">
-    Download DOCX
+  <button class="btn btn-primary btn-sm" id="builderDownloadMenuBtn" type="button" aria-haspopup="dialog" aria-expanded="false">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    <span>Download</span>
   </button>
   <button class="btn btn-secondary btn-sm" id="builderSaveAccountBtn" type="button" title="Save to logged-in profile">
     Save to Profile
@@ -1360,9 +1335,9 @@
         <a href="#/analyzer" class="btn btn-secondary btn-xs">Upload in Analyzer →</a>
       </div>
       <div>
-        <h3 class="text-lg font-semibold mb-2">Start Fresh or Test Demos</h3>
+        <h3 class="text-lg font-semibold mb-2">Start Fresh</h3>
         <p class="text-sm text-secondary mb-3">
-          No existing resume on hand? Build a high-impact profile from scratch, or load a pre-populated fictional profile tailored for the Indian hiring market.
+          No existing resume on hand? Build a clean, ATS-ready resume from scratch or parse an existing file in Resume Analyzer.
         </p>
         <div class="bld-quickstart-grid">
           <button type="button" class="bld-preset-card" id="builderLandingScratchBtn">
@@ -1414,12 +1389,6 @@
      SECTION 2: WORKSPACE & TEMPLATE STUDIO (#builderWorkspaceSection)
      ============================================================== -->
 <div id="builderWorkspaceSection" class="hidden">
-  <!-- Mobile & Tablet Segmented View Toggle (< 1100px) -->
-  <div class="builder-mobile-view-toggle mb-3" id="builderMobileViewToggle" role="tablist" aria-label="Builder View Selection">
-    <button type="button" class="btn btn-sm btn-primary bld-view-toggle-btn active" data-bld-view="editor">Edit Details</button>
-    <button type="button" class="btn btn-sm btn-ghost bld-view-toggle-btn" data-bld-view="preview">Live Preview</button>
-    <button type="button" class="btn btn-sm btn-ghost bld-view-toggle-btn" data-bld-view="templates">Templates</button>
-  </div>
 
   <div class="builder-workspace-grid">
     <!-- Left Column: Template switcher & Live A4 Preview -->
@@ -1433,7 +1402,7 @@
         </div>
         <div class="bld-inline">
           <span id="builderPageCount" class="bld-pagecount text-tertiary">1 page</span>
-          <select id="builderZoomSelect" class="input input-sm" style="width: 104px;" aria-label="Preview zoom">
+          <select id="builderZoomSelect" class="input input-sm bld-zoom-select" aria-label="Preview zoom">
             <option value="fit" selected>Fit width</option>
             <option value="1">100%</option>
             <option value="0.85">85%</option>
@@ -1478,7 +1447,6 @@
         </div>
       </div>
     </div>
-  </div>
 
     <!-- Right Column: Profile Editor -->
     <div class="builder-editor-pane card">
@@ -1679,6 +1647,37 @@
 <!-- ==============================================================
      CONFIRMATION MODAL (#builderConfirmModal)
      ============================================================== -->
+</div>
+<!-- Download Format Selector Modal (PDF / DOCX) -->
+<div class="modal-backdrop hidden" id="builderDownloadFormatModal" role="dialog" aria-modal="true" aria-labelledby="bldDlModalTitle">
+  <div class="modal-dialog bld-download-modal">
+    <div class="modal-header">
+      <h3 id="bldDlModalTitle" class="m-0 text-base font-semibold">Download Resume</h3>
+      <button class="btn btn-ghost btn-sm" id="closeBldDlFormatModalBtn" type="button" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="text-xs text-secondary mb-3 mt-0">Choose your preferred export format for the active template.</p>
+      <div class="bld-download-options">
+        <button type="button" class="bld-download-option-card" id="builderDownloadBtn">
+          <span class="bld-dl-icon bld-dl-icon-pdf" aria-hidden="true">PDF</span>
+          <span class="bld-dl-meta">
+            <strong>Download PDF</strong>
+            <small>Print-ready, exact layout &amp; fonts preserved</small>
+          </span>
+          <span class="bld-dl-arrow" aria-hidden="true">→</span>
+        </button>
+        <button type="button" class="bld-download-option-card" id="builderDownloadDocxBtn">
+          <span class="bld-dl-icon bld-dl-icon-docx" aria-hidden="true">DOCX</span>
+          <span class="bld-dl-meta">
+            <strong>Download DOCX</strong>
+            <small>Editable Microsoft Word document</small>
+          </span>
+          <span class="bld-dl-arrow" aria-hidden="true">→</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 <div id="builderConfirmModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="builderModalTitle">
   <div class="modal-dialog card p-4" style="max-width: 580px; margin: 6vh auto; border-radius: var(--r-lg); box-shadow: var(--overlay-shadow);">
     <div class="flex-row justify-between items-center mb-3">
@@ -2477,31 +2476,7 @@ Explore verified engineering openings with live skill and salary benchmarks.
 <div class="settings-shell mx-auto d-flex flex-col gap-md">
   <div class="settings-page-head">
     <h2 class="font-serif text-xl m-0">Workspace Settings</h2>
-    <p class="text-sm text-secondary m-0">Manage appearance, data exports, and local browser privacy.</p>
-  </div>
-
-  <!-- Appearance Card -->
-  <div class="card settings-card">
-    <div class="settings-row">
-      <div class="settings-row-info">
-        <div class="settings-row-title">Appearance &amp; Theme</div>
-        <p class="text-xs text-secondary m-0">Auto matches your browser or OS preference automatically.</p>
-      </div>
-      <div class="theme-segmented theme-icon-pill" role="group" aria-label="Theme preference">
-  <button type="button" class="theme-seg-btn active" data-theme-choice="auto" title="Auto (System Theme)" aria-label="Auto Theme">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-    <span class="theme-seg-label">Auto</span>
-  </button>
-  <button type="button" class="theme-seg-btn" data-theme-choice="light" title="Light Theme" aria-label="Light Theme">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.07" y2="4.93"/></svg>
-    <span class="theme-seg-label">Light</span>
-  </button>
-  <button type="button" class="theme-seg-btn" data-theme-choice="dark" title="Dark Theme" aria-label="Dark Theme">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-    <span class="theme-seg-label">Dark</span>
-  </button>
-</div>
-    </div>
+    <p class="text-sm text-secondary m-0">Manage data exports and local browser privacy.</p>
   </div>
 
   <!-- Data & Privacy Card -->
@@ -2928,9 +2903,10 @@ We use only strictly necessary HTTP cookies (to isolate your guest session secur
 <span id="pStep3"></span>
 </div>
 <!-- Core Modular Application Entry -->
-<script src="/frontend/js/main.js?v=20261121j" type="module"></script>
+<script src="/frontend/js/main.js?v=20261122a" type="module"></script>
 <!-- Boot Watchdog Safety Net -->
 <script src="/frontend/js/boot-watchdog.js" defer></script>
+<script src="/frontend/js/landing-previews.js?v=20261122b" type="module"></script>
   <!-- Storage & Essential Cookies Notice Banner (Non-intrusive) -->
   <aside id="cmStorageNotice" class="storage-notice-banner" hidden="" role="region" aria-label="Storage and Essential Cookie Notice">
     <div class="storage-notice-content">

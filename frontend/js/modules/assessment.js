@@ -79,6 +79,16 @@ export class AssessmentModule {
       genBtn.disabled = true;
       genBtn.textContent = "Generating Test...";
     }
+    const mcqSkelBox = document.getElementById("assessmentQuestionsContainer");
+    if (mcqSkelBox) {
+      mcqSkelBox.innerHTML = Array.from({ length: 3 }).map(() => `
+        <div class="cm-skel-card mb-3" aria-busy="true">
+          <div class="cm-skel-pill mb-2"></div>
+          <div class="cm-skel-line w-90 mb-2"></div>
+          <div class="cm-skel-line w-75 mb-1"></div>
+          <div class="cm-skel-line w-70"></div>
+        </div>`).join("");
+    }
 
     try {
       const token = store.get("token");

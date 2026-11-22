@@ -40,10 +40,13 @@ function initApp() {
     document.documentElement.style.colorScheme = resolved;
     const metaTheme = document.querySelector('meta[name="theme-color"]');
     if (metaTheme) metaTheme.setAttribute("content", resolved === "dark" ? "#121417" : "#FBF9F5");
-    document.querySelectorAll("[data-theme-choice]").forEach((btn) => {
-      const active = btn.getAttribute("data-theme-choice") === normalized;
-      btn.classList.toggle("active", active);
-      btn.setAttribute("aria-pressed", String(active));
+    const nextMap = { auto: "Light", light: "Dark", dark: "Device" };
+    const labelMap = { auto: "Device", light: "Light", dark: "Dark" };
+    document.querySelectorAll("[data-theme-cycle]").forEach((btn) => {
+      btn.setAttribute("data-theme-mode", normalized);
+      const titleText = `Theme: ${labelMap[normalized]} (click for ${nextMap[normalized]})`;
+      btn.setAttribute("title", titleText);
+      btn.setAttribute("aria-label", titleText);
     });
   }
   const initialThemePref = store.get("theme") || "auto";
@@ -60,6 +63,7 @@ function initApp() {
   // 2. Initialize Components safely with per-component try/catch
   const components = [
     ["router", () => router.init()],
+    ["bootSplash", () => { document.documentElement.removeAttribute("data-boot-route"); document.documentElement.setAttribute("data-booting", "false"); }],
     ["commandPalette", () => commandPalette.init()],
     ["guidedFix", () => guidedFix.init()],
     ["notifications", () => notifications.init()],
@@ -303,19 +307,17 @@ function attachShellListeners() {
     applyThemePreference(next);
   }
 
-  // Delegated theme selector across Landing, Profile dropdown, and Settings
+  // Delegated single-icon theme cycle button (Landing & Profile dropdown: auto -> light -> dark -> auto)
   document.addEventListener("click", (evt) => {
-    const btn = evt.target.closest("[data-theme-choice]");
+    const btn = evt.target.closest("[data-theme-cycle]");
     if (!btn) return;
     evt.preventDefault();
     evt.stopPropagation();
-    const choice = btn.getAttribute("data-theme-choice") || "auto";
-    store.set("theme", choice);
-    applyThemePreference(choice);
-    if (avatarDropdown && avatarDropdown.contains(btn)) {
-      avatarDropdown.classList.remove("open");
-      avatarBtn?.setAttribute("aria-expanded", "false");
-    }
+    const currentPref = store.get("theme") || document.documentElement.getAttribute("data-theme-pref") || "auto";
+    const order = ["auto", "light", "dark"];
+    const nextPref = order[(order.indexOf(currentPref) + 1) % order.length];
+    store.set("theme", nextPref);
+    applyThemePreference(nextPref);
   });
 
   // Auth page Back button
