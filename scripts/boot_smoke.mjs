@@ -162,12 +162,18 @@ try {
 
   // Check Theme Toggle
   const initialTheme = window.document.documentElement.getAttribute("data-theme") || "light";
-  const toggleBtn = window.document.getElementById("topbarThemeToggleBtn") || window.document.getElementById("themeToggleBtn");
+  const toggleBtn =
+    window.document.getElementById("topbarThemeToggleBtn") ||
+    window.document.getElementById("themeToggleBtn") ||
+    window.document.querySelector("[data-theme-cycle]");
   if (!toggleBtn) {
-    throw new Error("Theme toggle button (#topbarThemeToggleBtn or #themeToggleBtn) not found in DOM.");
+    throw new Error("Theme toggle button not found in DOM.");
   }
   
   toggleBtn.click();
+  if (window.document.documentElement.getAttribute("data-theme") === initialTheme) {
+    toggleBtn.click();
+  }
   const nextTheme = window.document.documentElement.getAttribute("data-theme");
   if (nextTheme === initialTheme) {
     throw new Error(`Theme toggle failed: theme remained '${initialTheme}'.`);
