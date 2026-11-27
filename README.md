@@ -1,39 +1,25 @@
-&lt;div align=&quot;center&quot;&gt;
-
-&lt;img
-  src=&quot;https://raw.githubusercontent.com/Rishav1002/CareerMatch-AI/main/frontend/assets/favicon.svg&quot;
-  alt=&quot;CareerMatch AI Logo&quot;
-  width=&quot;56&quot;
-  height=&quot;56&quot;
-/&gt;
-
-&lt;h1&gt;CareerMatch AI&lt;/h1&gt;
-
-&lt;p&gt;&lt;strong&gt;Evidence-First Career Intelligence, Resume Studio &amp;amp; Placement Readiness Platform&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;
-  &lt;strong&gt;Live App:&lt;/strong&gt;
-  &lt;a href=&quot;https://career-match-ai-six.vercel.app/#/landing&quot;&gt;
-    &lt;strong&gt;career-match-ai-six.vercel.app&lt;/strong&gt; ↗
-  &lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-  &lt;a href=&quot;https://career-match-ai-six.vercel.app/#/landing&quot;&gt;
-    &lt;img src=&quot;https://img.shields.io/badge/Launch%20Live%20Website-CareerMatch%20AI-B84D2B?style=for-the-badge&amp;logo=vercel&amp;logoColor=white&quot; alt=&quot;Launch Live Website&quot; /&gt;
-  &lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-  &lt;a href=&quot;.python-version&quot;&gt;&lt;img src=&quot;https://img.shields.io/badge/Python-3.12-3776AB?logo=python&amp;logoColor=white&quot; alt=&quot;Python 3.12&quot; /&gt;&lt;/a&gt;
-  &lt;a href=&quot;https://fastapi.tiangolo.com/&quot;&gt;&lt;img src=&quot;https://img.shields.io/badge/FastAPI-Backend-009688?logo=fastapi&amp;logoColor=white&quot; alt=&quot;FastAPI&quot; /&gt;&lt;/a&gt;
-  &lt;a href=&quot;https://neon.tech/&quot;&gt;&lt;img src=&quot;https://img.shields.io/badge/Database-Neon%20PostgreSQL-00E599?logo=postgresql&amp;logoColor=111827&quot; alt=&quot;Neon PostgreSQL&quot; /&gt;&lt;/a&gt;
-  &lt;a href=&quot;https://ai.google.dev/&quot;&gt;&lt;img src=&quot;https://img.shields.io/badge/AI-Google%20Gemini-4285F4?logo=googlegemini&amp;logoColor=white&quot; alt=&quot;Google Gemini&quot; /&gt;&lt;/a&gt;
-  &lt;a href=&quot;https://vercel.com/&quot;&gt;&lt;img src=&quot;https://img.shields.io/badge/Hosted%20on-Vercel-000000?logo=vercel&amp;logoColor=white&quot; alt=&quot;Hosted on Vercel&quot; /&gt;&lt;/a&gt;
-  &lt;a href=&quot;LICENSE&quot;&gt;&lt;img src=&quot;https://img.shields.io/badge/License-MIT-blue.svg&quot; alt=&quot;License: MIT&quot; /&gt;&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;/div&gt;
+<div align="center">
+  <img src="https://raw.githubusercontent.com/Rishav1002/CareerMatch-AI/main/frontend/assets/favicon.svg" alt="CareerMatch AI Logo" width="56" height="56" />
+  <h1>CareerMatch AI</h1>
+  <p><strong>Evidence-First Career Intelligence, Resume Studio &amp; Placement Readiness Platform</strong></p>
+  <p>
+    <strong>Live App:</strong>
+    <a href="https://career-match-ai-six.vercel.app/#/landing"><strong>career-match-ai-six.vercel.app ↗</strong></a>
+  </p>
+  <p>
+    <a href="https://career-match-ai-six.vercel.app/#/landing">
+      <img src="https://img.shields.io/badge/Launch%20Live%20Website-CareerMatch%20AI-B84D2B?style=for-the-badge&logo=vercel&logoColor=white" alt="Launch Live Website" />
+    </a>
+  </p>
+  <p>
+    <a href=".python-version"><img src="https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white" alt="Python 3.12" /></a>
+    <a href="https://fastapi.tiangolo.com/"><img src="https://img.shields.io/badge/FastAPI-Backend-009688?logo=fastapi&logoColor=white" alt="FastAPI" /></a>
+    <a href="https://neon.tech/"><img src="https://img.shields.io/badge/Database-Neon%20PostgreSQL-00E599?logo=postgresql&logoColor=111827" alt="Neon PostgreSQL" /></a>
+    <a href="https://ai.google.dev/"><img src="https://img.shields.io/badge/AI-Google%20Gemini-4285F4?logo=googlegemini&logoColor=white" alt="Google Gemini" /></a>
+    <a href="https://vercel.com/"><img src="https://img.shields.io/badge/Hosted%20on-Vercel-000000?logo=vercel&logoColor=white" alt="Hosted on Vercel" /></a>
+    <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" /></a>
+  </p>
+</div>
 
 ---
 
@@ -128,7 +114,7 @@ Configure these in your **Vercel Project Settings → Environment Variables** (o
 | `APP_ENV` | Yes | Set to `production` in live deployments (enforces strict JWT and CORS rules). |
 | `DATABASE_URL` | Yes (Prod) | Neon PostgreSQL pooled connection string (`postgresql://...?sslmode=require`). |
 | `JWT_SECRET` | Yes | Cryptographic secret ($\ge 32$ chars) for signing authentication JWTs. |
-| `GEMINI_API_KEY` | Recommended | Google Gemini API key from [Google AI Studio](https://www.google.com/search?q=https%3A%2F%2Faistudio.google.com%2Fapp%2Fapikey). Falls back deterministically if unset. |
+| `GEMINI_API_KEY` | Recommended | Google Gemini API key from [Google AI Studio](https://aistudio.google.com/app/apikey). Falls back deterministically if unset. |
 | `GEMINI_MODEL` | Optional | Primary Gemini model (default: `gemini-1.5-flash` with automatic fallback). |
 | `CORS_ORIGINS` | Optional | Comma-separated allowed origins for production requests. |
 | `HEALTH_KEY` | Optional | Secret header (`X-Health-Key`) for detailed `/api/health` diagnostics. |
@@ -169,7 +155,7 @@ pip install -r requirements.txt -r requirements-dev.txt
 python -m uvicorn backend.main:app --host 127.0.0.1 --port 3000 --no-server-header
 ```
 
-Open [http://127.0.0.1:3000](https://www.google.com/search?q=http%3A%2F%2F127.0.0.1%3A3000) in your browser.
+Open [http://127.0.0.1:3000](http://127.0.0.1:3000) in your browser.
 
 ---
 
@@ -203,4 +189,4 @@ python scripts/post_deploy_smoke.py --url http://127.0.0.1:3000
 
 ## License
 
-CareerMatch AI is open-source software licensed under the [MIT License](https://www.google.com/search?q=LICENSE).
+CareerMatch AI is open-source software licensed under the [MIT License](LICENSE).
