@@ -17,3 +17,7 @@ venv/
 .aistudio/
 public/
 bun.lock
+
+.vscode/
+*.zip
+careermatch.db
