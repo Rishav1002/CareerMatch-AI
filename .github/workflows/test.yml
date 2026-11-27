@@ -39,7 +39,7 @@ jobs:
         run: |
           npm ci || npm install --no-audit --no-fund
 
-      - name: Stage 1: Strict JS Syntax Verification (All ES Modules)
+      - name: "Stage 1: Strict JS Syntax Verification (All ES Modules)"
         run: |
           node --input-type=module --check < frontend/js/main.js
           node --input-type=module --check < frontend/js/api.js
@@ -55,7 +55,7 @@ jobs:
           sleep 3
           curl -I http://127.0.0.1:3000/api/health
 
-      - name: Stage 2: Headless DOM Boot Smoke Test (JSDOM)
+      - name: "Stage 2: Headless DOM Boot Smoke Test (JSDOM)"
         env:
           BASE_URL: http://127.0.0.1:3000
         run: |
@@ -65,14 +65,14 @@ jobs:
         run: |
           npx playwright install --with-deps chromium
 
-      - name: Stage 3: Real Browser CSP & Security Violation Check
+      - name: "Stage 3: Real Browser CSP & Security Violation Check"
         run: |
           node scripts/verify_csp.mjs
 
-      - name: Stage 4: End-to-End User Journey Test (Real Browser)
+      - name: "Stage 4: End-to-End User Journey Test (Real Browser)"
         run: |
           node scripts/journey_test.mjs
 
-      - name: Stage 5: Local Deploy Smoke Audit (Health, CSP, Deployed Assets)
+      - name: "Stage 5: Local Deploy Smoke Audit (Health, CSP, Deployed Assets)"
         run: |
           python scripts/post_deploy_smoke.py --url http://127.0.0.1:3000
